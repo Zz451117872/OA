@@ -1,5 +1,7 @@
-package com.example.OA.shiro;
+package com.example.OA.config;
 
+import com.example.OA.shiro.AuthRealm;
+import com.example.OA.shiro.CredentialsMatcher;
 import org.apache.shiro.spring.LifecycleBeanPostProcessor;
 import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;

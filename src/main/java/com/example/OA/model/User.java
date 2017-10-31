@@ -1,29 +1,31 @@
 package com.example.OA.model;
 
-import java.io.Serializable;
+import java.util.Date;
 
-/**
- * Created by aa on 2017/10/30.
- */
-public class User implements Serializable{
-
+public class User {
     private Integer id;
+
     private String username;
-    private String password;
 
-    public User() {
-    }
+    private String passwd;
 
-    public User(Integer id, String username, String password) {
+    private Integer partId;
+
+    private Date createTime;
+
+    private Date updateTime;
+
+    public User(Integer id, String username, String passwd, Integer partId, Date createTime, Date updateTime) {
         this.id = id;
         this.username = username;
-        this.password = password;
+        this.passwd = passwd;
+        this.partId = partId;
+        this.createTime = createTime;
+        this.updateTime = updateTime;
     }
 
-    public User(String username, String password) {
-
-        this.username = username;
-        this.password = password;
+    public User() {
+        super();
     }
 
     public Integer getId() {
@@ -39,14 +41,38 @@ public class User implements Serializable{
     }
 
     public void setUsername(String username) {
-        this.username = username;
+        this.username = username == null ? null : username.trim();
     }
 
-    public String getPassword() {
-        return password;
+    public String getPasswd() {
+        return passwd;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setPasswd(String passwd) {
+        this.passwd = passwd == null ? null : passwd.trim();
+    }
+
+    public Integer getPartId() {
+        return partId;
+    }
+
+    public void setPartId(Integer partId) {
+        this.partId = partId;
+    }
+
+    public Date getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(Date createTime) {
+        this.createTime = createTime;
+    }
+
+    public Date getUpdateTime() {
+        return updateTime;
+    }
+
+    public void setUpdateTime(Date updateTime) {
+        this.updateTime = updateTime;
     }
 }
