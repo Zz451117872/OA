@@ -1,7 +1,7 @@
 package com.example.OA.service.manager;
 
-import com.example.OA.mapper.PartMapper;
-import com.example.OA.mapper.UserMapper;
+import com.example.OA.dao.PartMapper;
+import com.example.OA.dao.UserMapper;
 import com.example.OA.model.Part;
 import com.example.OA.mvc.exception.AppException;
 import com.example.OA.mvc.exception.Error;
@@ -23,11 +23,10 @@ public class PartService {
     @Autowired
     UserMapper userMapper;
 
-    public String addPart(Part part)
-    {
+    public String addPart(Part part) {
         if(part != null) {
             String partName = part.getPartName();
-            if (StringUtils.isNotBlank(partName) && partMapper.getByPartname(partName) != null) {
+            if (StringUtils.isNotBlank(partName) && partMapper.getByPartname(partName) == null) {
                 part.setCreateTime(new Date());
                 partMapper.insert(part);
                 return partName;

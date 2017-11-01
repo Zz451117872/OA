@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.example.OA.mapper.RolePrivilegeMapper">
+<mapper namespace="com.example.OA.dao.RolePrivilegeMapper">
   <resultMap id="BaseResultMap" type="com.example.OA.model.RolePrivilegeKey">
     <constructor>
       <idArg column="role_id" javaType="java.lang.Integer" jdbcType="INTEGER" />
@@ -69,4 +69,41 @@
       </if>
     </trim>
   </insert>
+
+
+  <sql id="Base_Column_List">
+    role_id,privilege_id
+  </sql>
+
+
+  <!-- ===================================    -->
+  <delete id="deleteByRoleId" parameterType="int">
+    DELETE
+    from role_privilege
+    where role_id = {roleId}
+  </delete>
+
+  <delete id="deleteByRoleidAndPrivilegeid" parameterType="map" >
+    DELETE
+    from role_privilege
+    where
+    role_id = #{roleId}
+    and privilege_id = #{privilegeId}
+  </delete>
+
+
+  <select id="getByRoleId" parameterType="int" resultMap="BaseResultMap">
+    SELECT
+    <include refid="Base_Column_List"/>
+    from role_privilege
+    where role_id = #{roleId}
+  </select>
+
+
+  <delete id="deleteByPrivilegeId" parameterType="int">
+    DELETE
+    from role_privilege
+    where privilege_id = #{privilegeId}
+  </delete>
+
 </mapper>

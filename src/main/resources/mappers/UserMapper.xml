@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.example.OA.mapper.UserMapper">
+<mapper namespace="com.example.OA.dao.UserMapper">
   <resultMap id="BaseResultMap" type="com.example.OA.model.User">
     <constructor>
       <idArg column="id" javaType="java.lang.Integer" jdbcType="INTEGER" />
       <arg column="username" javaType="java.lang.String" jdbcType="VARCHAR" />
-      <arg column="passwd" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="password" javaType="java.lang.String" jdbcType="VARCHAR" />
       <arg column="part_id" javaType="java.lang.Integer" jdbcType="INTEGER" />
       <arg column="create_time" javaType="java.util.Date" jdbcType="TIMESTAMP" />
       <arg column="update_time" javaType="java.util.Date" jdbcType="TIMESTAMP" />
     </constructor>
   </resultMap>
   <sql id="Base_Column_List">
-    id, username, passwd, part_id, create_time, update_time
+    id, username, password, part_id, create_time, update_time
   </sql>
   <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
     select 
@@ -25,10 +25,10 @@
     where id = #{id,jdbcType=INTEGER}
   </delete>
   <insert id="insert" parameterType="com.example.OA.model.User">
-    insert into user (id, username, passwd, 
+    insert into user (id, username, password, 
       part_id, create_time, update_time
       )
-    values (#{id,jdbcType=INTEGER}, #{username,jdbcType=VARCHAR}, #{passwd,jdbcType=VARCHAR}, 
+    values (#{id,jdbcType=INTEGER}, #{username,jdbcType=VARCHAR}, #{password,jdbcType=VARCHAR}, 
       #{partId,jdbcType=INTEGER}, #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP}
       )
   </insert>
@@ -41,8 +41,8 @@
       <if test="username != null">
         username,
       </if>
-      <if test="passwd != null">
-        passwd,
+      <if test="password != null">
+        password,
       </if>
       <if test="partId != null">
         part_id,
@@ -61,8 +61,8 @@
       <if test="username != null">
         #{username,jdbcType=VARCHAR},
       </if>
-      <if test="passwd != null">
-        #{passwd,jdbcType=VARCHAR},
+      <if test="password != null">
+        #{password,jdbcType=VARCHAR},
       </if>
       <if test="partId != null">
         #{partId,jdbcType=INTEGER},
@@ -81,8 +81,8 @@
       <if test="username != null">
         username = #{username,jdbcType=VARCHAR},
       </if>
-      <if test="passwd != null">
-        passwd = #{passwd,jdbcType=VARCHAR},
+      <if test="password != null">
+        password = #{password,jdbcType=VARCHAR},
       </if>
       <if test="partId != null">
         part_id = #{partId,jdbcType=INTEGER},
@@ -99,7 +99,7 @@
   <update id="updateByPrimaryKey" parameterType="com.example.OA.model.User">
     update user
     set username = #{username,jdbcType=VARCHAR},
-      passwd = #{passwd,jdbcType=VARCHAR},
+      password = #{password,jdbcType=VARCHAR},
       part_id = #{partId,jdbcType=INTEGER},
       create_time = #{createTime,jdbcType=TIMESTAMP},
       update_time = #{updateTime,jdbcType=TIMESTAMP}
@@ -109,14 +109,14 @@
     <constructor>
       <idArg column="id" javaType="java.lang.Integer" jdbcType="INTEGER" />
       <arg column="username" javaType="java.lang.String" jdbcType="VARCHAR" />
-      <arg column="passwd" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="password" javaType="java.lang.String" jdbcType="VARCHAR" />
       <arg column="part_id" javaType="java.lang.Integer" jdbcType="INTEGER" />
       <arg column="create_time" javaType="java.util.Date" jdbcType="TIMESTAMP" />
       <arg column="update_time" javaType="java.util.Date" jdbcType="TIMESTAMP" />
     </constructor>
   </resultMap>
   <sql id="Base_Column_List">
-    id, username, passwd, part_id, create_time, update_time
+    id, username, password, part_id, create_time, update_time
   </sql>
   <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
     select 
@@ -129,10 +129,10 @@
     where id = #{id,jdbcType=INTEGER}
   </delete>
   <insert id="insert" parameterType="com.example.OA.model.User">
-    insert into user (id, username, passwd, 
+    insert into user (id, username, password, 
       part_id, create_time, update_time
       )
-    values (#{id,jdbcType=INTEGER}, #{username,jdbcType=VARCHAR}, #{passwd,jdbcType=VARCHAR}, 
+    values (#{id,jdbcType=INTEGER}, #{username,jdbcType=VARCHAR}, #{password,jdbcType=VARCHAR}, 
       #{partId,jdbcType=INTEGER}, #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP}
       )
   </insert>
@@ -145,8 +145,8 @@
       <if test="username != null">
         username,
       </if>
-      <if test="passwd != null">
-        passwd,
+      <if test="password != null">
+        password,
       </if>
       <if test="partId != null">
         part_id,
@@ -165,8 +165,8 @@
       <if test="username != null">
         #{username,jdbcType=VARCHAR},
       </if>
-      <if test="passwd != null">
-        #{passwd,jdbcType=VARCHAR},
+      <if test="password != null">
+        #{password,jdbcType=VARCHAR},
       </if>
       <if test="partId != null">
         #{partId,jdbcType=INTEGER},
@@ -185,8 +185,8 @@
       <if test="username != null">
         username = #{username,jdbcType=VARCHAR},
       </if>
-      <if test="passwd != null">
-        passwd = #{passwd,jdbcType=VARCHAR},
+      <if test="password != null">
+        password = #{password,jdbcType=VARCHAR},
       </if>
       <if test="partId != null">
         part_id = #{partId,jdbcType=INTEGER},
@@ -203,10 +203,38 @@
   <update id="updateByPrimaryKey" parameterType="com.example.OA.model.User">
     update user
     set username = #{username,jdbcType=VARCHAR},
-      passwd = #{passwd,jdbcType=VARCHAR},
+      password = #{password,jdbcType=VARCHAR},
       part_id = #{partId,jdbcType=INTEGER},
       create_time = #{createTime,jdbcType=TIMESTAMP},
       update_time = #{updateTime,jdbcType=TIMESTAMP}
     where id = #{id,jdbcType=INTEGER}
   </update>
+
+  <select id="getByUsername" parameterType="java.lang.String" resultMap="BaseResultMap">
+    SELECT
+    <include refid="Base_Column_List"/>
+    from user
+    where username = #{username}
+  </select>
+
+  <delete id="deleteByPartId" parameterType="int">
+    DELETE
+    from user
+    where part_id = #{partId}
+  </delete>
+
+
+  <select id="getByIdOrUsername" parameterType="map" resultMap="BaseResultMap">
+    SELECT
+    <include refid="Base_Column_List"/>
+    from user
+    <where>
+      <if test="userId != null">
+         id = #{userId}
+      </if>
+      <if test="username != null">
+         username = #{username}
+      </if>
+    </where>
+  </select>
 </mapper>

@@ -1,12 +1,11 @@
 package com.example.OA.service.manager;
 
-import com.example.OA.mapper.*;
+import com.example.OA.dao.*;
 import com.example.OA.model.Privilege;
 import com.example.OA.model.Role;
 import com.example.OA.model.RolePrivilegeKey;
 import com.example.OA.mvc.exception.AppException;
 import com.example.OA.mvc.exception.Error;
-import org.apache.catalina.mbeans.RoleMBean;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -35,7 +34,7 @@ public class RoleService {
     public String addRole(Role role) {
         if(role != null) {
             String roleName = role.getRoleName();
-            if (StringUtils.isNotBlank(roleName) && roleMapper.getByRolename(roleName) != null) {
+            if (StringUtils.isNotBlank(roleName) && roleMapper.getByRolename(roleName) == null) {
                 role.setCreateTime(new Date());
                 roleMapper.insert(role);
                 return roleName;
@@ -87,6 +86,7 @@ public class RoleService {
                 Integer privilegeId = Integer.parseInt(privilegeArr[i]);
                 if(privilegeMapper.selectByPrimaryKey(privilegeId) != null)
                 {
+                    //授予该角色权限时，要判断该角色是否已拥有该权限
                     RolePrivilegeKey rolePrivilegeKey = new RolePrivilegeKey(roleId,privilegeId);
                     rolePrivilegeMapper.insert(rolePrivilegeKey);
                     result ++;
@@ -109,6 +109,7 @@ public class RoleService {
                 Integer privilegeId = Integer.parseInt(privilegeArr[i]);
                 if(privilegeMapper.selectByPrimaryKey(privilegeId) != null)
                 {
+                    //收回角色 权限时，要判断该角色是否拥有该权限
                     rolePrivilegeMapper.deleteByRoleidAndPrivilegeid(roleId,privilegeId);
                     result ++;
                 }

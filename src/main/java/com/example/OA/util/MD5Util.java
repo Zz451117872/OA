@@ -45,6 +45,12 @@ public class MD5Util {
     }
 
 
+    public static void main(String[] str)
+    {
+        String password = "1234";
+        System.out.println(MD5EncodeUtf8(password));
+    }
+
     private static final String hexDigits[] = {"0", "1", "2", "3", "4", "5",
             "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"};
 

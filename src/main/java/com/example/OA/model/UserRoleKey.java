@@ -1,6 +1,8 @@
 package com.example.OA.model;
 
-public class UserRoleKey {
+import java.io.Serializable;
+
+public class UserRoleKey implements Serializable {
     private Integer userId;
 
     private Integer roleId;

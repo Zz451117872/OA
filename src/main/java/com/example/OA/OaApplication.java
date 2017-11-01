@@ -5,7 +5,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-@MapperScan("com.example.OA.mapper")
+@MapperScan("com.example.OA.dao")
 public class OaApplication {
 
 	public static void main(String[] args) {

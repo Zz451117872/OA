@@ -1,5 +1,6 @@
 package com.example.OA.shiro;
 
+import com.example.OA.util.MD5Util;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.UsernamePasswordToken;

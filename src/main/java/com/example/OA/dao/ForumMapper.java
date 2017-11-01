@@ -1,6 +1,9 @@
-package com.example.OA.mapper;
+package com.example.OA.dao;
 
 import com.example.OA.model.Forum;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 public interface ForumMapper {
     int deleteByPrimaryKey(Integer id);
@@ -14,4 +17,12 @@ public interface ForumMapper {
     int updateByPrimaryKeySelective(Forum record);
 
     int updateByPrimaryKey(Forum record);
+
+
+    //---------------------------
+    Forum getByForumName(String forumName);
+
+    List<Forum> getAll();
+
+    Forum getByIdOrName(@Param("forumId") Integer forumId, @Param("forumName")String forumName);
 }

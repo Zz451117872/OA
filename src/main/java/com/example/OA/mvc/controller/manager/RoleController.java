@@ -94,7 +94,7 @@ public class RoleController {
         throw new AppException(Error.PARAMS_ERROR);
     }
 
-    @RequestMapping(value = "get_all_privilege_byrole",method = RequestMethod.POST)
+    @RequestMapping(value = "all_privilege_role",method = RequestMethod.POST)
     public List<Privilege> getAllPrivilegeByRoleId(Integer roleId)
     {
         Subject subject = SecurityUtils.getSubject();

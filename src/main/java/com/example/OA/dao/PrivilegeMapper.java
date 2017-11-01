@@ -1,4 +1,4 @@
-package com.example.OA.mapper;
+package com.example.OA.dao;
 
 import com.example.OA.model.Privilege;
 
@@ -14,4 +14,7 @@ public interface PrivilegeMapper {
     int updateByPrimaryKeySelective(Privilege record);
 
     int updateByPrimaryKey(Privilege record);
+
+    //-------------------------------
+    Privilege getByUrl(String url);
 }

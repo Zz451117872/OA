@@ -1,7 +1,8 @@
 package com.example.OA.shiro;
 
 import com.example.OA.model.User;
-import com.example.OA.service.UserService;
+import com.example.OA.service.manager.UserService;
+import com.example.OA.util.MD5Util;
 import org.apache.shiro.authc.*;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;

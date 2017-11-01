@@ -1,13 +1,14 @@
 package com.example.OA.model;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class User {
+public class User implements Serializable{
     private Integer id;
 
     private String username;
 
-    private String passwd;
+    private String password;
 
     private Integer partId;
 
@@ -15,10 +16,10 @@ public class User {
 
     private Date updateTime;
 
-    public User(Integer id, String username, String passwd, Integer partId, Date createTime, Date updateTime) {
+    public User(Integer id, String username, String password, Integer partId, Date createTime, Date updateTime) {
         this.id = id;
         this.username = username;
-        this.passwd = passwd;
+        this.password = password;
         this.partId = partId;
         this.createTime = createTime;
         this.updateTime = updateTime;
@@ -44,12 +45,12 @@ public class User {
         this.username = username == null ? null : username.trim();
     }
 
-    public String getPasswd() {
-        return passwd;
+    public String getPassword() {
+        return password;
     }
 
-    public void setPasswd(String passwd) {
-        this.passwd = passwd == null ? null : passwd.trim();
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public Integer getPartId() {

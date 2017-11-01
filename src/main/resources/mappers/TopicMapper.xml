@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.example.OA.mapper.TopicMapper">
+<mapper namespace="com.example.OA.dao.TopicMapper">
   <resultMap id="BaseResultMap" type="com.example.OA.model.Topic">
     <constructor>
       <idArg column="id" javaType="java.lang.Integer" jdbcType="INTEGER" />
@@ -9,7 +9,7 @@
       <arg column="create_time" javaType="java.util.Date" jdbcType="TIMESTAMP" />
       <arg column="update_time" javaType="java.util.Date" jdbcType="TIMESTAMP" />
       <arg column="status" javaType="java.lang.Short" jdbcType="SMALLINT" />
-      <arg column="author" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="author" javaType="java.lang.Integer" jdbcType="INTEGER" />
       <arg column="ip" javaType="java.lang.String" jdbcType="VARCHAR" />
       <arg column="reply_count" javaType="java.lang.Integer" jdbcType="INTEGER" />
       <arg column="forum_id" javaType="java.lang.Integer" jdbcType="INTEGER" />
@@ -37,7 +37,7 @@
       forum_id, last_reply)
     values (#{id,jdbcType=INTEGER}, #{title,jdbcType=CHAR}, #{content,jdbcType=VARCHAR}, 
       #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP}, #{status,jdbcType=SMALLINT}, 
-      #{author,jdbcType=VARCHAR}, #{ip,jdbcType=VARCHAR}, #{replyCount,jdbcType=INTEGER}, 
+      #{author,jdbcType=INTEGER}, #{ip,jdbcType=VARCHAR}, #{replyCount,jdbcType=INTEGER},
       #{forumId,jdbcType=INTEGER}, #{lastReply,jdbcType=INTEGER})
   </insert>
   <insert id="insertSelective" parameterType="com.example.OA.model.Topic">
@@ -97,7 +97,7 @@
         #{status,jdbcType=SMALLINT},
       </if>
       <if test="author != null">
-        #{author,jdbcType=VARCHAR},
+        #{author,jdbcType=INTEGER},
       </if>
       <if test="ip != null">
         #{ip,jdbcType=VARCHAR},
@@ -132,7 +132,7 @@
         status = #{status,jdbcType=SMALLINT},
       </if>
       <if test="author != null">
-        author = #{author,jdbcType=VARCHAR},
+        author = #{author,jdbcType=INTEGER},
       </if>
       <if test="ip != null">
         ip = #{ip,jdbcType=VARCHAR},
@@ -156,7 +156,7 @@
       create_time = #{createTime,jdbcType=TIMESTAMP},
       update_time = #{updateTime,jdbcType=TIMESTAMP},
       status = #{status,jdbcType=SMALLINT},
-      author = #{author,jdbcType=VARCHAR},
+      author = #{author,jdbcType=INTEGER},
       ip = #{ip,jdbcType=VARCHAR},
       reply_count = #{replyCount,jdbcType=INTEGER},
       forum_id = #{forumId,jdbcType=INTEGER},
@@ -171,7 +171,7 @@
       <arg column="create_time" javaType="java.util.Date" jdbcType="TIMESTAMP" />
       <arg column="update_time" javaType="java.util.Date" jdbcType="TIMESTAMP" />
       <arg column="status" javaType="java.lang.Short" jdbcType="SMALLINT" />
-      <arg column="author" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="author" javaType="java.lang.Integer" jdbcType="INTEGER" />
       <arg column="ip" javaType="java.lang.String" jdbcType="VARCHAR" />
       <arg column="reply_count" javaType="java.lang.Integer" jdbcType="INTEGER" />
       <arg column="forum_id" javaType="java.lang.Integer" jdbcType="INTEGER" />
@@ -192,16 +192,20 @@
     delete from topic
     where id = #{id,jdbcType=INTEGER}
   </delete>
-  <insert id="insert" parameterType="com.example.OA.model.Topic">
+
+
+  <insert id="insert" parameterType="com.example.OA.model.Topic" useGeneratedKeys="true" keyProperty="id">
     insert into topic (id, title, content, 
       create_time, update_time, status, 
       author, ip, reply_count, 
       forum_id, last_reply)
     values (#{id,jdbcType=INTEGER}, #{title,jdbcType=CHAR}, #{content,jdbcType=VARCHAR}, 
       #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP}, #{status,jdbcType=SMALLINT}, 
-      #{author,jdbcType=VARCHAR}, #{ip,jdbcType=VARCHAR}, #{replyCount,jdbcType=INTEGER}, 
+      #{author,jdbcType=INTEGER}, #{ip,jdbcType=VARCHAR}, #{replyCount,jdbcType=INTEGER},
       #{forumId,jdbcType=INTEGER}, #{lastReply,jdbcType=INTEGER})
   </insert>
+
+
   <insert id="insertSelective" parameterType="com.example.OA.model.Topic">
     insert into topic
     <trim prefix="(" suffix=")" suffixOverrides=",">
@@ -259,7 +263,7 @@
         #{status,jdbcType=SMALLINT},
       </if>
       <if test="author != null">
-        #{author,jdbcType=VARCHAR},
+        #{author,jdbcType=INTEGER},
       </if>
       <if test="ip != null">
         #{ip,jdbcType=VARCHAR},
@@ -294,7 +298,7 @@
         status = #{status,jdbcType=SMALLINT},
       </if>
       <if test="author != null">
-        author = #{author,jdbcType=VARCHAR},
+        author = #{author,jdbcType=INTEGER},
       </if>
       <if test="ip != null">
         ip = #{ip,jdbcType=VARCHAR},
@@ -318,11 +322,47 @@
       create_time = #{createTime,jdbcType=TIMESTAMP},
       update_time = #{updateTime,jdbcType=TIMESTAMP},
       status = #{status,jdbcType=SMALLINT},
-      author = #{author,jdbcType=VARCHAR},
+      author = #{author,jdbcType=INTEGER},
       ip = #{ip,jdbcType=VARCHAR},
       reply_count = #{replyCount,jdbcType=INTEGER},
       forum_id = #{forumId,jdbcType=INTEGER},
       last_reply = #{lastReply,jdbcType=INTEGER}
     where id = #{id,jdbcType=INTEGER}
   </update>
+
+
+
+  <!--   这是俺的分割线，漂亮吧-->
+  <select id="getAllByForum" resultMap="BaseResultMap" parameterType="int">
+    SELECT
+    <include refid="Base_Column_List"/>
+    from topic
+    where forum_id = #{forumId}
+  </select>
+
+
+  <select id="getAllByAuthor" resultMap="BaseResultMap" parameterType="int">
+    SELECT
+    <include refid="Base_Column_List"/>
+    from topic
+    where author = #{userId}
+  </select>
+
+
+  <select id="getByIdOrName" resultMap="BaseResultMap" parameterType="map">
+    SELECT
+    <include refid="Base_Column_List"/>
+    from topic
+    <where>
+      <if test="topicId != null">
+        and id = #{topicId}
+      </if>
+      <if test="topicName != null">
+        and title = #{topicName}
+      </if>
+    </where>
+  </select>
+
+
+
 </mapper>

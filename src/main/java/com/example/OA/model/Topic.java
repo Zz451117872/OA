@@ -1,8 +1,9 @@
 package com.example.OA.model;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class Topic {
+public class Topic implements Serializable {
     private Integer id;
 
     private String title;
@@ -15,7 +16,7 @@ public class Topic {
 
     private Short status;
 
-    private String author;
+    private Integer author;
 
     private String ip;
 
@@ -25,7 +26,7 @@ public class Topic {
 
     private Integer lastReply;
 
-    public Topic(Integer id, String title, String content, Date createTime, Date updateTime, Short status, String author, String ip, Integer replyCount, Integer forumId, Integer lastReply) {
+    public Topic(Integer id, String title, String content, Date createTime, Date updateTime, Short status, Integer author, String ip, Integer replyCount, Integer forumId, Integer lastReply) {
         this.id = id;
         this.title = title;
         this.content = content;
@@ -91,12 +92,12 @@ public class Topic {
         this.status = status;
     }
 
-    public String getAuthor() {
+    public Integer getAuthor() {
         return author;
     }
 
-    public void setAuthor(String author) {
-        this.author = author == null ? null : author.trim();
+    public void setAuthor(Integer author) {
+        this.author = author;
     }
 
     public String getIp() {

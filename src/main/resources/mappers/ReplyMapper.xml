@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.example.OA.mapper.ReplyMapper">
+<mapper namespace="com.example.OA.dao.ReplyMapper">
   <resultMap id="BaseResultMap" type="com.example.OA.model.Reply">
     <constructor>
       <idArg column="id" javaType="java.lang.Integer" jdbcType="INTEGER" />
@@ -26,7 +26,8 @@
     delete from reply
     where id = #{id,jdbcType=INTEGER}
   </delete>
-  <insert id="insert" parameterType="com.example.OA.model.Reply">
+
+  <insert id="insert" parameterType="com.example.OA.model.Reply" useGeneratedKeys="true" keyProperty="id">
     insert into reply (id, title, content, 
       status, replay_time, author, 
       ip, topic_id)
@@ -34,6 +35,7 @@
       #{status,jdbcType=SMALLINT}, #{replayTime,jdbcType=TIMESTAMP}, #{author,jdbcType=INTEGER}, 
       #{ip,jdbcType=VARCHAR}, #{topicId,jdbcType=INTEGER})
   </insert>
+
   <insert id="insertSelective" parameterType="com.example.OA.model.Reply">
     insert into reply
     <trim prefix="(" suffix=")" suffixOverrides=",">
@@ -253,4 +255,32 @@
       topic_id = #{topicId,jdbcType=INTEGER}
     where id = #{id,jdbcType=INTEGER}
   </update>
+
+
+
+  <!--   这是俺的分割线，漂亮吧-->
+  <update id="setStatusById" parameterType="map">
+    UPDATE reply
+    SET status = #{status}
+    where id = #{replyId}
+  </update>
+
+  <select id="getAllReplyByUser" parameterType="int" resultMap="BaseResultMap">
+    SELECT
+    <include refid="Base_Column_List"/>
+    from reply
+    where author = #{userId}
+  </select>
+
+
+  <select id="getAllByTopic" parameterType="int" resultMap="BaseResultMap">
+    SELECT
+    <include refid="Base_Column_List"/>
+    from reply
+    where topic_id = #{topicId}
+  </select>
+
+
+
+
 </mapper>

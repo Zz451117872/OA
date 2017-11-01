@@ -1,8 +1,9 @@
 package com.example.OA.model;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class Privilege {
+public class Privilege implements Serializable {
     private Integer id;
 
     private String privilegeName;

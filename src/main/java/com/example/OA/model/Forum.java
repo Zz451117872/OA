@@ -1,8 +1,9 @@
 package com.example.OA.model;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class Forum {
+public class Forum implements Serializable {
     private Integer id;
 
     private String forumName;

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.example.OA.mapper.UserRoleMapper">
+<mapper namespace="com.example.OA.dao.UserRoleMapper">
   <resultMap id="BaseResultMap" type="com.example.OA.model.UserRoleKey">
     <constructor>
       <idArg column="user_id" javaType="java.lang.Integer" jdbcType="INTEGER" />
@@ -69,4 +69,42 @@
       </if>
     </trim>
   </insert>
+
+
+  <sql id="Base_Column_List">
+    user_id , role_id
+  </sql>
+
+  <-- ==============================-->
+  <delete id="deleteByRoleId" parameterType="int">
+    DELETE
+    from user_role
+    where role_id = #{roleId}
+  </delete>
+
+
+  <delete id="deleteByRoleidAndUserid" parameterType="map">
+    DELETE
+    from user_role
+    where
+    user_id = #{userId}
+    and role_id #{roleId}
+  </delete>
+
+
+  <select id="getRoleidByUserid" parameterType="int" resultMap="list">
+    SELECT role_id
+    from user_role
+    where user_id = #{userId}
+  </select>
+
+  <delete id="deleteByRoleidsAndUserid" parameterType="map">
+    DELETE
+    from user_role
+    where user_id = #{userId}
+    and role_id IN
+    <foreach collection="roleIds" index="index" item="item" open="(" separator="," close=")">
+      #{item}
+    </foreach>
+  </delete>
 </mapper>

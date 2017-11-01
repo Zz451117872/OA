@@ -1,6 +1,7 @@
-package com.example.OA.mapper;
+package com.example.OA.dao;
 
 import com.example.OA.model.UserRoleKey;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -14,7 +15,9 @@ public interface UserRoleMapper {
     //-------------------------------------------------------
     int deleteByRoleId(Integer roleId);
 
-    int deleteByRoleidAndUserid(Integer userId, Integer roleId);
+    int deleteByRoleidAndUserid(@Param("userId") Integer userId, @Param("roleId")Integer roleId);
 
     List<Integer> getRoleidByUserid(Integer userId);
+
+    int deleteByRoleidsAndUserid(@Param("userId")Integer userId, @Param("roleIds")List<Integer> roleIds);
 }

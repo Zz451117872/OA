@@ -1,7 +1,8 @@
-package com.example.OA.mapper;
+package com.example.OA.dao;
 
 import com.example.OA.model.Privilege;
 import com.example.OA.model.RolePrivilegeKey;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -16,7 +17,9 @@ public interface RolePrivilegeMapper {
 
     int deleteByRoleId(Integer roleId);
 
-    int deleteByRoleidAndPrivilegeid(Integer roleId, Integer privilegeId);
+    int deleteByRoleidAndPrivilegeid(@Param("roleId") Integer roleId, @Param("privilegeId")Integer privilegeId);
 
     List<Privilege> getByRoleId(Integer roleId);
+
+    int deleteByPrivilegeId(Integer privilegeId);
 }

@@ -34,12 +34,12 @@ public class UserController {
         Subject subject = SecurityUtils.getSubject();
         if(!subject.isAuthenticated())
         {
-            UsernamePasswordToken token = new UsernamePasswordToken(username, MD5Util.MD5EncodeUtf8(password));
+            UsernamePasswordToken token = new UsernamePasswordToken(username, password);
             token.setRememberMe(true);
             subject.login(token);
-            return ((User)subject.getPrincipal()).getUsername();
+            return username;
         }
-        return ((User)subject.getPrincipal()).getUsername();
+        return username;
     }
 
     @RequestMapping(value = "add_user",method = RequestMethod.POST)
@@ -51,6 +51,7 @@ public class UserController {
         }
         if(user != null)
         {
+            user.setPassword(MD5Util.MD5EncodeUtf8(user.getPassword()));
             return userService.addUser(user);
         }
        throw new AppException(Error.PARAMS_ERROR);
@@ -66,6 +67,7 @@ public class UserController {
         if(user != null)
         {
             user.setId(((User)subject.getPrincipal()).getId());
+            user.setPassword(MD5Util.MD5EncodeUtf8(user.getPassword()));
             return userService.updateUser(user);
         }
         throw new AppException(Error.PARAMS_ERROR);
@@ -123,7 +125,7 @@ public class UserController {
         throw new AppException(Error.PARAMS_ERROR);
     }
 
-    @RequestMapping(value = "get_all_role_byuser",method = RequestMethod.POST)
+    @RequestMapping(value = "all_role_user",method = RequestMethod.POST)
     public List<Role> getAllRoleByUserId(Integer userId)
     {
         Subject subject = SecurityUtils.getSubject();
@@ -138,7 +140,7 @@ public class UserController {
     }
 
 
-    @RequestMapping(value = "get_all_role",method = RequestMethod.POST)
+    @RequestMapping(value = "all_privilege_user",method = RequestMethod.POST)
     public List<Privilege> getAllPrivilegeByUserId(Integer userId)
     {
         Subject subject = SecurityUtils.getSubject();
