@@ -34,7 +34,7 @@ public class ForumController extends CommonController {
         }
         if(forum != null)
         {
-            return forumService.add(getUserId(subject),forum);
+            return forumService.add(forum);
         }
         throw new AppException(Error.PARAMS_ERROR);
     }
@@ -48,7 +48,7 @@ public class ForumController extends CommonController {
         }
         if(forum != null && forum.getId() != null)
         {
-            return forumService.update(getUserId(subject),forum);
+            return forumService.update(forum);
         }
         throw new AppException(Error.PARAMS_ERROR);
     }
@@ -62,7 +62,7 @@ public class ForumController extends CommonController {
         }
         if(forumId != null )
         {
-            return forumService.getAllTopic(getUserId(subject),forumId);
+            return forumService.getAllTopic(forumId);
         }
         throw new AppException(Error.PARAMS_ERROR);
     }
@@ -76,7 +76,7 @@ public class ForumController extends CommonController {
         }
         if(forumId != null )
         {
-            return forumService.getLastTopicByForum(getUserId(subject),forumId);
+            return forumService.getLastTopicByForum(forumId);
         }
         throw new AppException(Error.PARAMS_ERROR);
     }

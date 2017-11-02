@@ -9,3 +9,4 @@ spring:
         driver-class-name: com.mysql.jdbc.Driver
 mybatis:
   type-aliases-package: com.example.OA.model
+  mapper-locations: classpath:mappers/*.xml

@@ -166,6 +166,7 @@ public class UserService {
                 }
                 return result;
             }
+            return null;
         }
         throw new AppException(Error.PARAMS_ERROR,"param error");
     }

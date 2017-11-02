@@ -1,6 +1,7 @@
 package com.example.OA.dao;
 
 import com.example.OA.model.Role;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -20,5 +21,5 @@ public interface RoleMapper {
     //----------------------------------------------------
     Role getByRolename(String roleName);
 
-    List<Role> getByRoleIds(List<Integer> roleIds);
+    List<Role> getByRoleIds(@Param("roleIds") List<Integer> roleIds);
 }

@@ -60,7 +60,7 @@ public class ReplyService extends CommonService{
             int result = replyMapper.insert(reply);
             if(result >= 1)
             {
-                Topic topic = topicMapper.selectByPrimaryKey(reply.getId());
+                Topic topic = topicMapper.selectByPrimaryKey(reply.getTopicId());
                 if(topic != null)
                 {
                     topic.setReplyCount(topic.getReplyCount()+1);//主题 回复数加1

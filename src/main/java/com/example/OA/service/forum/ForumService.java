@@ -26,15 +26,14 @@ public class ForumService extends CommonService{
     @Autowired
     TopicMapper topicMapper;
 
-    public Forum add(Integer userId,Forum forum) {
-        verification(userId);// 认证
+    public Forum add(Forum forum) {
         if(forum != null)
         {
             String forumName = forum.getForumName();//版块名称是唯一的
             if(forumMapper.getByForumName(forumName) == null)
             {
                 forum.setCreateTime(new Date());
-                forumMapper.insert(forum);
+                forumMapper.insertSelective(forum);
                 return forum;
             }
             throw new AppException(Error.EXISTSED,"target existed");
@@ -42,8 +41,7 @@ public class ForumService extends CommonService{
         throw new AppException(Error.PARAMS_ERROR,"param error");
     }
 
-    public Forum update(Integer userId,Forum forum) {
-        verification(userId);
+    public Forum update(Forum forum) {
         if(forum != null)
         {
             String forumName = forum.getForumName();
@@ -62,8 +60,7 @@ public class ForumService extends CommonService{
     }
 
 
-    public List<Topic> getAllTopic(Integer userId,Integer forumId) {
-        verification(userId);
+    public List<Topic> getAllTopic(Integer forumId) {
         if(forumId != null)
         {
             if(forumMapper.selectByPrimaryKey(forumId) != null)
@@ -75,8 +72,7 @@ public class ForumService extends CommonService{
         throw new AppException(Error.PARAMS_ERROR,"param error");
     }
 
-    public Topic getLastTopicByForum(Integer userId, Integer forumId) {
-        verification(userId);
+    public Topic getLastTopicByForum(Integer forumId) {
         if(forumId != null)
         {
             Forum forum = forumMapper.selectByPrimaryKey(forumId);

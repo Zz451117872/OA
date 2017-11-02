@@ -34,7 +34,7 @@ public class UserController {
         Subject subject = SecurityUtils.getSubject();
         if(!subject.isAuthenticated())
         {
-            UsernamePasswordToken token = new UsernamePasswordToken(username, password);
+            UsernamePasswordToken token = new UsernamePasswordToken(username, MD5Util.MD5EncodeUtf8(password));
             token.setRememberMe(true);
             subject.login(token);
             return username;
@@ -66,7 +66,6 @@ public class UserController {
         }
         if(user != null)
         {
-            user.setId(((User)subject.getPrincipal()).getId());
             user.setPassword(MD5Util.MD5EncodeUtf8(user.getPassword()));
             return userService.updateUser(user);
         }

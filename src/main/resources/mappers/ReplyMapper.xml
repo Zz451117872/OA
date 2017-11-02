@@ -36,7 +36,7 @@
       #{ip,jdbcType=VARCHAR}, #{topicId,jdbcType=INTEGER})
   </insert>
 
-  <insert id="insertSelective" parameterType="com.example.OA.model.Reply">
+  <insert id="insertSelective" parameterType="com.example.OA.model.Reply" useGeneratedKeys="true" keyProperty="id">
     insert into reply
     <trim prefix="(" suffix=")" suffixOverrides=",">
       <if test="id != null">
@@ -129,132 +129,7 @@
       topic_id = #{topicId,jdbcType=INTEGER}
     where id = #{id,jdbcType=INTEGER}
   </update>
-  <resultMap id="BaseResultMap" type="com.example.OA.model.Reply">
-    <constructor>
-      <idArg column="id" javaType="java.lang.Integer" jdbcType="INTEGER" />
-      <arg column="title" javaType="java.lang.String" jdbcType="CHAR" />
-      <arg column="content" javaType="java.lang.String" jdbcType="VARCHAR" />
-      <arg column="status" javaType="java.lang.Short" jdbcType="SMALLINT" />
-      <arg column="replay_time" javaType="java.util.Date" jdbcType="TIMESTAMP" />
-      <arg column="author" javaType="java.lang.Integer" jdbcType="INTEGER" />
-      <arg column="ip" javaType="java.lang.String" jdbcType="VARCHAR" />
-      <arg column="topic_id" javaType="java.lang.Integer" jdbcType="INTEGER" />
-    </constructor>
-  </resultMap>
-  <sql id="Base_Column_List">
-    id, title, content, status, replay_time, author, ip, topic_id
-  </sql>
-  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
-    select 
-    <include refid="Base_Column_List" />
-    from reply
-    where id = #{id,jdbcType=INTEGER}
-  </select>
-  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
-    delete from reply
-    where id = #{id,jdbcType=INTEGER}
-  </delete>
-  <insert id="insert" parameterType="com.example.OA.model.Reply">
-    insert into reply (id, title, content, 
-      status, replay_time, author, 
-      ip, topic_id)
-    values (#{id,jdbcType=INTEGER}, #{title,jdbcType=CHAR}, #{content,jdbcType=VARCHAR}, 
-      #{status,jdbcType=SMALLINT}, #{replayTime,jdbcType=TIMESTAMP}, #{author,jdbcType=INTEGER}, 
-      #{ip,jdbcType=VARCHAR}, #{topicId,jdbcType=INTEGER})
-  </insert>
-  <insert id="insertSelective" parameterType="com.example.OA.model.Reply">
-    insert into reply
-    <trim prefix="(" suffix=")" suffixOverrides=",">
-      <if test="id != null">
-        id,
-      </if>
-      <if test="title != null">
-        title,
-      </if>
-      <if test="content != null">
-        content,
-      </if>
-      <if test="status != null">
-        status,
-      </if>
-      <if test="replayTime != null">
-        replay_time,
-      </if>
-      <if test="author != null">
-        author,
-      </if>
-      <if test="ip != null">
-        ip,
-      </if>
-      <if test="topicId != null">
-        topic_id,
-      </if>
-    </trim>
-    <trim prefix="values (" suffix=")" suffixOverrides=",">
-      <if test="id != null">
-        #{id,jdbcType=INTEGER},
-      </if>
-      <if test="title != null">
-        #{title,jdbcType=CHAR},
-      </if>
-      <if test="content != null">
-        #{content,jdbcType=VARCHAR},
-      </if>
-      <if test="status != null">
-        #{status,jdbcType=SMALLINT},
-      </if>
-      <if test="replayTime != null">
-        #{replayTime,jdbcType=TIMESTAMP},
-      </if>
-      <if test="author != null">
-        #{author,jdbcType=INTEGER},
-      </if>
-      <if test="ip != null">
-        #{ip,jdbcType=VARCHAR},
-      </if>
-      <if test="topicId != null">
-        #{topicId,jdbcType=INTEGER},
-      </if>
-    </trim>
-  </insert>
-  <update id="updateByPrimaryKeySelective" parameterType="com.example.OA.model.Reply">
-    update reply
-    <set>
-      <if test="title != null">
-        title = #{title,jdbcType=CHAR},
-      </if>
-      <if test="content != null">
-        content = #{content,jdbcType=VARCHAR},
-      </if>
-      <if test="status != null">
-        status = #{status,jdbcType=SMALLINT},
-      </if>
-      <if test="replayTime != null">
-        replay_time = #{replayTime,jdbcType=TIMESTAMP},
-      </if>
-      <if test="author != null">
-        author = #{author,jdbcType=INTEGER},
-      </if>
-      <if test="ip != null">
-        ip = #{ip,jdbcType=VARCHAR},
-      </if>
-      <if test="topicId != null">
-        topic_id = #{topicId,jdbcType=INTEGER},
-      </if>
-    </set>
-    where id = #{id,jdbcType=INTEGER}
-  </update>
-  <update id="updateByPrimaryKey" parameterType="com.example.OA.model.Reply">
-    update reply
-    set title = #{title,jdbcType=CHAR},
-      content = #{content,jdbcType=VARCHAR},
-      status = #{status,jdbcType=SMALLINT},
-      replay_time = #{replayTime,jdbcType=TIMESTAMP},
-      author = #{author,jdbcType=INTEGER},
-      ip = #{ip,jdbcType=VARCHAR},
-      topic_id = #{topicId,jdbcType=INTEGER}
-    where id = #{id,jdbcType=INTEGER}
-  </update>
+
 
 
 

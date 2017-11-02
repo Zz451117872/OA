@@ -32,15 +32,13 @@ public class TopicService extends CommonService{
     @Autowired
     ReplyMapper replyMapper;
 
-    public Topic add(Integer userId,Topic topic) {
+    public Topic add(Topic topic) {
         //增加 主题后，对应的版块 主题数量加1
-        if(userId != null && topic != null)
+        if(topic != null)
         {
-            verification(userId);   //验证用户
             topic.setStatus(Const.TopicStatus.APPLY.getCode());
-            topic.setAuthor(userId);
             topic.setCreateTime(new Date());
-            int result = topicMapper.insert(topic); //添加主题
+            int result = topicMapper.insertSelective(topic); //添加主题
             if(result >= 1)
             {
                 Forum forum = forumMapper.selectByPrimaryKey(topic.getForumId());
@@ -48,7 +46,7 @@ public class TopicService extends CommonService{
                 {               //更新主题 所属版块信息
                     forum.setTopCount(forum.getTopCount()+1);
                     forum.setLastTopic(topic.getId());
-                    forumMapper.updateByPrimaryKey(forum);
+                    forumMapper.updateByPrimaryKeySelective(forum);
                     return topic;
                 }
                 throw new AppException(Error.NO_EXISTS,"target not exist");
@@ -57,15 +55,15 @@ public class TopicService extends CommonService{
         throw new AppException(Error.PARAMS_ERROR,"param error");
     }
 
-    public int updateTopicStatus(Integer userId,Integer topicId,Short status) {
-        verification(userId);
+    public int updateTopicStatus(Integer topicId,Short status) {
         if(topicId != null && status != null)
         {
             Topic topic = topicMapper.selectByPrimaryKey(topicId);
             if(topic != null)
             {
                 topic.setStatus(status);
-                topicMapper.updateByPrimaryKey(topic);
+                topic.setCreateTime(new Date());
+                topicMapper.updateByPrimaryKeySelective(topic);
                 return topicId;
             }
             throw new AppException(Error.NO_EXISTS,"target not existed");
@@ -74,8 +72,7 @@ public class TopicService extends CommonService{
     }
 
 
-    public List<Reply> getAllReply(Integer userId,Integer topicId) {
-        verification(userId);
+    public List<Reply> getAllReply(Integer topicId) {
         if(topicId != null)
         {
             if(topicMapper.selectByPrimaryKey(topicId) != null)
@@ -87,8 +84,7 @@ public class TopicService extends CommonService{
         throw new AppException(Error.PARAMS_ERROR,"param error");
     }
 
-    public Reply getLastReplyByTopic(Integer userId,Integer topicId) {
-        verification(userId);
+    public Reply getLastReplyByTopic(Integer topicId) {
         if(topicId != null)
         {
             Topic topic = topicMapper.selectByPrimaryKey(topicId);
@@ -107,7 +103,7 @@ public class TopicService extends CommonService{
     }
 
     public List<Topic> getAllTopicByAuthor(Integer userId) {
-        verification(userId);
+
         if(userId != null)
         {
             return topicMapper.getAllByAuthor(userId);

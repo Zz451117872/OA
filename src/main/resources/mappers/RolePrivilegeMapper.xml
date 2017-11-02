@@ -35,40 +35,7 @@
       </if>
     </trim>
   </insert>
-  <resultMap id="BaseResultMap" type="com.example.OA.model.RolePrivilegeKey">
-    <constructor>
-      <idArg column="role_id" javaType="java.lang.Integer" jdbcType="INTEGER" />
-      <idArg column="privilege_id" javaType="java.lang.Integer" jdbcType="INTEGER" />
-    </constructor>
-  </resultMap>
-  <delete id="deleteByPrimaryKey" parameterType="com.example.OA.model.RolePrivilegeKey">
-    delete from role_privilege
-    where role_id = #{roleId,jdbcType=INTEGER}
-      and privilege_id = #{privilegeId,jdbcType=INTEGER}
-  </delete>
-  <insert id="insert" parameterType="com.example.OA.model.RolePrivilegeKey">
-    insert into role_privilege (role_id, privilege_id)
-    values (#{roleId,jdbcType=INTEGER}, #{privilegeId,jdbcType=INTEGER})
-  </insert>
-  <insert id="insertSelective" parameterType="com.example.OA.model.RolePrivilegeKey">
-    insert into role_privilege
-    <trim prefix="(" suffix=")" suffixOverrides=",">
-      <if test="roleId != null">
-        role_id,
-      </if>
-      <if test="privilegeId != null">
-        privilege_id,
-      </if>
-    </trim>
-    <trim prefix="values (" suffix=")" suffixOverrides=",">
-      <if test="roleId != null">
-        #{roleId,jdbcType=INTEGER},
-      </if>
-      <if test="privilegeId != null">
-        #{privilegeId,jdbcType=INTEGER},
-      </if>
-    </trim>
-  </insert>
+
 
 
   <sql id="Base_Column_List">

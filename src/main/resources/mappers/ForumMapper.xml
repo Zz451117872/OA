@@ -141,146 +141,6 @@
       update_time = #{updateTime,jdbcType=TIMESTAMP}
     where id = #{id,jdbcType=INTEGER}
   </update>
-  <resultMap id="BaseResultMap" type="com.example.OA.model.Forum">
-    <constructor>
-      <idArg column="id" javaType="java.lang.Integer" jdbcType="INTEGER" />
-      <arg column="forum_name" javaType="java.lang.String" jdbcType="VARCHAR" />
-      <arg column="description" javaType="java.lang.String" jdbcType="VARCHAR" />
-      <arg column="sorts" javaType="java.lang.Integer" jdbcType="INTEGER" />
-      <arg column="top_count" javaType="java.lang.Integer" jdbcType="INTEGER" />
-      <arg column="reply_count" javaType="java.lang.Integer" jdbcType="INTEGER" />
-      <arg column="last_topic" javaType="java.lang.Integer" jdbcType="INTEGER" />
-      <arg column="create_time" javaType="java.util.Date" jdbcType="TIMESTAMP" />
-      <arg column="update_time" javaType="java.util.Date" jdbcType="TIMESTAMP" />
-    </constructor>
-  </resultMap>
-  <sql id="Base_Column_List">
-    id, forum_name, description, sorts, top_count, reply_count, last_topic, create_time, 
-    update_time
-  </sql>
-  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
-    select 
-    <include refid="Base_Column_List" />
-    from forum
-    where id = #{id,jdbcType=INTEGER}
-  </select>
-  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
-    delete from forum
-    where id = #{id,jdbcType=INTEGER}
-  </delete>
-  <insert id="insert" parameterType="com.example.OA.model.Forum">
-    insert into forum (id, forum_name, description, 
-      sorts, top_count, reply_count, 
-      last_topic, create_time, update_time
-      )
-    values (#{id,jdbcType=INTEGER}, #{forumName,jdbcType=VARCHAR}, #{description,jdbcType=VARCHAR}, 
-      #{sorts,jdbcType=INTEGER}, #{topCount,jdbcType=INTEGER}, #{replyCount,jdbcType=INTEGER}, 
-      #{lastTopic,jdbcType=INTEGER}, #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP}
-      )
-  </insert>
-  <insert id="insertSelective" parameterType="com.example.OA.model.Forum">
-    insert into forum
-    <trim prefix="(" suffix=")" suffixOverrides=",">
-      <if test="id != null">
-        id,
-      </if>
-      <if test="forumName != null">
-        forum_name,
-      </if>
-      <if test="description != null">
-        description,
-      </if>
-      <if test="sorts != null">
-        sorts,
-      </if>
-      <if test="topCount != null">
-        top_count,
-      </if>
-      <if test="replyCount != null">
-        reply_count,
-      </if>
-      <if test="lastTopic != null">
-        last_topic,
-      </if>
-      <if test="createTime != null">
-        create_time,
-      </if>
-      <if test="updateTime != null">
-        update_time,
-      </if>
-    </trim>
-    <trim prefix="values (" suffix=")" suffixOverrides=",">
-      <if test="id != null">
-        #{id,jdbcType=INTEGER},
-      </if>
-      <if test="forumName != null">
-        #{forumName,jdbcType=VARCHAR},
-      </if>
-      <if test="description != null">
-        #{description,jdbcType=VARCHAR},
-      </if>
-      <if test="sorts != null">
-        #{sorts,jdbcType=INTEGER},
-      </if>
-      <if test="topCount != null">
-        #{topCount,jdbcType=INTEGER},
-      </if>
-      <if test="replyCount != null">
-        #{replyCount,jdbcType=INTEGER},
-      </if>
-      <if test="lastTopic != null">
-        #{lastTopic,jdbcType=INTEGER},
-      </if>
-      <if test="createTime != null">
-        #{createTime,jdbcType=TIMESTAMP},
-      </if>
-      <if test="updateTime != null">
-        #{updateTime,jdbcType=TIMESTAMP},
-      </if>
-    </trim>
-  </insert>
-  <update id="updateByPrimaryKeySelective" parameterType="com.example.OA.model.Forum">
-    update forum
-    <set>
-      <if test="forumName != null">
-        forum_name = #{forumName,jdbcType=VARCHAR},
-      </if>
-      <if test="description != null">
-        description = #{description,jdbcType=VARCHAR},
-      </if>
-      <if test="sorts != null">
-        sorts = #{sorts,jdbcType=INTEGER},
-      </if>
-      <if test="topCount != null">
-        top_count = #{topCount,jdbcType=INTEGER},
-      </if>
-      <if test="replyCount != null">
-        reply_count = #{replyCount,jdbcType=INTEGER},
-      </if>
-      <if test="lastTopic != null">
-        last_topic = #{lastTopic,jdbcType=INTEGER},
-      </if>
-      <if test="createTime != null">
-        create_time = #{createTime,jdbcType=TIMESTAMP},
-      </if>
-      <if test="updateTime != null">
-        update_time = #{updateTime,jdbcType=TIMESTAMP},
-      </if>
-    </set>
-    where id = #{id,jdbcType=INTEGER}
-  </update>
-  <update id="updateByPrimaryKey" parameterType="com.example.OA.model.Forum">
-    update forum
-    set forum_name = #{forumName,jdbcType=VARCHAR},
-      description = #{description,jdbcType=VARCHAR},
-      sorts = #{sorts,jdbcType=INTEGER},
-      top_count = #{topCount,jdbcType=INTEGER},
-      reply_count = #{replyCount,jdbcType=INTEGER},
-      last_topic = #{lastTopic,jdbcType=INTEGER},
-      create_time = #{createTime,jdbcType=TIMESTAMP},
-      update_time = #{updateTime,jdbcType=TIMESTAMP}
-    where id = #{id,jdbcType=INTEGER}
-  </update>
 
 
 
@@ -289,10 +149,10 @@
     SELECT
     <include refid="Base_Column_List"></include>
     from forum
-    where forun_name = #{forumName}
+    where forum_name = #{forumName}
   </select>
 
-  <select id="getAll" resultType="BaseResultMap">
+  <select id="getAll" resultMap="BaseResultMap">
     SELECT
     <include refid="Base_Column_List"/>
     from forum

@@ -61,7 +61,7 @@ public class PrivilegeController {
         }
         if(privilegeId != null)
         {
-            privilegeService.deleteById(privilegeId);
+            return privilegeService.deleteById(privilegeId);
         }
         throw new AppException(Error.PARAMS_ERROR);
     }

@@ -36,7 +36,8 @@ public class TopicController extends CommonController {
         }
         if(topic != null)
         {
-            return topicService.add(getUserId(subject),topic);
+            topic.setAuthor(getUserId(subject));
+            return topicService.add(topic);
         }
         throw new AppException(Error.PARAMS_ERROR);
     }
@@ -56,7 +57,7 @@ public class TopicController extends CommonController {
             {
                 throw new AppException(Error.PARAMS_ERROR,"status error");
             }
-            return topicService.updateTopicStatus(getUserId(subject),topicId,status);
+            return topicService.updateTopicStatus(topicId,status);
         }
         throw new AppException(Error.PARAMS_ERROR);
     }
@@ -70,7 +71,7 @@ public class TopicController extends CommonController {
         }
         if(topicId != null )
         {
-            return topicService.getAllReply(getUserId(subject),topicId);
+            return topicService.getAllReply(topicId);
         }
         throw new AppException(Error.PARAMS_ERROR);
     }
@@ -84,7 +85,7 @@ public class TopicController extends CommonController {
         }
         if(topicId != null )
         {
-            return topicService.getLastReplyByTopic(getUserId(subject),topicId);
+            return topicService.getLastReplyByTopic(topicId);
         }
         throw new AppException(Error.PARAMS_ERROR);
     }
@@ -110,7 +111,7 @@ public class TopicController extends CommonController {
         if(!subject.isAuthenticated()) {
             throw new AppException(Error.UN_AUTHORIZATION);
         }
-        if(StringUtils.isNotBlank(topicName))
+        if(topicId != null || topicName != null)
         {
             return topicService.getByIdOrName(topicId,topicName);
         }
