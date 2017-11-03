@@ -3,6 +3,43 @@ package com.example.OA.mvc.common;
 public class Const {
 
     public static String salt = "geelysdafaqj23ou89ZXcj@#$@#$#@KJdjklj;D../dSF.";
+
+    // 请假单状态
+    public enum  LeaveStatus{
+        APPLICATION(1,"申请中"),
+        APPROVED(10,"已批准"),
+        CANCELED(100,"已取消"),
+        CLOSED(10000,"已关闭"),
+        REJECTED(101,"已拒绝");
+        private String value;
+        private Integer code;
+        LeaveStatus(Integer code,String value)
+        {
+            this.code = code;
+            this.value = value;
+        }
+        public String getValue() {
+            return value;
+        }
+        public Integer getCode() {
+            return code;
+        }
+
+        public static LeaveStatus codeof(Integer code)
+        {
+            for(LeaveStatus leaveStatus : values())
+            {
+                if(leaveStatus.getCode() == code)
+                {
+                    return leaveStatus;
+                }
+            }
+            throw new RuntimeException("没有找到对应的枚举");
+        }
+    }
+
+
+
     //回复状态
     public enum  ReplyStatus{
         DISABLE((short)0,"不显示"),

@@ -4,6 +4,8 @@ import com.example.OA.model.User;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+
 public interface UserMapper {
     int deleteByPrimaryKey(Integer id);
 
@@ -23,4 +25,6 @@ public interface UserMapper {
     int deleteByPartId(Integer partId);
 
     User getByIdOrUsername(@Param("userId") Integer userId,@Param("username") String username);
+
+    List<User> getByUsernames(@Param("usernames")List<String> usernames);
 }

@@ -1,27 +1,29 @@
 package com.example.OA.model;
 
+import java.io.Serializable;
 import java.util.Date;
 
-/**
- * Created by aa on 2017/11/3.
- */
-public class Dispose {
-
+public class Dispose implements Serializable{
     private Integer id;
+
     private Integer leaveId;
-    private Integer auditer;
-    private String auditInformation;
+
+    private String auditer;
+
+    private String information;
+
     private Date auditTime;
 
-    public Dispose() {
-    }
-
-    public Dispose(Integer id, Integer leaveId, Integer auditer, String auditInformation, Date auditTime) {
+    public Dispose(Integer id, Integer leaveId, String auditer, String information, Date auditTime) {
         this.id = id;
         this.leaveId = leaveId;
         this.auditer = auditer;
-        this.auditInformation = auditInformation;
+        this.information = information;
         this.auditTime = auditTime;
+    }
+
+    public Dispose() {
+        super();
     }
 
     public Integer getId() {
@@ -40,20 +42,20 @@ public class Dispose {
         this.leaveId = leaveId;
     }
 
-    public Integer getAuditer() {
+    public String getAuditer() {
         return auditer;
     }
 
-    public void setAuditer(Integer auditer) {
-        this.auditer = auditer;
+    public void setAuditer(String auditer) {
+        this.auditer = auditer == null ? null : auditer.trim();
     }
 
-    public String getAuditInformation() {
-        return auditInformation;
+    public String getInformation() {
+        return information;
     }
 
-    public void setAuditInformation(String auditInformation) {
-        this.auditInformation = auditInformation;
+    public void setInformation(String information) {
+        this.information = information == null ? null : information.trim();
     }
 
     public Date getAuditTime() {

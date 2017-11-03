@@ -135,4 +135,14 @@
       </if>
     </where>
   </select>
+
+  <select id="getByUsernames" parameterType="list" resultMap="BaseResultMap">
+    SELECT
+    <include refid="Base_Column_List"/>
+    from user
+    where username IN
+    <foreach collection="usernames" index="index" item="item" open="(" close=")" separator=",">
+      #{item}
+    </foreach>
+  </select>
 </mapper>

@@ -30,15 +30,15 @@ public class DisposeController extends CommonController{
 
     //处理申请
     @RequestMapping(value = "audit_application",method = RequestMethod.POST)
-    public Dispose auditApplication(Integer leaveId)
+    public LeaveVO auditApplication(String taskId)
     {
         Subject subject = SecurityUtils.getSubject();
         if(!subject.isAuthenticated()) {
             throw new AppException(Error.UN_AUTHORIZATION);
         }
-        if(leaveId != null )
+        if(taskId != null )
         {
-            return disposeService.auditApplication(getUserId(subject),leaveId);
+            return disposeService.auditApplication(getUserId(subject),taskId);
         }
         throw new AppException(Error.PARAMS_ERROR,"param error");
     }

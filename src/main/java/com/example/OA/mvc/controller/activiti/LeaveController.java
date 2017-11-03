@@ -6,6 +6,7 @@ import com.example.OA.mvc.controller.CommonController;
 import com.example.OA.mvc.exception.AppException;
 import com.example.OA.mvc.exception.Error;
 import com.example.OA.service.activiti.LeaveService;
+import org.activiti.engine.task.Task;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by aa on 2017/11/3.
@@ -27,7 +29,7 @@ public class LeaveController extends CommonController{
 
     //申请请假 ----------需要表单验证
     @RequestMapping(value = "application",method = RequestMethod.POST)
-    public Leave application(Leave leave)
+    public Map<String,Leave> application(Leave leave, String key)
     {
         Subject subject = SecurityUtils.getSubject();
         if(!subject.isAuthenticated()) {
@@ -35,23 +37,23 @@ public class LeaveController extends CommonController{
         }
         if(leave != null)
         {
-            leave.setApplicant(getUserId(subject)); //设置申请人
-            return leaveService.application(leave);
+            leave.setApplication(getUserId(subject)); //设置申请人
+            return leaveService.application(leave,key);
         }
         throw new AppException(Error.PARAMS_ERROR,"param error");
     }
 
     //取消请假
     @RequestMapping(value = "cancle_application",method = RequestMethod.POST)
-    public Leave cancleApplication(Integer leaveId)
+    public Integer cancleApplication(String taskId)
     {
         Subject subject = SecurityUtils.getSubject();
         if(!subject.isAuthenticated()) {
             throw new AppException(Error.UN_AUTHORIZATION);
         }
-        if(leaveId != null)
+        if(taskId != null)
         {                               //传入 申请人 id，避免越权
-            return leaveService.cancleApplication(getUserId(subject),leaveId);
+            return leaveService.cancleApplication(getUserId(subject),taskId);
         }
         throw new AppException(Error.PARAMS_ERROR,"param error");
     }
@@ -110,29 +112,29 @@ public class LeaveController extends CommonController{
 
 
     //通过申请人查询
-    @RequestMapping(value = "get_by_id_or_name",method = RequestMethod.POST)
-    public Leave getByApplicationIdOrName(Integer userId,String username)
+    @RequestMapping(value = "by_application_id_or_name",method = RequestMethod.POST)
+    public List<Leave> getByApplicationIdOrName(Integer userId,String username)
     {
         Subject subject = SecurityUtils.getSubject();
         if(!subject.isAuthenticated()) {
             throw new AppException(Error.UN_AUTHORIZATION);
         }
-        if(userId != null || userId != null)
+        if(userId != null || username != null)
         {
-            return leaveService.getByApplicationIdOrName(userId,userId);
+            return leaveService.getByApplicationIdOrName(userId,username);
         }
         throw new AppException(Error.PARAMS_ERROR,"param error");
     }
 
     //获取需要我处理的请假
     @RequestMapping(value = "need_dispose",method = RequestMethod.POST)
-    public List<Leave> needIDispose()
+    public Map<String,Leave> needIDispose(String definitionKey)
     {
         Subject subject = SecurityUtils.getSubject();
         if(!subject.isAuthenticated()) {
             throw new AppException(Error.UN_AUTHORIZATION);
         }
-            return leaveService.needIDispose(getUserId(subject));
+            return leaveService.needIDispose(getUserId(subject),definitionKey);
     }
 
 }

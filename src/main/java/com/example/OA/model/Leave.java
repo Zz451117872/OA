@@ -3,36 +3,42 @@ package com.example.OA.model;
 import java.io.Serializable;
 import java.util.Date;
 
-/**
- * Created by aa on 2017/11/2.
- */
-public class Leave  implements Serializable{
-
+public class Leave implements Serializable {
     private Integer id;
+
     private String leaveType;
+
     private Integer leaveNumber;
+
     private String reason;
+
     private Integer status;
-    private Integer applicant;
+
+    private Integer application;
+
     private Date startTime;
+
     private Date endTime;
+
     private Date createTime;
+
     private Date updateTime;
 
-    public Leave() {
-    }
-
-    public Leave(Integer id, String leaveType, Integer leaveNumber, String reason, Integer status, Integer applicant, Date startTime, Date endTime, Date createTime, Date updateTime) {
+    public Leave(Integer id, String leaveType, Integer leaveNumber, String reason, Integer status, Integer application, Date startTime, Date endTime, Date createTime, Date updateTime) {
         this.id = id;
         this.leaveType = leaveType;
         this.leaveNumber = leaveNumber;
         this.reason = reason;
         this.status = status;
-        this.applicant = applicant;
+        this.application = application;
         this.startTime = startTime;
         this.endTime = endTime;
         this.createTime = createTime;
         this.updateTime = updateTime;
+    }
+
+    public Leave() {
+        super();
     }
 
     public Integer getId() {
@@ -48,7 +54,7 @@ public class Leave  implements Serializable{
     }
 
     public void setLeaveType(String leaveType) {
-        this.leaveType = leaveType;
+        this.leaveType = leaveType == null ? null : leaveType.trim();
     }
 
     public Integer getLeaveNumber() {
@@ -64,7 +70,7 @@ public class Leave  implements Serializable{
     }
 
     public void setReason(String reason) {
-        this.reason = reason;
+        this.reason = reason == null ? null : reason.trim();
     }
 
     public Integer getStatus() {
@@ -75,12 +81,12 @@ public class Leave  implements Serializable{
         this.status = status;
     }
 
-    public Integer getApplicant() {
-        return applicant;
+    public Integer getApplication() {
+        return application;
     }
 
-    public void setApplicant(Integer applicant) {
-        this.applicant = applicant;
+    public void setApplication(Integer application) {
+        this.application = application;
     }
 
     public Date getStartTime() {
@@ -115,4 +121,3 @@ public class Leave  implements Serializable{
         this.updateTime = updateTime;
     }
 }
-
