@@ -1,9 +1,17 @@
 package com.example.OA.model;
 
+
+import org.activiti.engine.history.HistoricProcessInstance;
+import org.activiti.engine.repository.ProcessDefinition;
+import org.activiti.engine.runtime.ProcessInstance;
+import org.activiti.engine.task.Task;
+
+import java.beans.Transient;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Map;
 
-public class Leave implements Serializable {
+public class Leave implements Serializable{
     private Integer id;
 
     private String leaveType;
@@ -24,7 +32,25 @@ public class Leave implements Serializable {
 
     private Date updateTime;
 
-    public Leave(Integer id, String leaveType, Integer leaveNumber, String reason, Integer status, Integer application, Date startTime, Date endTime, Date createTime, Date updateTime) {
+    private String processinstanceid;
+
+    //-- 临时属性 --//
+
+    // 流程任务
+    private Task task;
+
+    private Map<String, Object> variables;
+
+    // 运行中的流程实例
+    private ProcessInstance processInstance;
+
+    // 历史的流程实例
+    private HistoricProcessInstance historicProcessInstance;
+
+    // 流程定义
+    private ProcessDefinition processDefinition;
+
+    public Leave(Integer id, String leaveType, Integer leaveNumber, String reason, Integer status, Integer application, Date startTime, Date endTime, Date createTime, Date updateTime, String processinstanceid) {
         this.id = id;
         this.leaveType = leaveType;
         this.leaveNumber = leaveNumber;
@@ -35,6 +61,7 @@ public class Leave implements Serializable {
         this.endTime = endTime;
         this.createTime = createTime;
         this.updateTime = updateTime;
+        this.processinstanceid = processinstanceid;
     }
 
     public Leave() {
@@ -119,5 +146,59 @@ public class Leave implements Serializable {
 
     public void setUpdateTime(Date updateTime) {
         this.updateTime = updateTime;
+    }
+
+    public String getProcessinstanceid() {
+        return processinstanceid;
+    }
+
+    public void setProcessinstanceid(String processinstanceid) {
+        this.processinstanceid = processinstanceid == null ? null : processinstanceid.trim();
+    }
+
+    // 临时数据
+    @Transient
+    public Task getTask() {
+        return task;
+    }
+
+    public void setTask(Task task) {
+        this.task = task;
+    }
+
+    @Transient
+    public Map<String, Object> getVariables() {
+        return variables;
+    }
+
+    public void setVariables(Map<String, Object> variables) {
+        this.variables = variables;
+    }
+
+    @Transient
+    public ProcessInstance getProcessInstance() {
+        return processInstance;
+    }
+
+    public void setProcessInstance(ProcessInstance processInstance) {
+        this.processInstance = processInstance;
+    }
+
+    @Transient
+    public HistoricProcessInstance getHistoricProcessInstance() {
+        return historicProcessInstance;
+    }
+
+    public void setHistoricProcessInstance(HistoricProcessInstance historicProcessInstance) {
+        this.historicProcessInstance = historicProcessInstance;
+    }
+
+    @Transient
+    public ProcessDefinition getProcessDefinition() {
+        return processDefinition;
+    }
+
+    public void setProcessDefinition(ProcessDefinition processDefinition) {
+        this.processDefinition = processDefinition;
     }
 }

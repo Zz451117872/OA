@@ -1,8 +1,10 @@
 package com.example.OA.service;
 
 import com.example.OA.dao.UserMapper;
+import com.example.OA.model.User;
 import com.example.OA.mvc.exception.AppException;
 import com.example.OA.mvc.exception.Error;
+import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,4 +25,6 @@ public class CommonService {
         }
         throw new AppException(Error.PARAMS_ERROR,"param error");
     }
+
+
 }

@@ -13,37 +13,33 @@
       <arg column="end_time" jdbcType="TIMESTAMP" javaType="java.util.Date" />
       <arg column="create_time" jdbcType="TIMESTAMP" javaType="java.util.Date" />
       <arg column="update_time" jdbcType="TIMESTAMP" javaType="java.util.Date" />
+      <arg column="processInstanceId" jdbcType="VARCHAR" javaType="java.lang.String" />
     </constructor>
   </resultMap>
-
   <sql id="Base_Column_List" >
     id, leave_type, leave_number, reason, status, application, start_time, end_time, 
-    create_time, update_time
+    create_time, update_time, processInstanceId
   </sql>
-
   <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
     select 
     <include refid="Base_Column_List" />
     from leavess
     where id = #{id,jdbcType=INTEGER}
   </select>
-
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
     delete from leavess
     where id = #{id,jdbcType=INTEGER}
   </delete>
-
-  <insert id="insert" parameterType="com.example.OA.model.Leave" useGeneratedKeys="true" keyProperty="id" >
-    insert into leavess (id, leave_type, leave_number,
+  <insert id="insert" parameterType="com.example.OA.model.Leave" useGeneratedKeys="true" keyProperty="id">
+    insert into leavess (id, leave_type, leave_number, 
       reason, status, application, 
       start_time, end_time, create_time, 
-      update_time)
+      update_time, processInstanceId)
     values (#{id,jdbcType=INTEGER}, #{leaveType,jdbcType=VARCHAR}, #{leaveNumber,jdbcType=INTEGER}, 
       #{reason,jdbcType=VARCHAR}, #{status,jdbcType=INTEGER}, #{application,jdbcType=INTEGER}, 
       #{startTime,jdbcType=TIMESTAMP}, #{endTime,jdbcType=TIMESTAMP}, #{createTime,jdbcType=TIMESTAMP}, 
-      #{updateTime,jdbcType=TIMESTAMP})
+      #{updateTime,jdbcType=TIMESTAMP}, #{processinstanceid,jdbcType=VARCHAR})
   </insert>
-
   <insert id="insertSelective" parameterType="com.example.OA.model.Leave" useGeneratedKeys="true" keyProperty="id">
     insert into leavess
     <trim prefix="(" suffix=")" suffixOverrides="," >
@@ -77,6 +73,9 @@
       <if test="updateTime != null" >
         update_time,
       </if>
+      <if test="processinstanceid != null" >
+        processInstanceId,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides="," >
       <if test="id != null" >
@@ -109,9 +108,11 @@
       <if test="updateTime != null" >
         #{updateTime,jdbcType=TIMESTAMP},
       </if>
+      <if test="processinstanceid != null" >
+        #{processinstanceid,jdbcType=VARCHAR},
+      </if>
     </trim>
   </insert>
-
   <update id="updateByPrimaryKeySelective" parameterType="com.example.OA.model.Leave" >
     update leavess
     <set >
@@ -142,10 +143,12 @@
       <if test="updateTime != null" >
         update_time = #{updateTime,jdbcType=TIMESTAMP},
       </if>
+      <if test="processinstanceid != null" >
+        processInstanceId = #{processinstanceid,jdbcType=VARCHAR},
+      </if>
     </set>
     where id = #{id,jdbcType=INTEGER}
   </update>
-
   <update id="updateByPrimaryKey" parameterType="com.example.OA.model.Leave" >
     update leavess
     set leave_type = #{leaveType,jdbcType=VARCHAR},
@@ -156,56 +159,8 @@
       start_time = #{startTime,jdbcType=TIMESTAMP},
       end_time = #{endTime,jdbcType=TIMESTAMP},
       create_time = #{createTime,jdbcType=TIMESTAMP},
-      update_time = #{updateTime,jdbcType=TIMESTAMP}
+      update_time = #{updateTime,jdbcType=TIMESTAMP},
+      processInstanceId = #{processinstanceid,jdbcType=VARCHAR}
     where id = #{id,jdbcType=INTEGER}
   </update>
-
-
-  <!-- +++++++++++++++++++++++++++++++++++++-->
-  <select id="getByIdAndApplication" parameterType="map" resultMap="BaseResultMap">
-    SELECT
-    <include refid="Base_Column_List"/>
-    from leavess
-    where
-    id = #{leaveId}
-    and application = #{userId}
-  </select>
-
-  <update id="updateLeaveStatus" parameterType="map" >
-    UPDATE leavess
-    set status = #{status}
-    where id = #{leaveId}
-  </update>
-
-  <select id="getByApplicationAndStatus" parameterType="map" resultMap="BaseResultMap">
-    SELECT
-    <include refid="Base_Column_List"/>
-    from leavess
-    where
-    application = #{userId}
-    and status = #{status}
-  </select>
-
-  <select id="getAllByStatus" parameterType="int" resultMap="BaseResultMap">
-    SELECT
-    <include refid="Base_Column_List"></include>
-    from leavess
-    where status =#{status}
-  </select>
-
-
-  <select id="getByApplication" parameterType="int" resultMap="BaseResultMap">
-    SELECT
-    <include refid="Base_Column_List"/>
-    from leavess
-    where application = #{userId}
-  </select>
-
-  <select id="myApplicationEorStatus" parameterType="int" resultMap="BaseResultMap">
-    SELECT
-    <include refid="Base_Column_List"/>
-    from leavess
-    where application = #{userId}
-    and status != #{status}
-  </select>
 </mapper>

@@ -73,4 +73,10 @@
     where privilege_id = #{privilegeId}
   </delete>
 
+  <select id="getPrivilegeIdByRoleid" parameterType="int" resultType="int">
+    SELECT privilege_id
+    from role_privilege
+    where role_id = #{roleId}
+  </select>
+
 </mapper>

@@ -27,4 +27,6 @@ public interface UserMapper {
     User getByIdOrUsername(@Param("userId") Integer userId,@Param("username") String username);
 
     List<User> getByUsernames(@Param("usernames")List<String> usernames);
+
+    String getUsernameById(Integer userId);
 }

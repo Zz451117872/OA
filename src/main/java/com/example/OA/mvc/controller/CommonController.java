@@ -16,4 +16,14 @@ public class CommonController {
         }
         return null;
     }
+
+    public User getUserBySubject(Subject subject)
+    {
+        Object obj = subject.getPrincipal();
+        if(obj instanceof User)
+        {
+            return (User) obj;
+        }
+        return null;
+    }
 }

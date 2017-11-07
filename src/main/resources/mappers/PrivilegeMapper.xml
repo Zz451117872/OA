@@ -114,4 +114,14 @@
     from privilege
     where url = #{url}
   </select>
+
+  <select id="getByIds" parameterType="list" resultMap="BaseResultMap">
+    SELECT
+    <include refid="Base_Column_List"/>
+    from privilege
+    where id in
+    <foreach collection="privilegeIds" index="index" item="item" close=")" open="(" separator=",">
+      #{item}
+    </foreach>
+  </select>
 </mapper>

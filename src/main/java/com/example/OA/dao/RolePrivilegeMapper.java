@@ -22,4 +22,6 @@ public interface RolePrivilegeMapper {
     List<Privilege> getByRoleId(Integer roleId);
 
     int deleteByPrivilegeId(Integer privilegeId);
+
+    List<Integer> getPrivilegeIdByRoleid(Integer roleId);
 }

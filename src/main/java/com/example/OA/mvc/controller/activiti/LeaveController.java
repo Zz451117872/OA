@@ -1,19 +1,26 @@
 package com.example.OA.mvc.controller.activiti;
 
-import com.example.OA.model.Dispose;
+import com.example.OA.dao.LeaveMapper;
 import com.example.OA.model.Leave;
+import com.example.OA.model.User;
+import com.example.OA.model.activiti.TaskBean;
+import com.example.OA.mvc.common.ServerResponse;
 import com.example.OA.mvc.controller.CommonController;
 import com.example.OA.mvc.exception.AppException;
 import com.example.OA.mvc.exception.Error;
-import com.example.OA.service.activiti.LeaveService;
-import org.activiti.engine.task.Task;
+import com.example.OA.service.activiti.LeaveWorkflowService;
+import com.example.OA.util.Variable;
+import org.activiti.engine.TaskService;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -24,117 +31,127 @@ import java.util.Map;
 @RequestMapping("leave")
 public class LeaveController extends CommonController{
 
+    Logger logger = LoggerFactory.getLogger(this.getClass());
+
     @Autowired
-    LeaveService leaveService;
+    LeaveMapper leaveMapper;
 
-    //申请请假 ----------需要表单验证
-    @RequestMapping(value = "application",method = RequestMethod.POST)
-    public Map<String,Leave> application(Leave leave, String key)
+    @Autowired
+    TaskService taskService;
+
+    @Autowired
+    LeaveWorkflowService leaveWorkflowService;
+
+    @RequestMapping(value = "start_leave_workflow",method = RequestMethod.POST)
+    public ServerResponse startWorkflow(Leave leave)
     {
         Subject subject = SecurityUtils.getSubject();
-        if(!subject.isAuthenticated()) {
-            throw new AppException(Error.UN_AUTHORIZATION);
-        }
-        if(leave != null)
+        if(!subject .isAuthenticated())
         {
-            leave.setApplication(getUserId(subject)); //设置申请人
-            return leaveService.application(leave,key);
-        }
-        throw new AppException(Error.PARAMS_ERROR,"param error");
-    }
-
-    //取消请假
-    @RequestMapping(value = "cancle_application",method = RequestMethod.POST)
-    public Integer cancleApplication(String taskId)
-    {
-        Subject subject = SecurityUtils.getSubject();
-        if(!subject.isAuthenticated()) {
             throw new AppException(Error.UN_AUTHORIZATION);
         }
-        if(taskId != null)
-        {                               //传入 申请人 id，避免越权
-            return leaveService.cancleApplication(getUserId(subject),taskId);
-        }
-        throw new AppException(Error.PARAMS_ERROR,"param error");
-    }
-
-    //获取的我的申请,状态为 未关闭
-    @RequestMapping(value = "my_application",method = RequestMethod.POST)
-    public List<Leave> myApplication()
-    {
-        Subject subject = SecurityUtils.getSubject();
-        if(!subject.isAuthenticated()) {
-            throw new AppException(Error.UN_AUTHORIZATION);
-        }
-          return leaveService.myApplication(getUserId(subject));
-    }
-
-    //获取我的历史记录
-    @RequestMapping(value = "my_application_history",method = RequestMethod.POST)
-    public List<Leave> myApplicationHistory()
-    {
-        Subject subject = SecurityUtils.getSubject();
-        if(!subject.isAuthenticated()) {
-            throw new AppException(Error.UN_AUTHORIZATION);
-        }
-        return leaveService.myApplicationHistory(getUserId(subject));
-    }
-
-    //通过状态查询
-    @RequestMapping(value = "all_leave_status",method = RequestMethod.POST)
-    public List<Leave> getAllByStatus(Integer status)
-    {
-        Subject subject = SecurityUtils.getSubject();
-        if(!subject.isAuthenticated()) {
-            throw new AppException(Error.UN_AUTHORIZATION);
-        }
-        if(status != null)
+        try{
+            User user = getUserBySubject(subject);
+            leave.setApplication(user.getId());
+            Map<String, Object> variables = new HashMap<String, Object>();
+            return leaveWorkflowService.startWorkflow(leave, variables);
+        }catch (Exception e)
         {
-            return leaveService.getAllByStatus(status);
+            throw e;
         }
-        throw new AppException(Error.PARAMS_ERROR,"param error");
     }
 
-    //通过主键查询
-    @RequestMapping(value = "get_by_id",method = RequestMethod.POST)
-    public Leave getById(Integer leaveId)
+    @RequestMapping(value = "task_list",method = RequestMethod.POST)
+    public List<Leave> taskList()
     {
         Subject subject = SecurityUtils.getSubject();
-        if(!subject.isAuthenticated()) {
-            throw new AppException(Error.UN_AUTHORIZATION);
-        }
-        if(leaveId != null)
+        if(!subject .isAuthenticated())
         {
-            return leaveService.getById(leaveId);
-        }
-        throw new AppException(Error.PARAMS_ERROR,"param error");
-    }
-
-
-    //通过申请人查询
-    @RequestMapping(value = "by_application_id_or_name",method = RequestMethod.POST)
-    public List<Leave> getByApplicationIdOrName(Integer userId,String username)
-    {
-        Subject subject = SecurityUtils.getSubject();
-        if(!subject.isAuthenticated()) {
             throw new AppException(Error.UN_AUTHORIZATION);
         }
-        if(userId != null || username != null)
+        User user = getUserBySubject(subject);
+        return leaveWorkflowService.findTodoTasks(user.getId());
+    }
+
+    @RequestMapping(value = "running_list",method = RequestMethod.POST)
+    public List<Leave> runningList()
+    {
+        Subject subject = SecurityUtils.getSubject();
+        if(!subject .isAuthenticated())
         {
-            return leaveService.getByApplicationIdOrName(userId,username);
-        }
-        throw new AppException(Error.PARAMS_ERROR,"param error");
-    }
-
-    //获取需要我处理的请假
-    @RequestMapping(value = "need_dispose",method = RequestMethod.POST)
-    public Map<String,Leave> needIDispose(String definitionKey)
-    {
-        Subject subject = SecurityUtils.getSubject();
-        if(!subject.isAuthenticated()) {
             throw new AppException(Error.UN_AUTHORIZATION);
         }
-            return leaveService.needIDispose(getUserId(subject),definitionKey);
+
+       return leaveWorkflowService.findRunningProcessInstaces();
+    }
+
+    @RequestMapping(value = "finished_list",method = RequestMethod.POST)
+    public  List<Leave> finishedList()
+    {
+        Subject subject = SecurityUtils.getSubject();
+        if(!subject .isAuthenticated())
+        {
+            throw new AppException(Error.UN_AUTHORIZATION);
+        }
+
+        return leaveWorkflowService.findFinishedProcessInstaces();
+    }
+
+    @RequestMapping(value = "claim",method = RequestMethod.POST)
+    public ServerResponse claim(String taskId)
+    {
+        Subject subject = SecurityUtils.getSubject();
+        if(!subject .isAuthenticated())
+        {
+            throw new AppException(Error.UN_AUTHORIZATION);
+        }
+        User user = getUserBySubject(subject);
+        taskService.claim(taskId, user.getUsername());
+        return ServerResponse.createBySuccess();
+    }
+
+    @RequestMapping(value = "get_leave",method = RequestMethod.POST)
+    public Leave getLeave(Integer leaveId)
+    {
+        Subject subject = SecurityUtils.getSubject();
+        if(!subject .isAuthenticated())
+        {
+            throw new AppException(Error.UN_AUTHORIZATION);
+        }
+        return leaveMapper.selectByPrimaryKey(leaveId);
+    }
+
+
+    @RequestMapping(value = "get_leave_vars",method = RequestMethod.POST)
+    public Leave getLeaveWithVars(Integer leaveId,String taskId)
+    {
+        Subject subject = SecurityUtils.getSubject();
+        if(!subject .isAuthenticated())
+        {
+            throw new AppException(Error.UN_AUTHORIZATION);
+        }
+        Leave leave = leaveMapper.selectByPrimaryKey(leaveId);
+        Map<String, Object> variables = taskService.getVariables(taskId);
+        leave.setVariables(variables);
+        return leave;
+    }
+
+    @RequestMapping(value = "complete",method = RequestMethod.POST)
+    public ServerResponse complete(String taskId, Variable var)
+    {
+        Subject subject = SecurityUtils.getSubject();
+        if(!subject .isAuthenticated())
+        {
+            throw new AppException(Error.UN_AUTHORIZATION);
+        }
+        try{
+            Map<String, Object> variables = var.getVariableMap();
+            taskService.complete(taskId, variables);
+           return ServerResponse.createBySuccess();
+        }catch (Exception e)
+        {
+            throw  e;
+        }
     }
 
 }

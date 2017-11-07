@@ -1,6 +1,9 @@
 package com.example.OA.dao;
 
 import com.example.OA.model.Privilege;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 public interface PrivilegeMapper {
     int deleteByPrimaryKey(Integer id);
@@ -17,4 +20,6 @@ public interface PrivilegeMapper {
 
     //-------------------------------
     Privilege getByUrl(String url);
+
+    List<Privilege> getByIds(@Param("privilegeIds") List<Integer> privilegeIds);
 }
