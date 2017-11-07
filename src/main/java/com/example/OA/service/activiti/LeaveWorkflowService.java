@@ -4,6 +4,7 @@ import com.example.OA.dao.LeaveMapper;
 import com.example.OA.dao.UserMapper;
 import com.example.OA.model.Leave;
 import com.example.OA.model.activiti.TaskBean;
+import com.example.OA.mvc.common.Const;
 import com.example.OA.mvc.common.ServerResponse;
 import com.google.common.collect.Lists;
 import org.activiti.engine.*;
@@ -17,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -50,6 +52,8 @@ public class LeaveWorkflowService {
     UserMapper userMapper;
 
     public ServerResponse startWorkflow(Leave leave, Map<String, Object> variables) {
+        leave.setCreateTime(new Date());
+        leave.setStatus(Const.LeaveStatus.APPLICATION.getCode());
         leaveMapper.insertSelective(leave);
         logger.info("save entity: {}", leave);
 

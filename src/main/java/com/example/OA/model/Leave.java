@@ -1,10 +1,12 @@
 package com.example.OA.model;
 
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.beans.Transient;
 import java.io.Serializable;
@@ -24,8 +26,10 @@ public class Leave implements Serializable{
 
     private Integer application;
 
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date startTime;
 
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date endTime;
 
     private Date createTime;

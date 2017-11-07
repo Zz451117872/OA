@@ -59,7 +59,7 @@ public class WorkflowProcessDefinitionService {
     public String deploymentProcessDefinition(String processName,String deploymentName) {
         try{
             DeploymentBuilder deploymentBuilder =  repositoryService.createDeployment().name(deploymentName);
-            deploymentBuilder = deploymentBuilder.addClasspathResource("processes/processName.bpmn");
+            deploymentBuilder = deploymentBuilder.addClasspathResource("processes/"+processName+".bpmn");
             Deployment deployment = deploymentBuilder.deploy();
             if(deployment != null)
             {
@@ -125,9 +125,16 @@ public class WorkflowProcessDefinitionService {
     public ServerResponse deleteProcessDefinition(String processId) {
         logger.info("invoke->deleteProcessDefinition");
         try{
-            repositoryService.deleteDeployment(processId,true);
-            logger.info("deleteDeployment:"+processId);
-            return ServerResponse.createBySuccess();
+            ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().processDefinitionId(processId).singleResult();
+            if(processDefinition != null)
+            {
+                repositoryService.deleteDeployment(processDefinition.getDeploymentId(),true);
+                logger.info("deleteDeployment:"+processDefinition.getDeploymentId());
+                return ServerResponse.createBySuccess();
+            }else {
+                logger.info(processId+"->没有对应的部署对象");
+                return ServerResponse.createByError();
+            }
         }catch (Exception e)
         {
             throw e;

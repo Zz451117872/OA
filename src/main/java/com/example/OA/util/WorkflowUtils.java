@@ -19,9 +19,6 @@ public class WorkflowUtils {
 
     /**
      * 转换流程节点类型为中文说明
-     *
-     * @param type 英文名称
-     * @return 翻译后的中文名称
      */
     public static String parseToZhType(String type) {
         Map<String, String> types = new HashMap<String, String>();

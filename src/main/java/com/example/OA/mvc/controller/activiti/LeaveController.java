@@ -11,15 +11,21 @@ import com.example.OA.mvc.exception.Error;
 import com.example.OA.service.activiti.LeaveWorkflowService;
 import com.example.OA.util.Variable;
 import org.activiti.engine.TaskService;
+import org.apache.catalina.servlet4preview.http.HttpServletRequest;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.propertyeditors.CustomDateEditor;
+import org.springframework.web.bind.ServletRequestDataBinder;
+import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,23 +48,27 @@ public class LeaveController extends CommonController{
     @Autowired
     LeaveWorkflowService leaveWorkflowService;
 
+
     @RequestMapping(value = "start_leave_workflow",method = RequestMethod.POST)
     public ServerResponse startWorkflow(Leave leave)
     {
+        System.out.println("start:"+leave.getStartTime());
+
         Subject subject = SecurityUtils.getSubject();
         if(!subject .isAuthenticated())
         {
             throw new AppException(Error.UN_AUTHORIZATION);
         }
-        try{
-            User user = getUserBySubject(subject);
-            leave.setApplication(user.getId());
-            Map<String, Object> variables = new HashMap<String, Object>();
-            return leaveWorkflowService.startWorkflow(leave, variables);
-        }catch (Exception e)
-        {
-            throw e;
-        }
+        return null;
+//        try{
+//            User user = getUserBySubject(subject);
+//            leave.setApplication(user.getId());
+//            Map<String, Object> variables = new HashMap<String, Object>();
+//            return leaveWorkflowService.startWorkflow(leave, variables);
+//        }catch (Exception e)
+//        {
+//            throw e;
+//        }
     }
 
     @RequestMapping(value = "task_list",method = RequestMethod.POST)

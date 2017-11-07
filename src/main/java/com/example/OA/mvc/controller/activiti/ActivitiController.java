@@ -135,7 +135,7 @@ public class ActivitiController extends CommonController{
         throw new AppException(Error.PARAMS_ERROR,"param error");
     }
 
-    @RequestMapping(value = "delete_all_pdf",method = RequestMethod.POST)
+        @RequestMapping(value = "delete_all_pdf",method = RequestMethod.POST)
     public void deleteAllProcessDefinition() {
         Subject subject = SecurityUtils.getSubject();
         if(!subject.isAuthenticated()) {
@@ -145,7 +145,7 @@ public class ActivitiController extends CommonController{
         workflowProcessDefinitionService.deleteAllProcessDefinition();
     }
 
-    @RequestMapping(value = "load_pdf_by_id",method = RequestMethod.POST)
+    @RequestMapping(value = "load_by_pdf",method = RequestMethod.POST)
     public void loadByProcessDefinition(String processDefinitionId, String resourceType, HttpServletResponse response) throws IOException {
         ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().processDefinitionId(processDefinitionId).singleResult();
         String resourceName = "";
@@ -162,7 +162,7 @@ public class ActivitiController extends CommonController{
             }
     }
 
-    @RequestMapping(value = "load_pdf_by_piid",method = RequestMethod.POST)
+    @RequestMapping(value = "load_by_pin",method = RequestMethod.POST)
     public void loadByProcessInstance(String processInstanceId,String resourceType,HttpServletResponse response) throws IOException {
         InputStream resourceAsStream = null;
         ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
