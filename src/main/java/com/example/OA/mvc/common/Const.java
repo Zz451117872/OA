@@ -1,12 +1,14 @@
 package com.example.OA.mvc.common;
 
+import java.util.Date;
+
 public class Const {
 
     public static String salt = "geelysdafaqj23ou89ZXcj@#$@#$#@KJdjklj;D../dSF.";
 
     // 请假单状态
     public enum  LeaveStatus{
-        APPLICATION(1,"申请中"),
+        APPLICATION(1,"审批中"),
         APPROVED(10,"已批准"),
         CANCELED(100,"已取消"),
         CLOSED(10000,"已关闭"),
@@ -105,33 +107,69 @@ public class Const {
         }
     }
 
-    //支付类型
-    public enum PaymentTypeEnum{
-        ONLINE_PAY(1,"在线支付");
-        private String value;
+
+    public enum Error {
+        UNKNOW_EXCEPTION(0, "unknow exception"),
+        UN_AUTHORIZATION(10, "un authorization"),
+        PARAMS_ERROR(100, "parasm valid %s"),
+        USERNAME_OR_PASSWORD_ERROR(1000, "username or password error"),
+        INVALID_PARAMS(10000, "invalid params: %s"),
+        EXISTSED(1001,"target existsed"),
+        NO_EXISTS(1002,"target NO existsed"),
+        ;
+
         private int code;
-        PaymentTypeEnum(int code,String value)
-        {
+        private String msg;
+
+        Error(int code) {
             this.code = code;
-            this.value = value;
+            this.msg = this.name();
         }
-        public String getValue() {
-            return value;
+
+        Error(int code, String msg){
+            this.code = code;
+            this.msg = msg;
         }
+
         public int getCode() {
             return code;
         }
+        public String getMsg() {
+            return msg;
+        }
 
-        public static PaymentTypeEnum codeof(int code)
+        public static Error codeof(Short code)
         {
-            for(PaymentTypeEnum paymentTypeEnum : values())
+            for(Error error : values())
             {
-                if(paymentTypeEnum.getCode() == code)
+                if(error.getCode() == code)
                 {
-                    return paymentTypeEnum;
+                    return error;
                 }
             }
             throw new RuntimeException("没有找到对应的枚举");
         }
     }
+
+    public enum PropertyType {
+        S(String.class),
+        I(Integer.class),
+        L(Long.class),
+        F(Float.class),
+        N(Double.class),
+        D(Date.class),
+        SD(java.sql.Date.class),
+        B(Boolean.class);
+
+        private Class<?> clazz;
+
+        private PropertyType(Class<?> clazz) {
+            this.clazz = clazz;
+        }
+
+        public Class<?> getValue() {
+            return clazz;
+        }
+    }
+
 }

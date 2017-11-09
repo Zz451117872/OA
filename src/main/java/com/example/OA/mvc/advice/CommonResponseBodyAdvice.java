@@ -13,6 +13,7 @@ import java.lang.reflect.Type;
 
 /**
  * Created by aa on 2017/10/31.
+ * 统一返回值处理
  */
 @ControllerAdvice
 public class CommonResponseBodyAdvice implements ResponseBodyAdvice<Object> {
@@ -27,9 +28,7 @@ public class CommonResponseBodyAdvice implements ResponseBodyAdvice<Object> {
 
     @Override
     public Object beforeBodyWrite(Object body, MethodParameter methodParameter, MediaType mediaType, Class<? extends HttpMessageConverter<?>> aClass, ServerHttpRequest serverHttpRequest, ServerHttpResponse serverHttpResponse) {
-        ServerResponse result = new ServerResponse();
-        result.setStatus(true);
-        result.setData(body);
+        ServerResponse result = ServerResponse.createBySuccess(body);
         return result;
     }
 }

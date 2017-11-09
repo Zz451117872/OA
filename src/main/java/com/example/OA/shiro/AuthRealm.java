@@ -26,9 +26,7 @@ import java.util.List;
 public class AuthRealm extends AuthorizingRealm {
 
     Logger logger = LoggerFactory.getLogger(this.getClass());
-    /*
-    授权
-     */
+
     @Autowired
     UserService userService;
 

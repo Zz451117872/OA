@@ -1,6 +1,7 @@
 package com.example.OA.model;
 
 
+import com.example.OA.model.activiti.TaskBean;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.repository.ProcessDefinition;
@@ -41,7 +42,7 @@ public class Leave implements Serializable{
     //-- 临时属性 --//
 
     // 流程任务
-    private Task task;
+    private TaskBean taskBean;
 
     private Map<String, Object> variables;
 
@@ -161,13 +162,14 @@ public class Leave implements Serializable{
     }
 
     // 临时数据
-    @Transient
-    public Task getTask() {
-        return task;
+
+
+    public TaskBean getTaskBean() {
+        return taskBean;
     }
 
-    public void setTask(Task task) {
-        this.task = task;
+    public void setTaskBean(TaskBean taskBean) {
+        this.taskBean = taskBean;
     }
 
     @Transient

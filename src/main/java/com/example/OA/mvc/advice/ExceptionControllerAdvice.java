@@ -18,6 +18,7 @@ import javax.validation.ConstraintViolationException;
 
 /**
  * Created by aa on 2017/10/31.
+ * 统一异常处理
  */
 @ControllerAdvice
 @ResponseBody
@@ -62,8 +63,7 @@ public class ExceptionControllerAdvice {
     }
 
     private ServerResponse appExceptionToServerResponse(AppException ex) {
-        ServerResponse serverResponse = new ServerResponse();
-        serverResponse.setStatus(false);
+        ServerResponse serverResponse = ServerResponse.createByError();
         serverResponse.setCode(ex.getCode());
         serverResponse.setMsg(ex.getMessage());
         return serverResponse;

@@ -1,34 +1,26 @@
 package com.example.OA.mvc.controller.activiti;
 
 import com.example.OA.dao.LeaveMapper;
+import com.example.OA.dao.UserMapper;
 import com.example.OA.model.Leave;
 import com.example.OA.model.User;
-import com.example.OA.model.activiti.TaskBean;
 import com.example.OA.mvc.common.ServerResponse;
 import com.example.OA.mvc.controller.CommonController;
 import com.example.OA.mvc.exception.AppException;
 import com.example.OA.mvc.exception.Error;
 import com.example.OA.service.activiti.LeaveWorkflowService;
 import com.example.OA.util.Variable;
+import org.activiti.engine.IdentityService;
 import org.activiti.engine.TaskService;
-import org.apache.catalina.servlet4preview.http.HttpServletRequest;
+import org.activiti.engine.task.Task;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.propertyeditors.CustomDateEditor;
-import org.springframework.web.bind.ServletRequestDataBinder;
-import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by aa on 2017/11/3.
@@ -36,8 +28,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("leave")
 public class LeaveController extends CommonController{
-
-    Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     LeaveMapper leaveMapper;
@@ -48,29 +38,38 @@ public class LeaveController extends CommonController{
     @Autowired
     LeaveWorkflowService leaveWorkflowService;
 
+    @Autowired
+    UserMapper userMapper;
 
+    @Autowired
+    IdentityService identityService;
+
+
+    //开始任务   要进行表单验证
     @RequestMapping(value = "start_leave_workflow",method = RequestMethod.POST)
-    public ServerResponse startWorkflow(Leave leave)
-    {
-        System.out.println("start:"+leave.getStartTime());
-
+    public String startWorkflow(Leave leave) {
         Subject subject = SecurityUtils.getSubject();
         if(!subject .isAuthenticated())
         {
             throw new AppException(Error.UN_AUTHORIZATION);
         }
-        return null;
-//        try{
-//            User user = getUserBySubject(subject);
-//            leave.setApplication(user.getId());
-//            Map<String, Object> variables = new HashMap<String, Object>();
-//            return leaveWorkflowService.startWorkflow(leave, variables);
-//        }catch (Exception e)
-//        {
-//            throw e;
-//        }
+        if(leave != null)
+        {
+            try{
+                User user = getUserBySubject(subject);
+                leave.setApplication(user.getId()); //设置申请人
+                Map<String, Object> variables = new HashMap<String, Object>();
+                variables.put("inputUser",user.getUsername());//这个变量工作流中有用，设置办理人
+                return leaveWorkflowService.startWorkflow(leave, variables);
+            }catch (Exception e)
+            {
+                throw e;
+            }
+        }
+        throw new AppException(Error.PARAMS_ERROR);
     }
 
+    //任务列表
     @RequestMapping(value = "task_list",method = RequestMethod.POST)
     public List<Leave> taskList()
     {
@@ -80,9 +79,10 @@ public class LeaveController extends CommonController{
             throw new AppException(Error.UN_AUTHORIZATION);
         }
         User user = getUserBySubject(subject);
-        return leaveWorkflowService.findTodoTasks(user.getId());
+        return leaveWorkflowService.findTodoTasks(user.getUsername());
     }
 
+    //进行中的任务
     @RequestMapping(value = "running_list",method = RequestMethod.POST)
     public List<Leave> runningList()
     {
@@ -95,6 +95,7 @@ public class LeaveController extends CommonController{
        return leaveWorkflowService.findRunningProcessInstaces();
     }
 
+    //已结束任务
     @RequestMapping(value = "finished_list",method = RequestMethod.POST)
     public  List<Leave> finishedList()
     {
@@ -107,8 +108,9 @@ public class LeaveController extends CommonController{
         return leaveWorkflowService.findFinishedProcessInstaces();
     }
 
+    //认领任务
     @RequestMapping(value = "claim",method = RequestMethod.POST)
-    public ServerResponse claim(String taskId)
+    public void claim(String taskId)
     {
         Subject subject = SecurityUtils.getSubject();
         if(!subject .isAuthenticated())
@@ -116,10 +118,15 @@ public class LeaveController extends CommonController{
             throw new AppException(Error.UN_AUTHORIZATION);
         }
         User user = getUserBySubject(subject);
-        taskService.claim(taskId, user.getUsername());
-        return ServerResponse.createBySuccess();
+        if(taskId != null)
+        {
+            leaveWorkflowService.claim(user.getUsername(),taskId);
+            return;
+        }
+        throw new AppException(Error.PARAMS_ERROR);
     }
 
+    //获取 请假单详细
     @RequestMapping(value = "get_leave",method = RequestMethod.POST)
     public Leave getLeave(Integer leaveId)
     {
@@ -128,10 +135,15 @@ public class LeaveController extends CommonController{
         {
             throw new AppException(Error.UN_AUTHORIZATION);
         }
-        return leaveMapper.selectByPrimaryKey(leaveId);
+        if(leaveId != null)
+        {
+            return leaveMapper.selectByPrimaryKey(leaveId);
+        }
+        throw new AppException(Error.PARAMS_ERROR);
     }
 
 
+    //获取 请假单详细
     @RequestMapping(value = "get_leave_vars",method = RequestMethod.POST)
     public Leave getLeaveWithVars(Integer leaveId,String taskId)
     {
@@ -140,12 +152,17 @@ public class LeaveController extends CommonController{
         {
             throw new AppException(Error.UN_AUTHORIZATION);
         }
-        Leave leave = leaveMapper.selectByPrimaryKey(leaveId);
-        Map<String, Object> variables = taskService.getVariables(taskId);
-        leave.setVariables(variables);
-        return leave;
+       if(leaveId != null && taskId!= null)
+       {
+           Leave leave = leaveMapper.selectByPrimaryKey(leaveId);
+           Map<String, Object> variables = taskService.getVariables(taskId);
+           leave.setVariables(variables);
+           return leave;
+       }
+        throw new AppException(Error.PARAMS_ERROR);
     }
 
+    //完成任务
     @RequestMapping(value = "complete",method = RequestMethod.POST)
     public ServerResponse complete(String taskId, Variable var)
     {
@@ -154,14 +171,12 @@ public class LeaveController extends CommonController{
         {
             throw new AppException(Error.UN_AUTHORIZATION);
         }
-        try{
-            Map<String, Object> variables = var.getVariableMap();
-            taskService.complete(taskId, variables);
-           return ServerResponse.createBySuccess();
-        }catch (Exception e)
+        User user = getUserBySubject(subject);
+        if(taskId != null)
         {
-            throw  e;
+            return leaveWorkflowService.completeTask(user.getUsername(),taskId,var);
         }
+       throw new AppException(Error.PARAMS_ERROR);
     }
 
 }

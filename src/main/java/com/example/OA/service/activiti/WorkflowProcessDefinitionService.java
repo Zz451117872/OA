@@ -1,30 +1,36 @@
 package com.example.OA.service.activiti;
 
 import com.example.OA.model.activiti.ProcessDefinitionBean;
+import com.example.OA.model.activiti.TaskBean;
 import com.example.OA.mvc.common.ServerResponse;
 import com.example.OA.mvc.exception.AppException;
 import com.example.OA.mvc.exception.Error;
+import com.example.OA.service.CommonService;
 import com.google.common.collect.Lists;
 import org.activiti.engine.HistoryService;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.RuntimeService;
+import org.activiti.engine.TaskService;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.repository.DeploymentBuilder;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.ProcessInstance;
+import org.activiti.engine.task.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by aa on 2017/11/7.
  */
 @Service
-public class WorkflowProcessDefinitionService {
+public class WorkflowProcessDefinitionService extends CommonService{
 
     Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -37,24 +43,9 @@ public class WorkflowProcessDefinitionService {
     @Autowired
     HistoryService historyService;
 
-    public ServerResponse startProcessDefinition(String processDefinitionKey)
-    {
-        if(processDefinitionKey != null)
-        {
-            try{
-                ProcessInstance instance = runtimeService.startProcessInstanceByKey(processDefinitionKey);
-                if( instance != null)
-                {
-                    return ServerResponse.createBySuccess();
-                }
-                return ServerResponse.createByError();
-            }catch (Exception e)
-            {
-                throw e;
-            }
-        }
-        throw new AppException(Error.PARAMS_ERROR);
-    }
+    @Autowired
+    TaskService taskService;
+
 
     public String deploymentProcessDefinition(String processName,String deploymentName) {
         try{
@@ -105,23 +96,6 @@ public class WorkflowProcessDefinitionService {
         }
     }
 
-    private ProcessDefinitionBean convertProcessDefinitionBean(ProcessDefinition processDefinition) {
-        if(processDefinition != null)
-        {
-            Deployment deployment = repositoryService.createDeploymentQuery().deploymentId(processDefinition.getDeploymentId()).singleResult();
-            ProcessDefinitionBean processDefinitionBean = new ProcessDefinitionBean();
-            processDefinitionBean.setId(processDefinition.getId());
-            processDefinitionBean.setKey(processDefinition.getKey());
-            processDefinitionBean.setDevloyment_id(processDefinition.getDeploymentId());
-            processDefinitionBean.setPro_defi_name(processDefinition.getName());
-            processDefinitionBean.setPro_devl_name(deployment.getName());
-            processDefinitionBean.setPro_devl_time(deployment.getDeploymentTime());
-            processDefinitionBean.setVersion(processDefinition.getVersion()+"");
-            return processDefinitionBean;
-        }
-        throw new AppException(Error.PARAMS_ERROR,"convertProcessDefinitionBean error");
-    }
-
     public ServerResponse deleteProcessDefinition(String processId) {
         logger.info("invoke->deleteProcessDefinition");
         try{
@@ -144,14 +118,14 @@ public class WorkflowProcessDefinitionService {
 
     public void deleteAllProcessDefinition() {
         logger.info("invoke->deleteAllProcessDefinition");
-        try{
-            List<ProcessDefinition> processDefinitionList = repositoryService.createProcessDefinitionQuery().list();
-            if(processDefinitionList != null && !processDefinitionList.isEmpty())
+        try {
+            List<Deployment> deployments =  repositoryService.createDeploymentQuery().list();
+            if(deployments != null && !deployments.isEmpty())
             {
-                for(ProcessDefinition processDefinition : processDefinitionList)
+                for (Deployment deployment : deployments)
                 {
-                    repositoryService.deleteDeployment(processDefinition.getDeploymentId(),true);
-                    logger.info("deleteDeployment:"+processDefinition.getDeploymentId());
+                    repositoryService.deleteDeployment(deployment.getId(),true);
+                    logger.info("deleteDeployment :->"+deployment.getId());
                 }
             }
         }catch (Exception e)
@@ -161,16 +135,31 @@ public class WorkflowProcessDefinitionService {
     }
 
 
-    public ProcessDefinition findProcessDefinitionByPid(String processInstanceId) {
-        HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
-        String processDefinitionId = historicProcessInstance.getProcessDefinitionId();
-        ProcessDefinition processDefinition = findProcessDefinition(processDefinitionId);
-        return processDefinition;
-    }
-
-
-    public ProcessDefinition findProcessDefinition(String processDefinitionId) {
-        ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().processDefinitionId(processDefinitionId).singleResult();
-        return processDefinition;
+    public List<TaskBean> todoList(String username) {
+        if(username != null)
+        {
+            try{
+                List<TaskBean> result = Lists.newArrayList();
+                // 个人任务
+                List<Task> todoList = taskService.createTaskQuery().taskAssignee(username).active().list();
+                for (Task task : todoList) {
+                    TaskBean taskBean = convertTask(task);
+                    taskBean.setStatus("todo");
+                    result.add(taskBean);
+                }
+                // 组任务
+                List<Task> toClaimList = taskService.createTaskQuery().taskCandidateUser(username).active().list();
+                for (Task task : toClaimList) {
+                    TaskBean taskBean = convertTask(task);
+                    taskBean.setStatus("clima");
+                    result.add(taskBean);
+                }
+                return result;
+            }catch (Exception e)
+            {
+                throw e;
+            }
+        }
+        throw new AppException(Error.PARAMS_ERROR);
     }
 }

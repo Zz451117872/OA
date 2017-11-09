@@ -44,11 +44,11 @@ public class ServerResponse<T> implements Serializable{
         this.code = code;
         this.msg = msg;
     }
-    @JsonIgnore
-    public boolean isSuccess()
-    {
-        return this.status == true;
-    }
+  //  @JsonIgnore
+ //   public boolean isSuccess()
+  //  {
+  //      return this.status == true;
+  //  }
     public boolean getStatus()
     {
         return status;

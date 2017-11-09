@@ -10,15 +10,20 @@ public class AppException extends RuntimeException{
 	    this(Error.UNKNOW_EXCEPTION);
 	}
 
-	public AppException(Error code) {
-		code = code == null ? Error.UNKNOW_EXCEPTION : code;
-		this.code = code.getCode();
-		this.msg = code.getMsg();
+	public AppException(Error error) {
+		if(error != null)
+		{
+			this.code = error.getCode();
+			this.msg = error.getMsg();
+		}else {
+			this.code = Error.UNKNOW_EXCEPTION.getCode();
+			this.msg = Error.UNKNOW_EXCEPTION.getMsg();
+		}
 	}
 
-	public AppException(Error code, String exMsg) {
-		this(code);
-		this.msg = String.format(code.getMsg(), exMsg);
+	public AppException(Error error, String exMsg) {
+		this.code = error.getCode();
+		this.msg = exMsg;
 	}
 
 	@Override

@@ -2,53 +2,35 @@ package com.example.OA.mvc.controller.activiti;
 
 import com.example.OA.model.User;
 import com.example.OA.model.activiti.ProcessDefinitionBean;
+import com.example.OA.model.activiti.TaskBean;
 import com.example.OA.mvc.common.ServerResponse;
 import com.example.OA.mvc.controller.CommonController;
 import com.example.OA.mvc.exception.AppException;
 import com.example.OA.mvc.exception.Error;
-import com.example.OA.service.CommonService;
 import com.example.OA.service.activiti.WorkflowProcessDefinitionService;
-import com.example.OA.service.activiti.WorkflowTraceService;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
-import org.activiti.bpmn.converter.BpmnXMLConverter;
 import org.activiti.bpmn.model.BpmnModel;
-import org.activiti.editor.constants.ModelDataJsonConstants;
-import org.activiti.editor.language.json.converter.BpmnJsonConverter;
 import org.activiti.engine.*;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.impl.RepositoryServiceImpl;
-import org.activiti.engine.impl.cfg.ProcessEngineConfigurationImpl;
-import org.activiti.engine.impl.context.Context;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.activiti.engine.impl.pvm.PvmActivity;
 import org.activiti.engine.impl.pvm.PvmTransition;
 import org.activiti.engine.impl.pvm.process.ActivityImpl;
 import org.activiti.engine.impl.pvm.process.ProcessDefinitionImpl;
 import org.activiti.engine.impl.pvm.process.TransitionImpl;
-import org.activiti.engine.repository.Model;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
 import org.activiti.image.ProcessDiagramGenerator;
 import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.authz.UnauthenticatedException;
 import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-
 import javax.servlet.http.HttpServletResponse;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.text.SimpleDateFormat;
+import java.io.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -62,9 +44,6 @@ public class ActivitiController extends CommonController{
 
     @Autowired
     WorkflowProcessDefinitionService workflowProcessDefinitionService;
-
-    @Autowired
-    WorkflowTraceService workflowTraceService;
 
     @Autowired
     TaskService taskService;
@@ -86,6 +65,7 @@ public class ActivitiController extends CommonController{
 
     protected static Map<String, ProcessDefinition> PROCESS_DEFINITION_CACHE = new HashMap<String, ProcessDefinition>();
 
+    //部署流程定义
     @RequestMapping(value = "deploy_pdf",method = RequestMethod.POST)
     public String deploymentProcessDefinition(String processName,String deploymentName) {
         Subject subject = SecurityUtils.getSubject();
@@ -99,16 +79,17 @@ public class ActivitiController extends CommonController{
         throw new AppException(Error.PARAMS_ERROR,"param error");
     }
 
-
+    //获取所有流程定义
     @RequestMapping(value = "all_pdf",method = RequestMethod.POST)
     public List<ProcessDefinitionBean> getAllProcessDefinition() {
         Subject subject = SecurityUtils.getSubject();
         if(!subject.isAuthenticated()) {
             throw new AppException(Error.UN_AUTHORIZATION);
         }
-            return workflowProcessDefinitionService.getAllProcessDefinition();
+        return workflowProcessDefinitionService.getAllProcessDefinition();
     }
 
+    //获取单个流程定义
     @RequestMapping(value = "get_pdf",method = RequestMethod.POST)
     public ProcessDefinitionBean get(String processId) {
         Subject subject = SecurityUtils.getSubject();
@@ -122,6 +103,7 @@ public class ActivitiController extends CommonController{
         throw new AppException(Error.PARAMS_ERROR,"param error");
     }
 
+    //删除流程定义
     @RequestMapping(value = "delete_pdf",method = RequestMethod.POST)
     public ServerResponse deleteProcessDefinition(String processId) {
         Subject subject = SecurityUtils.getSubject();
@@ -132,149 +114,128 @@ public class ActivitiController extends CommonController{
         {
             return workflowProcessDefinitionService.deleteProcessDefinition(processId);
         }
-        throw new AppException(Error.PARAMS_ERROR,"param error");
+        throw new AppException(Error.PARAMS_ERROR);
     }
 
-        @RequestMapping(value = "delete_all_pdf",method = RequestMethod.POST)
+    //删除所有流程定义
+    @RequestMapping(value = "delete_all_pdf",method = RequestMethod.POST)
     public void deleteAllProcessDefinition() {
         Subject subject = SecurityUtils.getSubject();
         if(!subject.isAuthenticated()) {
             throw new AppException(Error.UN_AUTHORIZATION);
         }
-
         workflowProcessDefinitionService.deleteAllProcessDefinition();
     }
 
+    //加载资源文件 通过流程定义，中文显示不出，不知原因
     @RequestMapping(value = "load_by_pdf",method = RequestMethod.POST)
     public void loadByProcessDefinition(String processDefinitionId, String resourceType, HttpServletResponse response) throws IOException {
-        ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().processDefinitionId(processDefinitionId).singleResult();
-        String resourceName = "";
-        if (resourceType.equals("image")) {
-            resourceName = processDefinition.getDiagramResourceName();
-        } else if (resourceType.equals("xml")) {
-            resourceName = processDefinition.getResourceName();
-        }
-        InputStream resourceAsStream = repositoryService.getResourceAsStream(processDefinition.getDeploymentId(), resourceName);
-        byte[] b = new byte[1024];
-        int len = -1;
-            while ((len = resourceAsStream.read(b,0,1024)) != -1) {
-                response.getOutputStream().write(b,0,len);
-            }
+       if(processDefinitionId != null && resourceType != null)
+       {
+           try{
+               ProcessDefinition processDefinition = repositoryService//
+                       .createProcessDefinitionQuery()//
+                       .processDefinitionId(processDefinitionId)//
+                       .singleResult();
+               String resourceName = "";
+               if (resourceType.equals("image")) {
+                   resourceName = processDefinition.getDiagramResourceName();
+               } else if (resourceType.equals("xml")) {
+                   resourceName = processDefinition.getResourceName();
+               }
+               InputStream resourceAsStream = repositoryService.getResourceAsStream(processDefinition.getDeploymentId(), resourceName);
+
+               byte[] b = new byte[1024];
+               int len = -1;
+               while ((len = resourceAsStream.read(b,0,1024)) != -1) {
+                   response.getOutputStream().write(b,0,len);
+               }
+               return;
+           }catch (Exception e)
+           {
+               throw e;
+           }
+       }
+        throw new AppException(Error.PARAMS_ERROR);
     }
 
+    //加载资源文件 通过 流程实例，中文显示不出，不知原因
     @RequestMapping(value = "load_by_pin",method = RequestMethod.POST)
     public void loadByProcessInstance(String processInstanceId,String resourceType,HttpServletResponse response) throws IOException {
-        InputStream resourceAsStream = null;
-        ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
-        ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().processDefinitionId(processInstance.getProcessDefinitionId())
-                .singleResult();
+        if(processInstanceId != null && resourceType != null)
+        {
+            try{
+                InputStream resourceAsStream = null;
+                ProcessInstance processInstance = runtimeService//
+                        .createProcessInstanceQuery()//
+                        .processInstanceId(processInstanceId)//
+                        .singleResult();
+                ProcessDefinition processDefinition = repositoryService//
+                        .createProcessDefinitionQuery()//
+                        .processDefinitionId(processInstance.getProcessDefinitionId())//
+                        .singleResult();
 
-        String resourceName = "";
-        if (resourceType.equals("image")) {
-            resourceName = processDefinition.getDiagramResourceName();
-        } else if (resourceType.equals("xml")) {
-            resourceName = processDefinition.getResourceName();
+                String resourceName = "";
+                if (resourceType.equals("image")) {
+                    resourceName = processDefinition.getDiagramResourceName();
+                } else if (resourceType.equals("xml")) {
+                    resourceName = processDefinition.getResourceName();
+                }
+                resourceAsStream = repositoryService.getResourceAsStream(processDefinition.getDeploymentId(), resourceName);
+                byte[] b = new byte[1024];
+                int len = -1;
+                while ((len = resourceAsStream.read(b, 0, 1024)) != -1) {
+                    response.getOutputStream().write(b, 0, len);
+                }
+                return;
+            }catch (Exception e)
+            {
+                throw e;
+            }
         }
-        resourceAsStream = repositoryService.getResourceAsStream(processDefinition.getDeploymentId(), resourceName);
-        byte[] b = new byte[1024];
-        int len = -1;
-        while ((len = resourceAsStream.read(b, 0, 1024)) != -1) {
-            response.getOutputStream().write(b, 0, len);
-        }
+        throw new AppException(Error.PARAMS_ERROR);
     }
 
-    @RequestMapping(value = "trace_process",method = RequestMethod.POST)
-    public List<Map<String, Object>> traceProcess(String processInstanceId)throws Exception
-    {
-        return workflowTraceService.traceProcess(processInstanceId);
-    }
 
+    //读取流程图,中文不能显示，不知原因
     @RequestMapping(value = "read_resource",method = RequestMethod.POST)
     public void readResource(String executionId,HttpServletResponse response) throws IOException {
-        ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(executionId).singleResult();
-        BpmnModel bpmnModel = repositoryService.getBpmnModel(processInstance.getProcessDefinitionId());
-        List<String> activeActivityIds = runtimeService.getActiveActivityIds(executionId);
 
-        processEngineConfiguration = processEngine.getProcessEngineConfiguration();
-        Context.setProcessEngineConfiguration((ProcessEngineConfigurationImpl) processEngineConfiguration);
+        if(executionId != null) {
+            try{
+                ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(executionId).singleResult();
+                BpmnModel bpmnModel = repositoryService.getBpmnModel(processInstance.getProcessDefinitionId());
+                List<String> activeActivityIds = runtimeService.getActiveActivityIds(executionId);
 
-        ProcessDiagramGenerator diagramGenerator = processEngineConfiguration.getProcessDiagramGenerator();
-        InputStream imageStream = diagramGenerator.generateDiagram(bpmnModel, "png", activeActivityIds);
+                ProcessDiagramGenerator diagramGenerator = processEngineConfiguration.getProcessDiagramGenerator();
+                InputStream imageStream = diagramGenerator.generateDiagram(bpmnModel, "png", activeActivityIds);
 
-        byte[] b = new byte[1024];
-        int len;
-        while ((len = imageStream.read(b, 0, 1024)) != -1) {
-            response.getOutputStream().write(b, 0, len);
+                byte[] b = new byte[1024];
+                int len;
+                while ((len = imageStream.read(b, 0, 1024)) != -1) {
+                    response.getOutputStream().write(b, 0, len);
+                }
+                return;
+            }catch (Exception e)
+            {
+                throw e;
+            }
         }
+        throw new AppException(Error.PARAMS_ERROR);
     }
 
-    @RequestMapping(value = "convert_to_model",method = RequestMethod.POST)
-    public ServerResponse convertToModel(String processDefinitionId) throws UnsupportedEncodingException, XMLStreamException {
-        ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery()
-                .processDefinitionId(processDefinitionId).singleResult();
-        InputStream bpmnStream = repositoryService.getResourceAsStream(processDefinition.getDeploymentId(),
-                processDefinition.getResourceName());
-        XMLInputFactory xif = XMLInputFactory.newInstance();
-        InputStreamReader in = new InputStreamReader(bpmnStream, "UTF-8");
-        XMLStreamReader xtr = xif.createXMLStreamReader(in);
-        BpmnModel bpmnModel = new BpmnXMLConverter().convertToBpmnModel(xtr);
-
-        BpmnJsonConverter converter = new BpmnJsonConverter();
-        com.fasterxml.jackson.databind.node.ObjectNode modelNode = converter.convertToJson(bpmnModel);
-        Model modelData = repositoryService.newModel();
-        modelData.setKey(processDefinition.getKey());
-        modelData.setName(processDefinition.getResourceName());
-        modelData.setCategory(processDefinition.getDeploymentId());
-
-        ObjectNode modelObjectNode = new ObjectMapper().createObjectNode();
-        modelObjectNode.put(ModelDataJsonConstants.MODEL_NAME, processDefinition.getName());
-        modelObjectNode.put(ModelDataJsonConstants.MODEL_REVISION, 1);
-        modelObjectNode.put(ModelDataJsonConstants.MODEL_DESCRIPTION, processDefinition.getDescription());
-        modelData.setMetaInfo(modelObjectNode.toString());
-
-        repositoryService.saveModel(modelData);
-
-        repositoryService.addModelEditorSource(modelData.getId(), modelNode.toString().getBytes("utf-8"));
-
-        return ServerResponse.createBySuccess();
-    }
-
+    //需要我处理的任务
     @RequestMapping(value = "todo_list",method = RequestMethod.POST)
-    public List<Map<String, Object>> todoList()
-    {
+    public List<TaskBean> todoList() {
         Subject subject = SecurityUtils.getSubject();
         if(!subject.isAuthenticated()) {
             throw new AppException(Error.UN_AUTHORIZATION);
         }
         User user = getUserBySubject(subject);
-        List<Map<String, Object>> result = Lists.newArrayList();
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm");
-
-        // 个人任务
-        List<Task> todoList = taskService.createTaskQuery().taskAssignee(user.getUsername()).active().list();
-        for (Task task : todoList) {
-            String processDefinitionId = task.getProcessDefinitionId();
-            ProcessDefinition processDefinition = getProcessDefinition(processDefinitionId);
-
-            Map<String, Object> singleTask = packageTaskInfo(sdf, task, processDefinition);
-            singleTask.put("status", "todo");
-            result.add(singleTask);
-        }
-
-        // 组任务
-        List<Task> toClaimList = taskService.createTaskQuery().taskCandidateUser(user.getUsername()).active().list();
-        for (Task task : toClaimList) {
-            String processDefinitionId = task.getProcessDefinitionId();
-            ProcessDefinition processDefinition = getProcessDefinition(processDefinitionId);
-
-            Map<String, Object> singleTask = packageTaskInfo(sdf, task, processDefinition);
-            singleTask.put("status", "claim");
-            result.add(singleTask);
-        }
-        return result;
+       return workflowProcessDefinitionService.todoList(user.getUsername());
     }
 
-    //驳回任务
+    //驳回任务 未测试
     @RequestMapping(value = "returnback_task",method = RequestMethod.POST)
     public ServerResponse returnBackTask(String taskId) {
         if(taskId != null)
@@ -362,36 +323,41 @@ public class ActivitiController extends CommonController{
         throw new AppException(Error.PARAMS_ERROR);
     }
 
+    //修改流程定义的状态
     @RequestMapping(value = "update_state",method = RequestMethod.POST)
-    public ServerResponse updateState(String state,String processDefinitionId)
-    {
-        if (state.equals("active")) {
-            repositoryService.activateProcessDefinitionById(processDefinitionId, true, null);
-            return ServerResponse.createBySuccess();
-        } else if (state.equals("suspend")) {
-            repositoryService.suspendProcessDefinitionById(processDefinitionId, true, null);
-            return ServerResponse.createBySuccess();
+    public void updateState(String state,String processDefinitionId) {
+        if(state != null && processDefinitionId != null) {
+            try {
+                if (state.equals("active")) {
+                    repositoryService.activateProcessDefinitionById(processDefinitionId, true, null);
+                    return;
+                } else if (state.equals("suspend")) {
+                    repositoryService.suspendProcessDefinitionById(processDefinitionId, true, null);
+                    return;
+                }
+            } catch (Exception e) {
+                throw e;
+            }
+            throw new AppException(Error.PARAMS_ERROR);
         }
-        return ServerResponse.createByError();
+        throw new AppException(Error.PARAMS_ERROR);
     }
 
+    //通过流程实例 得到 流程定义
     private ProcessDefinition getProcessDefinition(String processDefinitionId) {
-        ProcessDefinition processDefinition = PROCESS_DEFINITION_CACHE.get(processDefinitionId);
-        if (processDefinition == null) {
-            processDefinition = repositoryService.createProcessDefinitionQuery().processDefinitionId(processDefinitionId).singleResult();
-            PROCESS_DEFINITION_CACHE.put(processDefinitionId, processDefinition);
-        }
-        return processDefinition;
-    }
-
-    private Map<String,Object> packageTaskInfo(SimpleDateFormat sdf, Task task, ProcessDefinition processDefinition) {
-        Map<String, Object> singleTask = new HashMap<String, Object>();
-        singleTask.put("id", task.getId());
-        singleTask.put("name", task.getName());
-        singleTask.put("createTime", sdf.format(task.getCreateTime()));
-        singleTask.put("pdname", processDefinition.getName());
-        singleTask.put("pdversion", processDefinition.getVersion());
-        singleTask.put("pid", task.getProcessInstanceId());
-        return singleTask;
+       if(processDefinitionId != null) {
+           try{
+               ProcessDefinition processDefinition = PROCESS_DEFINITION_CACHE.get(processDefinitionId);
+               if (processDefinition == null) {
+                   processDefinition = repositoryService.createProcessDefinitionQuery().processDefinitionId(processDefinitionId).singleResult();
+                   PROCESS_DEFINITION_CACHE.put(processDefinitionId, processDefinition);
+               }
+               return processDefinition;
+           }catch (Exception e)
+           {
+               throw e;
+           }
+       }
+        throw new AppException(Error.PARAMS_ERROR);
     }
 }
