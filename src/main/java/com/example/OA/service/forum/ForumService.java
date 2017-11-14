@@ -36,7 +36,7 @@ public class ForumService extends CommonService{
                 forumMapper.insertSelective(forum);
                 return forum;
             }
-            throw new AppException(Error.EXISTSED,"target existed");
+            throw new AppException(Error.TARGET_EXISTSED,"target existed");
         }
         throw new AppException(Error.PARAMS_ERROR,"param error");
     }
@@ -54,7 +54,7 @@ public class ForumService extends CommonService{
                 forumMapper.updateByPrimaryKeySelective(forum);
                 return forum;
             }
-            throw new AppException(Error.EXISTSED,"target existed");
+            throw new AppException(Error.TARGET_EXISTSED,"target existed");
         }
         throw new AppException(Error.PARAMS_ERROR,"param error");
     }
@@ -67,7 +67,7 @@ public class ForumService extends CommonService{
             {
                 return topicMapper.getAllByForum(forumId);
             }
-            throw new AppException(Error.NO_EXISTS,"target not existed");
+            throw new AppException(Error.TARGET_NO_EXISTS,"target not existed");
         }
         throw new AppException(Error.PARAMS_ERROR,"param error");
     }
@@ -83,9 +83,9 @@ public class ForumService extends CommonService{
                 {
                     return topicMapper.selectByPrimaryKey(topicId);
                 }
-                throw new AppException(Error.NO_EXISTS,"target not existed");
+                throw new AppException(Error.TARGET_NO_EXISTS,"target not existed");
             }
-            throw new AppException(Error.NO_EXISTS,"target not existed");
+            throw new AppException(Error.TARGET_NO_EXISTS,"target not existed");
         }
         throw new AppException(Error.PARAMS_ERROR,"param error");
     }

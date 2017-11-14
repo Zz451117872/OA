@@ -1,38 +1,24 @@
 package com.example.OA.mvc.controller.activiti;
 
-import com.example.OA.model.User;
 import com.example.OA.model.activiti.*;
-import com.example.OA.mvc.common.Const;
-import com.example.OA.mvc.common.ServerResponse;
 import com.example.OA.mvc.controller.CommonController;
 import com.example.OA.mvc.exception.AppException;
 import com.example.OA.mvc.exception.Error;
 import com.example.OA.service.activiti.ProcessDefinitionService;
 import com.example.OA.service.activiti.WorkflowService;
-import com.example.OA.util.ProcessDefinitionCache;
-import com.example.OA.util.Variable;
 import com.google.common.collect.Lists;
 import org.activiti.bpmn.model.BpmnModel;
 import org.activiti.engine.*;
-import org.activiti.engine.history.HistoricTaskInstance;
-import org.activiti.engine.impl.RepositoryServiceImpl;
-import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
-import org.activiti.engine.impl.pvm.PvmActivity;
-import org.activiti.engine.impl.pvm.PvmTransition;
-import org.activiti.engine.impl.pvm.process.ActivityImpl;
-import org.activiti.engine.impl.pvm.process.ProcessDefinitionImpl;
-import org.activiti.engine.impl.pvm.process.TransitionImpl;
 import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.repository.ProcessDefinition;
-import org.activiti.engine.repository.ProcessDefinitionQuery;
 import org.activiti.engine.runtime.ProcessInstance;
-import org.activiti.engine.task.Task;
 import org.activiti.image.ProcessDiagramGenerator;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
@@ -75,16 +61,13 @@ public class ProcessDefinitionController extends CommonController{
 
     //部署流程定义
     @RequestMapping(value = "deploy_pdf",method = RequestMethod.POST)
-    public String deploymentProcessDefinition(String processName,String deploymentName) {
+    public String deploymentProcessDefinition(@RequestParam(value = "processName",required = true) String processName,
+                                              @RequestParam(value = "deploymentName",required = false,defaultValue = "呵呵") String deploymentName) {
         Subject subject = SecurityUtils.getSubject();
         if(!subject.isAuthenticated()) {
             throw new AppException(Error.UN_AUTHORIZATION);
         }
-        if(processName != null && deploymentName != null)
-        {
-            return processDefinitionService.deploymentProcessDefinition(processName,deploymentName);
-        }
-        throw new AppException(Error.PARAMS_ERROR,"param error");
+        return processDefinitionService.deploymentProcessDefinition(processName,deploymentName);
     }
 
     //获取所有流程定义
@@ -99,31 +82,23 @@ public class ProcessDefinitionController extends CommonController{
 
     //获取单个流程定义
     @RequestMapping(value = "get_pdf",method = RequestMethod.POST)
-    public ProcessDefinitionBean get(String processId) {
+    public ProcessDefinitionBean get(@RequestParam(value = "processId",required = true) String processId) {
         Subject subject = SecurityUtils.getSubject();
         if(!subject.isAuthenticated()) {
             throw new AppException(Error.UN_AUTHORIZATION);
         }
-        if(processId != null )
-        {
-            return processDefinitionService.get(processId);
-        }
-        throw new AppException(Error.PARAMS_ERROR,"param error");
+        return processDefinitionService.get(processId);
     }
 
     //删除流程定义
     @RequestMapping(value = "delete_pdf",method = RequestMethod.POST)
-    public void deleteProcessDefinition(String processId) {
+    public void deleteProcessDefinition(@RequestParam(value = "processId",required = true) String processId) {
         Subject subject = SecurityUtils.getSubject();
         if(!subject.isAuthenticated()) {
             throw new AppException(Error.UN_AUTHORIZATION);
         }
-        if(processId != null )
-        {
-            processDefinitionService.deleteProcessDefinition(processId);
-            return;
-        }
-        throw new AppException(Error.PARAMS_ERROR);
+        processDefinitionService.deleteProcessDefinition(processId);
+        return;
     }
 
     //删除所有流程定义
@@ -134,14 +109,19 @@ public class ProcessDefinitionController extends CommonController{
             throw new AppException(Error.UN_AUTHORIZATION);
         }
         processDefinitionService.deleteAllProcessDefinition();
+        return;
     }
 
     //加载资源文件 通过流程定义，中文显示不出，不知原因
     @RequestMapping(value = "load_by_pdf",method = RequestMethod.POST)
-    public void loadByProcessDefinition(String processDefinitionId, String resourceType, HttpServletResponse response) throws IOException {
-       if(processDefinitionId != null && resourceType != null)
-       {
+    public void loadByProcessDefinition(@RequestParam(value = "processDefinitionId",required = true) String processDefinitionId,
+                                        @RequestParam(value = "resourceType",required = false ,defaultValue = "image")String resourceType,
+                                        HttpServletResponse response) {
            try{
+               Subject subject = SecurityUtils.getSubject();
+               if(!subject.isAuthenticated()) {
+                   throw new AppException(Error.UN_AUTHORIZATION);
+               }
                ProcessDefinition processDefinition = repositoryService//
                        .createProcessDefinitionQuery()//
                        .processDefinitionId(processDefinitionId)//
@@ -162,19 +142,21 @@ public class ProcessDefinitionController extends CommonController{
                return;
            }catch (Exception e)
            {
-               throw e;
+               throw new AppException(Error.UNKNOW_EXCEPTION,e.getMessage());
            }
-       }
-        throw new AppException(Error.PARAMS_ERROR);
     }
 
     //加载资源文件 通过 流程实例，中文显示不出，不知原因
     @RequestMapping(value = "load_by_pin",method = RequestMethod.POST)
-    public void loadByProcessInstance(String processInstanceId,String resourceType,HttpServletResponse response) throws IOException {
-        if(processInstanceId != null && resourceType != null)
-        {
+    public void loadByProcessInstance(
+            @RequestParam(value = "processInstanceId",required = true) String processInstanceId,
+            @RequestParam(value = "resourceType",required = false,defaultValue = "image") String resourceType,
+            HttpServletResponse response){
+        Subject subject = SecurityUtils.getSubject();
+        if(!subject.isAuthenticated()) {
+            throw new AppException(Error.UN_AUTHORIZATION);
+        }
             try{
-                InputStream resourceAsStream = null;
                 ProcessInstance processInstance = runtimeService//
                         .createProcessInstanceQuery()//
                         .processInstanceId(processInstanceId)//
@@ -190,7 +172,7 @@ public class ProcessDefinitionController extends CommonController{
                 } else if (resourceType.equals("xml")) {
                     resourceName = processDefinition.getResourceName();
                 }
-                resourceAsStream = repositoryService.getResourceAsStream(processDefinition.getDeploymentId(), resourceName);
+                InputStream resourceAsStream = repositoryService.getResourceAsStream(processDefinition.getDeploymentId(), resourceName);
                 byte[] b = new byte[1024];
                 int len = -1;
                 while ((len = resourceAsStream.read(b, 0, 1024)) != -1) {
@@ -199,19 +181,23 @@ public class ProcessDefinitionController extends CommonController{
                 return;
             }catch (Exception e)
             {
-                throw e;
+                throw new AppException(Error.UNKNOW_EXCEPTION,e.getMessage());
             }
-        }
-        throw new AppException(Error.PARAMS_ERROR);
     }
 
     //读取流程图,中文不能显示，不知原因
     @RequestMapping(value = "read_resource",method = RequestMethod.POST)
-    public void readResource(String executionId,HttpServletResponse response) throws IOException {
-
-        if(executionId != null) {
+    public void readResource(
+            @RequestParam(value = "executionId",required = true) String executionId,
+            HttpServletResponse response) {
+        Subject subject = SecurityUtils.getSubject();
+        if(!subject.isAuthenticated()) {
+            throw new AppException(Error.UN_AUTHORIZATION);
+        }
             try{
-                ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(executionId).singleResult();
+                ProcessInstance processInstance = runtimeService//
+                        .createProcessInstanceQuery()//
+                        .processInstanceId(executionId).singleResult();
                 BpmnModel bpmnModel = repositoryService.getBpmnModel(processInstance.getProcessDefinitionId());
                 List<String> activeActivityIds = runtimeService.getActiveActivityIds(executionId);
 
@@ -226,17 +212,19 @@ public class ProcessDefinitionController extends CommonController{
                 return;
             }catch (Exception e)
             {
-                throw e;
+                throw new AppException(Error.UNKNOW_EXCEPTION,e.getMessage());
             }
-        }
-        throw new AppException(Error.PARAMS_ERROR);
     }
 
     //修改流程定义的状态
-    @RequestMapping(value = "update_state",method = RequestMethod.POST)
-    public void updateState(String state,String processDefinitionId) {
-        if(state != null && processDefinitionId != null) {
+    @RequestMapping(value = "update_pdf_status",method = RequestMethod.POST)
+    public void updateState(@RequestParam(value = "state",required = true) String state,
+                            @RequestParam(value = "processDefinitionId",required = true) String processDefinitionId) {
             try {
+                Subject subject = SecurityUtils.getSubject();
+                if(!subject.isAuthenticated()) {
+                    throw new AppException(Error.UN_AUTHORIZATION);
+                }
                 if (state.equals("active")) {
                     repositoryService.activateProcessDefinitionById(processDefinitionId, true, null);
                     return;
@@ -244,12 +232,10 @@ public class ProcessDefinitionController extends CommonController{
                     repositoryService.suspendProcessDefinitionById(processDefinitionId, true, null);
                     return;
                 }
+                throw new AppException(Error.PARAMS_ERROR);
             } catch (Exception e) {
-                throw e;
+                throw new AppException(Error.UNKNOW_EXCEPTION,e.getMessage());
             }
-            throw new AppException(Error.PARAMS_ERROR);
-        }
-        throw new AppException(Error.PARAMS_ERROR);
     }
 
     //通过流程实例 得到 流程定义
@@ -264,60 +250,55 @@ public class ProcessDefinitionController extends CommonController{
                return processDefinition;
            }catch (Exception e)
            {
-               throw e;
+               throw new AppException(Error.UNKNOW_EXCEPTION,e.getMessage());
            }
        }
-        throw new AppException(Error.PARAMS_ERROR);
+       return null;
     }
 
     //加载流程定义
     @RequestMapping(value = "list_processDefinition",method = RequestMethod.POST)
     public List<ProcessDefinitionBean> listProcessDefinition() {
-        ProcessDefinitionQuery processDefinitionQuery = repositoryService.createProcessDefinitionQuery().orderByDeploymentId().desc();
-        List<ProcessDefinition> processDefinitionList = processDefinitionQuery.list();
-        List<ProcessDefinitionBean> result = Lists.newArrayList();
-
-        for (ProcessDefinition processDefinition : processDefinitionList) {
-            ProcessDefinitionBean pd = new ProcessDefinitionBean();
-            String deploymentId = processDefinition.getDeploymentId();
-            Deployment deployment = repositoryService.createDeploymentQuery().deploymentId(deploymentId).singleResult();
-            //封装到ProcessDefinitionEntity中
-            pd.setId(processDefinition.getId());
-            pd.setName(processDefinition.getName());
-            pd.setKey(processDefinition.getKey());
-            pd.setDeploymentId(processDefinition.getDeploymentId());
-            pd.setVersion(processDefinition.getVersion());
-            pd.setResourceName(processDefinition.getResourceName());
-            pd.setDiagramResourceName(processDefinition.getDiagramResourceName());
-            pd.setDeploymentTime(deployment.getDeploymentTime());
-            pd.setSuspended(processDefinition.isSuspended());
-            result.add(pd);
-        }
-        return result;
-    }
-
-    //设置流程定义的状态
-    @RequestMapping(value = "update_pdf_status",method = RequestMethod.POST)
-    public void updateProcessStatusByProDefinitionId(String status, String processDefinitionId) {
         Subject subject = SecurityUtils.getSubject();
-        if(!subject .isAuthenticated())
-        {
+        if(!subject.isAuthenticated()) {
             throw new AppException(Error.UN_AUTHORIZATION);
         }
-        User user = getUserBySubject(subject);
-        if (status.equals("active")) {
-            repositoryService.activateProcessDefinitionById(processDefinitionId, true, null);
-            return;
-        } else if (status.equals("suspend")) {
-            repositoryService.suspendProcessDefinitionById(processDefinitionId, true, null);
-            return;
-        }
-        throw new AppException(Error.PARAMS_ERROR);
+        try{
+            List<ProcessDefinition> processDefinitionList = repositoryService//
+                .createProcessDefinitionQuery()//
+                .orderByDeploymentId().desc().list();
+            List<ProcessDefinitionBean> result = Lists.newArrayList();
+
+           for (ProcessDefinition processDefinition : processDefinitionList) {
+               ProcessDefinitionBean pd = new ProcessDefinitionBean();
+               String deploymentId = processDefinition.getDeploymentId();
+               Deployment deployment = repositoryService.createDeploymentQuery().deploymentId(deploymentId).singleResult();
+               //封装到ProcessDefinitionEntity中
+               pd.setId(processDefinition.getId());
+               pd.setName(processDefinition.getName());
+               pd.setKey(processDefinition.getKey());
+               pd.setDeploymentId(processDefinition.getDeploymentId());
+               pd.setVersion(processDefinition.getVersion());
+               pd.setResourceName(processDefinition.getResourceName());
+               pd.setDiagramResourceName(processDefinition.getDiagramResourceName());
+               pd.setDeploymentTime(deployment.getDeploymentTime());
+               pd.setSuspended(processDefinition.isSuspended());
+               result.add(pd);
+           }
+           return result;
+       }catch (Exception e)
+       {
+           throw new AppException(Error.UNKNOW_EXCEPTION,e.getMessage());
+       }
     }
+
+
 
     //设置流程实例的状态
     @RequestMapping(value = "update_pin_status",method = RequestMethod.POST)
-    public void updateProcessStatusByProInstanceId(String status,String processInstanceId) {
+    public void updateProcessStatusByProInstanceId(
+            @RequestParam(value = "status", required = true) String status,
+            @RequestParam(value = "processInstanceId", required = true) String processInstanceId) {
         Subject subject = SecurityUtils.getSubject();
         if(!subject .isAuthenticated())
         {

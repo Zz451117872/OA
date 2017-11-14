@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -66,29 +67,28 @@ public class WorkflowService extends CommonService{
     UserMapper userMapper;
 
     // 开启请假流程
+    @Transactional
     public String startLeaveWorkflow(Leave leave, Map<String, Object> variables) {
-        leaveMapper.insertSelective(leave);
-        logger.info("save leave: {}", leave);   //保存请假单
-
-        identityService.setAuthenticatedUserId(leave.getApplication().toString());
-
-
-        String businessKey = leave.getId().toString();  //流程实例  与  请假单的一种对应关系
-        leave.setBusinesskey(businessKey);
-        variables.put("entry",leave);
-
-        ProcessInstance processInstance = null;
         try {
-            processInstance = runtimeService.startProcessInstanceByKey(Const.processDefinitionKey.LEAVE, businessKey, variables);
+            leaveMapper.insertSelective(leave); //存储业务对象，自动返回主键
+            logger.info("save leave: {}", leave);   //保存请假单
+            identityService.setAuthenticatedUserId(leave.getApplication().toString());
+
+            String businessKey = leave.getId().toString();  //流程实例  与  请假单的一种对应关系
+            leave.setBusinesskey(businessKey);
+            variables.put("entry",leave);
+
+            ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(Const.processDefinitionKey.LEAVE, businessKey, variables);
             String processInstanceId = processInstance.getId();
 
             leave.setProcessinstanceid(processInstanceId);  //流程实例id 放入 请假单
             leave.setBusinesskey(businessKey);
             leaveMapper.updateByPrimaryKeySelective(leave);
 
+            runtimeService.setVariable(processInstanceId,"entry",leave); //业务对象更新后，同步更新下变量
             return processInstanceId;
         }catch (Exception e) {
-            throw e;
+            throw new AppException(Error.WORKFLOW_INNER_ERROR,e.getMessage());
         }finally
         {
             identityService.setAuthenticatedUserId(null);
@@ -96,20 +96,19 @@ public class WorkflowService extends CommonService{
     }
 
     // 开启薪资调整流程
+    @Transactional
     public String startSalaryAdjustWorkflow(SalaryAdjust salaryAdjust, Map<String, Object> variables) {
         // 保存 薪资调整 对象
-        salaryAdjustMapper.insertSelective(salaryAdjust);
-        logger.info("save salaryAdjust: {}", salaryAdjust);   //保存请假单
-
-
-        identityService.setAuthenticatedUserId(salaryAdjust.getApplication().toString());//这个听说要这样写。。。
-        variables.put("entry",salaryAdjust);
-        variables.put("businessKey", salaryAdjust.getId());
-
-        String businessKey = salaryAdjust.getId()+"";  //流程实例  与  业务的一种对应关系
-        ProcessInstance processInstance = null;
         try {
-            processInstance = runtimeService.startProcessInstanceByKey(Const.processDefinitionKey.SALARY, businessKey, variables);
+            salaryAdjustMapper.insertSelective(salaryAdjust);   //存储业务对象，自动 返回主键
+            logger.info("save salaryAdjust: {}", salaryAdjust);   //保存请假单
+
+            identityService.setAuthenticatedUserId(salaryAdjust.getApplication().toString());//这个听说要这样写。。。
+            variables.put("entry",salaryAdjust);
+            variables.put("businessKey", salaryAdjust.getId()); //这个变量在薪资统计时可以获取对应的用户
+
+            String businessKey = salaryAdjust.getId()+"";  //流程实例  与  业务的一种对应关系
+            ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(Const.processDefinitionKey.SALARY, businessKey, variables);
             String processInstanceId = processInstance.getId();
 
             salaryAdjust.setProcessinstanceid(processInstanceId);  //流程实例id 放入 请假单
@@ -120,7 +119,7 @@ public class WorkflowService extends CommonService{
 
             return processInstanceId;
         }catch (Exception e) {
-            throw e;
+            throw new AppException(Error.WORKFLOW_INNER_ERROR,e.getMessage());
         }finally
         {
             identityService.setAuthenticatedUserId(null);
@@ -128,73 +127,91 @@ public class WorkflowService extends CommonService{
     }
 
     //委托任务
-    public void doDelegateTask(Integer fromUserId,Integer ToUserId, String taskId) {
+    public void doDelegateTask(String fromUsername,Integer ToUserId, String taskId) {
         try{
-            User user = userMapper.selectByPrimaryKey(ToUserId);
-            taskService.delegateTask(taskId,user.getUsername());
-        }catch (Exception e)
+            Task task = taskService.createTaskQuery().taskAssignee(fromUsername).taskId(taskId).singleResult();
+            if(task != null)
+            {
+                User user = userMapper.selectByPrimaryKey(ToUserId);
+                if(user != null)
+                {
+                    taskService.delegateTask(taskId,user.getUsername());
+                }
+                throw new AppException(Error.DATA_VERIFY_ERROR,"被委托人不存在");
+            }
+            throw new AppException(Error.DATA_VERIFY_ERROR,"委托人没有该任务");
+        }catch (AppException e)
         {
             throw e;
+        }catch (Exception e)
+        {
+            throw new AppException(Error.WORKFLOW_INNER_ERROR);
         }
     }
 
     //转办任务
-    public void doTransferTask(Integer fromUserId,Integer toUserId, String taskId){
-        Task task = this.taskService.createTaskQuery().taskId(taskId).singleResult();
-        User toUser = userMapper.selectByPrimaryKey(toUserId);
-        if(task != null){
-            String assign = task.getAssignee();
-            this.taskService.setAssignee(taskId, toUser.getUsername());
-            this.taskService.setOwner(taskId, assign);
-        }else{
-            throw new AppException(Error.NO_EXISTS,"要转办的任务 不存在 ");
+    @Transactional
+    public void doTransferTask(String fromUsername,Integer toUserId, String taskId){
+        try{
+            Task task = taskService.createTaskQuery().taskAssignee(fromUsername).taskId(taskId).singleResult();
+            if(task != null)
+            {
+                User toUser = userMapper.selectByPrimaryKey(toUserId);
+                if(toUser != null)
+                {
+                    String assign = task.getAssignee();
+                    this.taskService.setAssignee(taskId, toUser.getUsername());
+                    this.taskService.setOwner(taskId, assign);
+                }
+                throw new AppException(Error.DATA_VERIFY_ERROR,"被转办人不存在");
+            }
+            throw new AppException(Error.DATA_VERIFY_ERROR,"转办人没有该任务");
+        }catch (AppException e1)
+        {
+            throw e1;
+        }catch (Exception e2)
+        {
+            throw new AppException(Error.WORKFLOW_INNER_ERROR);
         }
     }
 
     //完成任务
+    @Transactional
     public void completeTask(User user, String taskId, Map<String,Object> var , String comment) {
         try{
-            Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+            Task task = taskService.createTaskQuery().taskAssignee(user.getUsername()).taskId(taskId).singleResult();
             if(task != null)
             {
-                String assignee = task.getAssignee();
-                if(assignee == null || "".equals(assignee))
-                    throw new AppException(Error.NO_EXISTS,"任务未分配");
-                if(assignee.equals(user.getUsername())) //如果任务的办理人 与 当前用户一至，就办理任务
-                {
                     ProcessInstance instance = runtimeService//
                             .createProcessInstanceQuery()//
                             .processInstanceId(task.getProcessInstanceId())//
                             .singleResult();
-
                     identityService.setAuthenticatedUserId(user.getId().toString());
                     if(comment != null){
                         this.taskService.addComment(taskId, instance.getId(), comment);
                     }
-
                     // 完成委派任务
                     if(DelegationState.PENDING == task.getDelegationState()){
                         this.taskService.resolveTask(taskId, var);
-                        logger.info("getDelegationState:"+(DelegationState.PENDING == task.getDelegationState()));
                         return;
                     }
                     //完成正常任务
                     taskService.complete(taskId, var);
                     return ;
-                }
-                throw new AppException(Error.UN_AUTHORIZATION,"指定任务办理人错误");
             }
-            throw new AppException(Error.UN_AUTHORIZATION,"没有找到指定任务");
-        }catch (Exception e)
+            throw new AppException(Error.DATA_VERIFY_ERROR,"用户没有该任务");
+        }catch (AppException e)
         {
             throw e;
+        }catch (Exception e)
+        {
+            throw new AppException(Error.WORKFLOW_INNER_ERROR);
         }
     }
 
     //认领任务
+    @Transactional
     public void claim(String username, String taskId) {
-        if(username == null || taskId == null)
-            throw new AppException(Error.PARAMS_ERROR);
         try{
             List<Task> tasks = taskService.createTaskQuery().taskCandidateUser(username).list();
             if(tasks != null && !tasks.isEmpty())
@@ -207,22 +224,27 @@ public class WorkflowService extends CommonService{
                         return;
                     }
                 }
-                throw new AppException(Error.NO_EXISTS,"没有该任务");
+                throw new AppException(Error.DATA_VERIFY_ERROR,"未找到任务1");
             }
-            throw new AppException(Error.NO_EXISTS,"没有任务可供领取");
-        }catch (Exception e)
+            throw new AppException(Error.DATA_VERIFY_ERROR,"未找到任务2");
+        }catch (AppException e)
         {
             throw e;
+        }catch (Exception e)
+        {
+            throw new AppException(Error.WORKFLOW_INNER_ERROR);
         }
     }
 
     // 获取个人任务列表
+    @Transactional
     public List<BaseVO> findTodoTasks(String username) {
-        if(username == null)
-            throw new AppException(Error.PARAMS_ERROR);
         try{
-            TaskQuery taskQuery = this.taskService.createTaskQuery().taskCandidateOrAssigned(username);
-            List<Task> tasks = taskQuery.orderByProcessDefinitionId().orderByTaskCreateTime().desc().list();
+            List<Task> tasks = taskService.createTaskQuery()//
+                    .taskCandidateOrAssigned(username)//
+                    .orderByProcessDefinitionId()//
+                    .orderByTaskCreateTime().desc().list();
+
             List<BaseVO> taskList = getBaseVOList(tasks);
             return taskList;
         }catch (Exception e)
@@ -232,39 +254,51 @@ public class WorkflowService extends CommonService{
     }
 
     //查询正在运行的 薪资调整 流程
+    @Transactional
     public List<BaseVO> listRuningSalaryAdjust()  {
-        List<SalaryAdjust> salaryAdjustList = salaryAdjustMapper.getByApplicationAndStatus(null,Const.WorkflowStatus.APPLICATION.getCode()) ;
-        List<BaseVO> result = Lists.newArrayList();
+        try{
+            List<SalaryAdjust> salaryAdjustList = salaryAdjustMapper.getByApplicationAndStatus(null,Const.WorkflowStatus.APPLICATION.getCode()) ;
+            List<BaseVO> result = Lists.newArrayList();
 
-        if(salaryAdjustList != null ){
-            for(SalaryAdjust salaryAdjust : salaryAdjustList){
-                if(salaryAdjust.getProcessinstanceid() == null){
-                    continue;
+            if(salaryAdjustList != null ){
+                for(SalaryAdjust salaryAdjust : salaryAdjustList){
+                    if(salaryAdjust.getProcessinstanceid() == null){
+                        continue;
+                    }
+                    // 查询流程实例
+                    String processInstanceId = salaryAdjust.getProcessinstanceid();
+                    result.add(getBaseVOByProcessInstance(processInstanceId));
                 }
-                // 查询流程实例
-                String processInstanceId = salaryAdjust.getProcessinstanceid();
-                result.add(getBaseVOByProcessInstance(processInstanceId));
             }
+            return result;
+        }catch (Exception e)
+        {
+            throw e;
         }
-        return result;
     }
 
     //查询正在运行的 请假 流程
     public List<BaseVO> listRuningLeave()  {
-        List<Leave> leaves = leaveMapper.getByApplicationAndStatus(null,Const.WorkflowStatus.APPLICATION.getCode()) ;
-        List<BaseVO> result = Lists.newArrayList();
+        try{
+            List<Leave> leaves = leaveMapper.getByApplicationAndStatus(null,Const.WorkflowStatus.APPLICATION.getCode()) ;
+            List<BaseVO> result = Lists.newArrayList();
 
-        if(leaves != null ){
-            for(Leave leave : leaves){
-                if(leave.getProcessinstanceid() == null){
-                    continue;
+            if(leaves != null ){
+                for(Leave leave : leaves){
+                    if(leave.getProcessinstanceid() == null){
+                        continue;
+                    }
+                    // 查询流程实例
+                    String processInstanceId = leave.getProcessinstanceid();
+                    result.add(getBaseVOByProcessInstance(processInstanceId));
                 }
-                // 查询流程实例
-                String processInstanceId = leave.getProcessinstanceid();
-                result.add(getBaseVOByProcessInstance(processInstanceId));
             }
+            return result;
+        }catch (Exception e)
+        {
+            throw e;
         }
-        return result;
+
     }
 
     //获取所有运行中的流程实例
@@ -288,6 +322,7 @@ public class WorkflowService extends CommonService{
     }
 
     //获取所有已结束的流程实例
+    @Transactional
     public List<BaseVO> findFinishedProcessInstaces() {
         try {
             List<HistoricProcessInstance> historicProcessInstances = historyService
@@ -320,6 +355,7 @@ public class WorkflowService extends CommonService{
     }
 
     //查看个人历史完成任务
+    @Transactional
     public List<BaseVO> findFinishedTaskInstances(String username){
         try {
             List<HistoricTaskInstance> list = historyService//
@@ -352,6 +388,7 @@ public class WorkflowService extends CommonService{
     }
 
     //获取评论信息
+    @Transactional
     public List<CommentVO> getComments(String taskId){
         try{
             Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
@@ -368,7 +405,7 @@ public class WorkflowService extends CommonService{
                 }
                 return commnetList;
             }
-            throw new AppException(Error.NO_EXISTS,"任务不存在");
+            throw new AppException(Error.TARGET_NO_EXISTS,"任务不存在");
         }catch (Exception e)
         {
             throw e;
@@ -433,6 +470,6 @@ public class WorkflowService extends CommonService{
             base.setProcessDefinition(getProcessDefinition(instance.getProcessDefinitionId()));
             return base;
         }
-        throw new AppException(Error.NO_EXISTS,"对应的流程实例不存在");
+        throw new AppException(Error.TARGET_NO_EXISTS,"对应的流程实例不存在");
     }
 }

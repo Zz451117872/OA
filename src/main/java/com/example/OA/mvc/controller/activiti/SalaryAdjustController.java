@@ -51,26 +51,19 @@ public class SalaryAdjustController extends CommonController{
         User user = getUserBySubject(subject);
         if(salaryAdjust != null)
         {
-            try{
+            //BaseVO 相关信息
+            salaryAdjust.setApplication(user.getId());//设置申请人
+            salaryAdjust.setApplicationName(user.getUsername());
+            salaryAdjust.setBusinesstype(Const.BusinessType.SALARY);//业务类型
 
-                   //BaseVO 相关信息
-                   salaryAdjust.setApplication(user.getId());
-                   salaryAdjust.setApplicationName(user.getUsername());
-                   salaryAdjust.setBusinesstype(Const.BusinessType.SALARY);
+            //SalaryAdjust相关信息
+            salaryAdjust.setCreateTime(new Date());
+            salaryAdjust.setStatus(Const.WorkflowStatus.APPLICATION.getCode());//业务状态
 
-                   //SalaryAdjust相关信息
-                   salaryAdjust.setCreateTime(new Date());
-                   salaryAdjust.setStatus(Const.WorkflowStatus.APPLICATION.getCode());
-
-                   Map<String, Object> variables = new HashMap<String, Object>();
-                   variables.put("baseMoney", user.getSalary());  //原有薪金(回滚用)
-                   variables.put("inputUser",user.getUsername());   //设置申请人
-                   return workflowService.startSalaryAdjustWorkflow(salaryAdjust, variables);
-
-            }catch (Exception e)
-            {
-                throw e;
-            }
+            Map<String, Object> variables = new HashMap<String, Object>();
+            variables.put("baseMoney", user.getSalary());  //原有薪金(回滚用)
+            variables.put("inputUser",user.getUsername());   //设置申请人
+            return workflowService.startSalaryAdjustWorkflow(salaryAdjust, variables);
         }
         throw new AppException(Error.PARAMS_ERROR);
     }
@@ -107,27 +100,8 @@ public class SalaryAdjustController extends CommonController{
         throw new AppException(Error.PARAMS_ERROR);
     }
 
-    //办理任务
-    @RequestMapping(value = "complete_salary",method = RequestMethod.POST)
-    public void complete(String comment,String taskId,Boolean isPass) {
-        Subject subject = SecurityUtils.getSubject();
-        if(!subject .isAuthenticated())
-        {
-            throw new AppException(Error.UN_AUTHORIZATION);
-        }
-        User user = getUserBySubject(subject);
-        try{
-            Map<String,Object> variables = Maps.newHashMap();
-            variables.put("isPass",isPass);
-            workflowService.completeTask(user,taskId,variables,comment);
-            return;
-        }catch (Exception e)
-        {
-            throw e;
-        }
-    }
 
-    //修改申请
+    //修改申请 ，要进行表单验证
     @RequestMapping(value = "modify_salary",method = RequestMethod.POST)
     public void modifySalaryAdjust(SalaryAdjust salaryAdjust,Boolean reApply,String taskId,String comment) {
         Subject subject = SecurityUtils.getSubject();
@@ -136,20 +110,15 @@ public class SalaryAdjustController extends CommonController{
             throw new AppException(Error.UN_AUTHORIZATION);
         }
         User user = getUserBySubject(subject);
-        try{
-            Map<String,Object> variables = Maps.newHashMap();
-            variables.put("reApply",reApply);
+        Map<String,Object> variables = Maps.newHashMap();
+        variables.put("reApply",reApply);
 
-            if(reApply)
-            {
-                variables.put("adjustMoney",salaryAdjust.getAdjustmoney());
-                variables.put("description",salaryAdjust.getDescription());
-            }
-            workflowService.completeTask(user,taskId,variables,comment);
-            return;
-        }catch (Exception e)
-        {
-            throw e;
+        if(reApply)
+        {   //可以修改属性：薪资调整金额，描述
+            variables.put("adjustMoney",salaryAdjust.getAdjustmoney());
+            variables.put("description",salaryAdjust.getDescription());
         }
+        workflowService.completeTask(user,taskId,variables,comment);
+        return;
     }
 }

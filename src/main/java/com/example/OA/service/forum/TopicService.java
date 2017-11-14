@@ -49,7 +49,7 @@ public class TopicService extends CommonService{
                     forumMapper.updateByPrimaryKeySelective(forum);
                     return topic;
                 }
-                throw new AppException(Error.NO_EXISTS,"target not exist");
+                throw new AppException(Error.TARGET_NO_EXISTS,"target not exist");
             }
         }
         throw new AppException(Error.PARAMS_ERROR,"param error");
@@ -66,7 +66,7 @@ public class TopicService extends CommonService{
                 topicMapper.updateByPrimaryKeySelective(topic);
                 return topicId;
             }
-            throw new AppException(Error.NO_EXISTS,"target not existed");
+            throw new AppException(Error.TARGET_NO_EXISTS,"target not existed");
         }
         throw new AppException(Error.PARAMS_ERROR,"param error");
     }
@@ -79,7 +79,7 @@ public class TopicService extends CommonService{
             {
                 return replyMapper.getAllByTopic(topicId);
             }
-            throw new AppException(Error.NO_EXISTS,"target not existed");
+            throw new AppException(Error.TARGET_NO_EXISTS,"target not existed");
         }
         throw new AppException(Error.PARAMS_ERROR,"param error");
     }
@@ -95,9 +95,9 @@ public class TopicService extends CommonService{
                 {
                     return replyMapper.selectByPrimaryKey(replyId);
                 }
-                throw new AppException(Error.NO_EXISTS,"target not existed");
+                throw new AppException(Error.TARGET_NO_EXISTS,"target not existed");
             }
-            throw new AppException(Error.NO_EXISTS,"target not existed");
+            throw new AppException(Error.TARGET_NO_EXISTS,"target not existed");
         }
         throw new AppException(Error.PARAMS_ERROR,"param error");
     }

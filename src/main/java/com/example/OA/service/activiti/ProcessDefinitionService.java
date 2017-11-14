@@ -98,7 +98,7 @@ public class ProcessDefinitionService extends CommonService{
                 return;
             }else {
                 logger.info(processId+"->没有对应的部署对象");
-                throw new AppException(Error.NO_EXISTS,"没有对应的部署对象");
+                throw new AppException(Error.TARGET_NO_EXISTS,"没有对应的部署对象");
             }
         }catch (Exception e)
         {

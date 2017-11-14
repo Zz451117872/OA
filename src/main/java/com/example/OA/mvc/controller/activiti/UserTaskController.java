@@ -15,8 +15,10 @@ import org.activiti.engine.repository.ProcessDefinition;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
@@ -37,7 +39,7 @@ public class UserTaskController {
 
     //获取所有 用户任务 信息
     @RequestMapping(value = "list_user_task",method = RequestMethod.POST)
-    public List<UserTask> listUserTask(String procDefKey){
+    public List<UserTask> listUserTask(@RequestParam(value = "procDefKey",required = true) String procDefKey){
         Subject subject = SecurityUtils.getSubject();
         if(!subject.isAuthenticated())
         {
@@ -48,6 +50,7 @@ public class UserTaskController {
 
     //初始化所有 流程定义 的用户任务
     @RequestMapping(value = "init_all_pdf",method = RequestMethod.POST)
+    @Transactional
     public void initializationAllPdf()
     {
         Subject subject = SecurityUtils.getSubject();
@@ -55,7 +58,6 @@ public class UserTaskController {
         {
             throw new AppException(Error.UN_AUTHORIZATION);
         }
-
         try{
             userTaskMapper.deleteAll();
             List<ProcessDefinition> processDefinitionList = repositoryService//
@@ -70,7 +72,7 @@ public class UserTaskController {
                 }
                 return;
             }
-            throw new AppException(Error.NO_EXISTS,"没有流程定义");
+            throw new AppException(Error.TARGET_NO_EXISTS,"没有流程定义");
         }catch (Exception e)
         {
             throw e;
@@ -79,7 +81,7 @@ public class UserTaskController {
 
     //初始化单个 流程定义 用户任务
     @RequestMapping(value = "init_single_pdf",method = RequestMethod.POST)
-    public void initializationSinglePdf(String processDefinitionId)
+    public void initializationSinglePdf(@RequestParam(value = "processDefinitionId",required = true) String processDefinitionId)
     {
         Subject subject = SecurityUtils.getSubject();
         if(!subject.isAuthenticated())
@@ -87,13 +89,15 @@ public class UserTaskController {
             throw new AppException(Error.UN_AUTHORIZATION);
         }
         try{
-            ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().processDefinitionId(processDefinitionId).singleResult();
+            ProcessDefinition processDefinition = repositoryService//
+                    .createProcessDefinitionQuery()//
+                    .processDefinitionId(processDefinitionId).singleResult();
             if(processDefinition != null)
             {
                 loadProcessDefinition(processDefinition);
                 return;
             }
-            throw new AppException(Error.NO_EXISTS,"流程定义不存在");
+            throw new AppException(Error.TARGET_NO_EXISTS,"流程定义不存在");
         }catch (Exception e)
         {
             throw e;
@@ -126,7 +130,7 @@ public class UserTaskController {
             }
         }catch (Exception e)
         {
-            throw e;
+            throw new AppException(Error.UNKNOW_EXCEPTION,e.getMessage());
         }
     }
 

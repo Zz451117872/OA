@@ -11,6 +11,8 @@ import org.apache.shiro.subject.Subject;
  */
 public class CommonController {
 
+
+
     public Integer getUserId(Subject subject)
     {
         if(subject != null)

@@ -31,7 +31,7 @@ public class PartService {
                 partMapper.insert(part);
                 return partName;
             }
-            throw new AppException(Error.EXISTSED);
+            throw new AppException(Error.TARGET_EXISTSED);
         }
         throw new AppException(Error.PARAMS_ERROR);
     }
@@ -43,7 +43,7 @@ public class PartService {
                 partMapper.updateByPrimaryKeySelective(part);
                 return part.getPartName();
             }
-            throw new AppException(Error.NO_EXISTS);
+            throw new AppException(Error.TARGET_NO_EXISTS);
         }
         throw new AppException(Error.PARAMS_ERROR);
     }
@@ -61,7 +61,7 @@ public class PartService {
                 }
                 throw new AppException(Error.UNKNOW_EXCEPTION);
             }
-            throw new AppException(Error.NO_EXISTS);
+            throw new AppException(Error.TARGET_NO_EXISTS);
         }
         throw new AppException(Error.PARAMS_ERROR);
     }

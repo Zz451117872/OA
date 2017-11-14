@@ -51,7 +51,7 @@ public class LeaveController extends CommonController{
                 User user = getUserBySubject(subject);
                 leave.setApplication(user.getId()); //设置申请人
                 leave.setApplicationName(user.getUsername());
-                leave.setBusinesstype(Const.BusinessType.LEAVE);
+                leave.setBusinesstype(Const.BusinessType.LEAVE);//业务类型
 
                 //leave 相关相关属性
                 leave.setCreateTime(new Date());
@@ -101,27 +101,7 @@ public class LeaveController extends CommonController{
         throw new AppException(Error.PARAMS_ERROR);
     }
 
-    //完成任务
-    @RequestMapping(value = "complete_leave",method = RequestMethod.POST)
-    public void complete(String comment,Boolean isPass,String taskId) {
-        Subject subject = SecurityUtils.getSubject();
-        if(!subject.isAuthenticated())
-        {
-            throw new AppException(Error.UN_AUTHORIZATION);
-        }
-        User user = getUserBySubject(subject);
-        try{
-            Map<String,Object> variables = Maps.newHashMap();
-            variables.put("isPass",isPass);
 
-            workflowService.completeTask(user,taskId,variables,comment);
-
-            return;
-        }catch (Exception e)
-        {
-            throw e;
-        }
-    }
 
     //请假申请修改，重新申请
     @RequestMapping(value = "modify_leave",method = RequestMethod.POST)
@@ -136,7 +116,7 @@ public class LeaveController extends CommonController{
             Map<String,Object> variables = Maps.newHashMap();
             variables.put("reApply",reApply);
             if(reApply)
-            {
+            {   //可以修改的内容：请假天数，原因，开始结束时间，请假类型
                 variables.put("leaveNumber",leave.getLeaveNumber());
                 variables.put("reason",leave.getReason());
                 variables.put("startTime",leave.getStartTime());

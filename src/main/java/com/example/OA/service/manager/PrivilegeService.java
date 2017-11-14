@@ -33,7 +33,7 @@ public class PrivilegeService {
                 privilegeMapper.insert(privilege);
                 return url;
             }
-            throw new AppException(Error.EXISTSED,"privilege existed");
+            throw new AppException(Error.TARGET_EXISTSED,"privilege existed");
         }
         throw new AppException(Error.PARAMS_ERROR,"param error");
     }
@@ -48,7 +48,7 @@ public class PrivilegeService {
                 privilegeMapper.updateByPrimaryKeySelective(privilege);
                 return url;
             }
-            throw new AppException(Error.EXISTSED,"privilege existed");
+            throw new AppException(Error.TARGET_EXISTSED,"privilege existed");
         }
         throw new AppException(Error.PARAMS_ERROR,"param error");
     }
@@ -67,7 +67,7 @@ public class PrivilegeService {
                 }
                 throw new AppException(Error.UNKNOW_EXCEPTION,"delete faild");
             }
-            throw new AppException(Error.NO_EXISTS,"privilege not existed");
+            throw new AppException(Error.TARGET_NO_EXISTS,"privilege not existed");
         }
         throw new AppException(Error.PARAMS_ERROR,"param error");
     }

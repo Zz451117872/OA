@@ -29,6 +29,7 @@ public class ContentSalary implements JavaDelegate {
 	
 	@Override
 	public void execute(DelegateExecution execution) throws Exception {
+
 		Integer businessKey = (Integer) execution.getVariable("businessKey");
 		SalaryAdjust salaryAdjust = salaryAdjustMapper.selectByPrimaryKey(businessKey);
 

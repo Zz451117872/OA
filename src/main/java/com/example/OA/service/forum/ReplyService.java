@@ -46,7 +46,7 @@ public class ReplyService extends CommonService{
                 replyMapper.setStatusById(replyId,status);
                 return replyId;
             }
-            throw new AppException(Error.NO_EXISTS,"target not existed");
+            throw new AppException(Error.TARGET_NO_EXISTS,"target not existed");
         }
         throw new AppException(Error.PARAMS_ERROR,"param error");
     }

@@ -39,7 +39,7 @@ public class RoleService {
                 roleMapper.insert(role);
                 return roleName;
             }
-            throw new AppException(Error.EXISTSED);
+            throw new AppException(Error.TARGET_EXISTSED);
         }
         throw new AppException(Error.PARAMS_ERROR);
     }
@@ -51,7 +51,7 @@ public class RoleService {
                 roleMapper.updateByPrimaryKeySelective(role);
                 return role.getRoleName();
             }
-            throw new AppException(Error.NO_EXISTS);
+            throw new AppException(Error.TARGET_NO_EXISTS);
         }
         throw new AppException(Error.PARAMS_ERROR);
     }
@@ -69,7 +69,7 @@ public class RoleService {
                 }
                 throw new AppException(Error.UNKNOW_EXCEPTION);
             }
-            throw new AppException(Error.NO_EXISTS);
+            throw new AppException(Error.TARGET_NO_EXISTS);
         }
         throw new AppException(Error.PARAMS_ERROR);
     }
@@ -78,7 +78,7 @@ public class RoleService {
         if(roleId != null && StringUtils.isNotBlank(privilegeIds))
         {
             Role role = roleMapper.selectByPrimaryKey(roleId);
-            if(role == null) throw new AppException(Error.NO_EXISTS,"role not exist");
+            if(role == null) throw new AppException(Error.TARGET_NO_EXISTS,"role not exist");
             int result = 0;
             String[] privilegeArr = privilegeIds.split(",");
             for(int i=0; i<privilegeArr.length; i++)
@@ -101,7 +101,7 @@ public class RoleService {
         if(roleId != null && StringUtils.isNotBlank(privilegeIds))
         {
             Role role = roleMapper.selectByPrimaryKey(roleId);
-            if(role == null) throw new AppException(Error.NO_EXISTS,"role not exist");
+            if(role == null) throw new AppException(Error.TARGET_NO_EXISTS,"role not exist");
             int result = 0;
             String[] privilegeArr = privilegeIds.split(",");
             for(int i=0; i<privilegeArr.length; i++)

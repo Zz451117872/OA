@@ -45,7 +45,7 @@ public class UserService {
               userMapper.insert(user);
               return username;
           }
-            throw new AppException(Error.EXISTSED);
+            throw new AppException(Error.TARGET_EXISTSED);
 
         }
         throw new AppException(Error.PARAMS_ERROR);
@@ -81,7 +81,7 @@ public class UserService {
                 }
                 throw new AppException(Error.UNKNOW_EXCEPTION,"delete faild");
             }
-            throw new AppException(Error.NO_EXISTS);
+            throw new AppException(Error.TARGET_NO_EXISTS);
         }
         throw new AppException(Error.PARAMS_ERROR);
     }
@@ -90,7 +90,7 @@ public class UserService {
         if(userId != null && StringUtils.isNotBlank(roleIds))
         {
             User user = userMapper.selectByPrimaryKey(userId);
-            if(user == null) throw new AppException(Error.NO_EXISTS,"user no exist");
+            if(user == null) throw new AppException(Error.TARGET_NO_EXISTS,"user no exist");
 
             int result = 0;
             String[] roleIdArr = roleIds.split(",");
@@ -116,7 +116,7 @@ public class UserService {
             User user = userMapper.selectByPrimaryKey(userId);
             if(user == null)
             {
-                throw new AppException(Error.NO_EXISTS,"user no exist");
+                throw new AppException(Error.TARGET_NO_EXISTS,"user no exist");
             }
             int result = 0;
             String[] roleIdArr = roleIds.split(",");
