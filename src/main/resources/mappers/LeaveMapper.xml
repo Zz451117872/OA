@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.example.OA.dao.LeaveMapper" >
-  <resultMap id="BaseResultMap" type="com.example.OA.model.Leave" >
+<mapper namespace="com.example.OA.dao.activiti.LeaveMapper" >
+
+  <resultMap id="BaseResultMap" type="com.example.OA.model.activiti.Leave" >
     <constructor >
       <idArg column="id" jdbcType="INTEGER" javaType="java.lang.Integer" />
       <arg column="leave_type" jdbcType="VARCHAR" javaType="java.lang.String" />
@@ -16,21 +17,25 @@
       <arg column="processInstanceId" jdbcType="VARCHAR" javaType="java.lang.String" />
     </constructor>
   </resultMap>
+
   <sql id="Base_Column_List" >
     id, leave_type, leave_number, reason, status, application, start_time, end_time, 
     create_time, update_time, processInstanceId
   </sql>
+
   <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
     select 
     <include refid="Base_Column_List" />
     from leavess
     where id = #{id,jdbcType=INTEGER}
   </select>
+
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
     delete from leavess
     where id = #{id,jdbcType=INTEGER}
   </delete>
-  <insert id="insert" parameterType="com.example.OA.model.Leave" useGeneratedKeys="true" keyProperty="id">
+
+  <insert id="insert" parameterType="com.example.OA.model.activiti.Leave" useGeneratedKeys="true" keyProperty="id">
     insert into leavess (id, leave_type, leave_number, 
       reason, status, application, 
       start_time, end_time, create_time, 
@@ -40,7 +45,8 @@
       #{startTime,jdbcType=TIMESTAMP}, #{endTime,jdbcType=TIMESTAMP}, #{createTime,jdbcType=TIMESTAMP}, 
       #{updateTime,jdbcType=TIMESTAMP}, #{processinstanceid,jdbcType=VARCHAR})
   </insert>
-  <insert id="insertSelective" parameterType="com.example.OA.model.Leave" useGeneratedKeys="true" keyProperty="id">
+
+  <insert id="insertSelective" parameterType="com.example.OA.model.activiti.Leave" useGeneratedKeys="true" keyProperty="id">
     insert into leavess
     <trim prefix="(" suffix=")" suffixOverrides="," >
       <if test="id != null" >
@@ -113,7 +119,7 @@
       </if>
     </trim>
   </insert>
-  <update id="updateByPrimaryKeySelective" parameterType="com.example.OA.model.Leave" >
+  <update id="updateByPrimaryKeySelective" parameterType="com.example.OA.model.activiti.Leave" >
     update leavess
     <set >
       <if test="leaveType != null" >
@@ -149,7 +155,7 @@
     </set>
     where id = #{id,jdbcType=INTEGER}
   </update>
-  <update id="updateByPrimaryKey" parameterType="com.example.OA.model.Leave" >
+  <update id="updateByPrimaryKey" parameterType="com.example.OA.model.activiti.Leave" >
     update leavess
     set leave_type = #{leaveType,jdbcType=VARCHAR},
       leave_number = #{leaveNumber,jdbcType=INTEGER},
@@ -163,4 +169,21 @@
       processInstanceId = #{processinstanceid,jdbcType=VARCHAR}
     where id = #{id,jdbcType=INTEGER}
   </update>
+
+
+
+  <!--  ========================================  -->
+  <select id="getByApplicationAndStatus" parameterType="map" resultMap="BaseResultMap">
+    SELECT
+    <include refid="Base_Column_List"/>
+    from leavess
+    <where>
+      <if test="application != null">
+      and  application = #{application}
+      </if>
+      <if test="status != null">
+       and status = #{status}
+      </if>
+    </where>
+  </select>
 </mapper>

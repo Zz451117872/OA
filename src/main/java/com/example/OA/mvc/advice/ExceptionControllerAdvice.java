@@ -4,7 +4,6 @@ import com.example.OA.mvc.common.ServerResponse;
 import com.example.OA.mvc.exception.AppException;
 import com.example.OA.mvc.exception.AuthorizationException;
 import com.example.OA.mvc.exception.Error;
-import com.example.OA.mvc.exception.ParamValidException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.validation.BindException;
@@ -37,23 +36,23 @@ public class ExceptionControllerAdvice {
         return appExceptionToServerResponse(new AppException(Error.UN_AUTHORIZATION));
     }
 
-    @ExceptionHandler(ParamValidException.class)
-    public ServerResponse paramValidExceptionHandler(ParamValidException ex, HttpServletResponse response) {
-        response.setStatus(400);
-        ServerResponse result = appException(new AppException(Error.INVALID_PARAMS, ex.getMessage()));
-        result.setData(ex.getFieldErrors());
-        return result;
-    }
+//    @ExceptionHandler(ParamValidException.class)
+//    public ServerResponse paramValidExceptionHandler(ParamValidException ex, HttpServletResponse response) {
+//        response.setStatus(400);
+//        ServerResponse result = appException(new AppException(Error.INVALID_PARAMS, ex.getMessage()));
+//        result.setData(ex.getFieldErrors());
+//        return result;
+//    }
 
-    @ExceptionHandler(BindException.class)
-    public ServerResponse bindExceptionHandler(BindException ex, HttpServletResponse response){
-        return paramValidExceptionHandler(new ParamValidException(ex), response);
-    }
-
-    @ExceptionHandler(ConstraintViolationException.class)
-    public ServerResponse constraintViolationExceptionHandler(ConstraintViolationException ex, HttpServletResponse response, HandlerMethod handlerMethod) {
-        return paramValidExceptionHandler(new ParamValidException(ex, handlerMethod.getMethodParameters()), response);
-    }
+//    @ExceptionHandler(BindException.class)
+//    public ServerResponse bindExceptionHandler(BindException ex, HttpServletResponse response){
+//        return paramValidExceptionHandler(new ParamValidException(ex), response);
+//    }
+//
+//    @ExceptionHandler(ConstraintViolationException.class)
+//    public ServerResponse constraintViolationExceptionHandler(ConstraintViolationException ex, HttpServletResponse response, HandlerMethod handlerMethod) {
+//        return paramValidExceptionHandler(new ParamValidException(ex, handlerMethod.getMethodParameters()), response);
+//    }
 
     @ExceptionHandler(Exception.class)
     public ServerResponse exception(Exception ex, HttpServletResponse response) {

@@ -1,13 +1,16 @@
 package com.example.OA.mvc.controller.activiti;
 
 import com.example.OA.model.User;
-import com.example.OA.model.activiti.ProcessDefinitionBean;
-import com.example.OA.model.activiti.TaskBean;
+import com.example.OA.model.activiti.*;
+import com.example.OA.mvc.common.Const;
 import com.example.OA.mvc.common.ServerResponse;
 import com.example.OA.mvc.controller.CommonController;
 import com.example.OA.mvc.exception.AppException;
 import com.example.OA.mvc.exception.Error;
-import com.example.OA.service.activiti.WorkflowProcessDefinitionService;
+import com.example.OA.service.activiti.ProcessDefinitionService;
+import com.example.OA.service.activiti.WorkflowService;
+import com.example.OA.util.ProcessDefinitionCache;
+import com.example.OA.util.Variable;
 import com.google.common.collect.Lists;
 import org.activiti.bpmn.model.BpmnModel;
 import org.activiti.engine.*;
@@ -19,7 +22,9 @@ import org.activiti.engine.impl.pvm.PvmTransition;
 import org.activiti.engine.impl.pvm.process.ActivityImpl;
 import org.activiti.engine.impl.pvm.process.ProcessDefinitionImpl;
 import org.activiti.engine.impl.pvm.process.TransitionImpl;
+import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.repository.ProcessDefinition;
+import org.activiti.engine.repository.ProcessDefinitionQuery;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
 import org.activiti.image.ProcessDiagramGenerator;
@@ -40,10 +45,13 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("process")
-public class ActivitiController extends CommonController{
+public class ProcessDefinitionController extends CommonController{
 
     @Autowired
-    WorkflowProcessDefinitionService workflowProcessDefinitionService;
+    WorkflowService workflowService;
+
+    @Autowired
+    ProcessDefinitionService processDefinitionService;
 
     @Autowired
     TaskService taskService;
@@ -74,7 +82,7 @@ public class ActivitiController extends CommonController{
         }
         if(processName != null && deploymentName != null)
         {
-            return workflowProcessDefinitionService.deploymentProcessDefinition(processName,deploymentName);
+            return processDefinitionService.deploymentProcessDefinition(processName,deploymentName);
         }
         throw new AppException(Error.PARAMS_ERROR,"param error");
     }
@@ -86,7 +94,7 @@ public class ActivitiController extends CommonController{
         if(!subject.isAuthenticated()) {
             throw new AppException(Error.UN_AUTHORIZATION);
         }
-        return workflowProcessDefinitionService.getAllProcessDefinition();
+        return processDefinitionService.getAllProcessDefinition();
     }
 
     //获取单个流程定义
@@ -98,21 +106,22 @@ public class ActivitiController extends CommonController{
         }
         if(processId != null )
         {
-            return workflowProcessDefinitionService.get(processId);
+            return processDefinitionService.get(processId);
         }
         throw new AppException(Error.PARAMS_ERROR,"param error");
     }
 
     //删除流程定义
     @RequestMapping(value = "delete_pdf",method = RequestMethod.POST)
-    public ServerResponse deleteProcessDefinition(String processId) {
+    public void deleteProcessDefinition(String processId) {
         Subject subject = SecurityUtils.getSubject();
         if(!subject.isAuthenticated()) {
             throw new AppException(Error.UN_AUTHORIZATION);
         }
         if(processId != null )
         {
-            return workflowProcessDefinitionService.deleteProcessDefinition(processId);
+            processDefinitionService.deleteProcessDefinition(processId);
+            return;
         }
         throw new AppException(Error.PARAMS_ERROR);
     }
@@ -124,7 +133,7 @@ public class ActivitiController extends CommonController{
         if(!subject.isAuthenticated()) {
             throw new AppException(Error.UN_AUTHORIZATION);
         }
-        workflowProcessDefinitionService.deleteAllProcessDefinition();
+        processDefinitionService.deleteAllProcessDefinition();
     }
 
     //加载资源文件 通过流程定义，中文显示不出，不知原因
@@ -196,7 +205,6 @@ public class ActivitiController extends CommonController{
         throw new AppException(Error.PARAMS_ERROR);
     }
 
-
     //读取流程图,中文不能显示，不知原因
     @RequestMapping(value = "read_resource",method = RequestMethod.POST)
     public void readResource(String executionId,HttpServletResponse response) throws IOException {
@@ -216,105 +224,6 @@ public class ActivitiController extends CommonController{
                     response.getOutputStream().write(b, 0, len);
                 }
                 return;
-            }catch (Exception e)
-            {
-                throw e;
-            }
-        }
-        throw new AppException(Error.PARAMS_ERROR);
-    }
-
-    //需要我处理的任务
-    @RequestMapping(value = "todo_list",method = RequestMethod.POST)
-    public List<TaskBean> todoList() {
-        Subject subject = SecurityUtils.getSubject();
-        if(!subject.isAuthenticated()) {
-            throw new AppException(Error.UN_AUTHORIZATION);
-        }
-        User user = getUserBySubject(subject);
-       return workflowProcessDefinitionService.todoList(user.getUsername());
-    }
-
-    //驳回任务 未测试
-    @RequestMapping(value = "returnback_task",method = RequestMethod.POST)
-    public ServerResponse returnBackTask(String taskId) {
-        if(taskId != null)
-        {
-            try{
-                Map<String,Object> variables;
-                //取得 当前任务
-                HistoricTaskInstance targetTask = historyService//
-                        .createHistoricTaskInstanceQuery()//
-                        .taskId(taskId).singleResult();
-                //取得流程实例
-                ProcessInstance processInstance = runtimeService//
-                        .createProcessInstanceQuery()//
-                        .processInstanceId(targetTask.getProcessInstanceId())//
-                        .singleResult();
-
-                if(processInstance != null)
-                {
-                    throw new AppException(Error.NO_EXISTS,"process is end");
-                }
-
-                variables = processInstance.getProcessVariables();
-                //取得流程定义
-                ProcessDefinitionEntity processDefinitionEntity = (ProcessDefinitionEntity)//
-                        ((RepositoryServiceImpl)//
-                                repositoryService).getDeployedProcessDefinition(//
-                                targetTask.getProcessDefinitionId());
-
-                if( processDefinitionEntity == null)
-                {
-                    throw new AppException(Error.NO_EXISTS,"process not selected");
-                }
-                //取得上一步活动
-                ActivityImpl targetActiviti = ((ProcessDefinitionImpl)processDefinitionEntity)//
-                        .findActivity(targetTask.getTaskDefinitionKey());
-
-                //清除当前活动的出口
-                List<PvmTransition> inPvmTransitions = targetActiviti.getIncomingTransitions();
-                List<PvmTransition> pvmTransitions = Lists.newArrayList();
-                List<PvmTransition> outPvmTransitions = targetActiviti.getOutgoingTransitions();
-
-                for(PvmTransition pvmTransition : outPvmTransitions)
-                {
-                    pvmTransitions.add(pvmTransition);
-                }
-                outPvmTransitions.clear();
-
-                //建立新出口
-                List<TransitionImpl> newTransitions = Lists.newArrayList();
-                for(PvmTransition pvmTransition : inPvmTransitions)
-                {
-                    PvmActivity pvmActivity = pvmTransition.getSource();
-                    ActivityImpl activity = ((ProcessDefinitionImpl)processDefinitionEntity)//
-                            .findActivity(pvmActivity.getId());
-
-                    TransitionImpl newTransition = targetActiviti.createOutgoingTransition();
-                    newTransition.setDestination(activity);
-                    newTransitions.add(newTransition);
-                }
-
-                //完成任务
-                List<Task> tasks = taskService.createTaskQuery().processInstanceId(processInstance.getId())
-                        .taskDefinitionKey(targetTask.getTaskDefinitionKey()).list();
-                for(Task task : tasks)
-                {
-                    taskService.complete(task.getId(),variables);
-                    historyService.deleteHistoricTaskInstance(task.getId());
-                }
-
-                //恢复方向
-                for(TransitionImpl transition : newTransitions)
-                {
-                    targetActiviti.getOutgoingTransitions().remove(transition);
-                }
-                for(PvmTransition pvmTransition : pvmTransitions)
-                {
-                    outPvmTransitions.add(pvmTransition);
-                }
-                return ServerResponse.createBySuccess();
             }catch (Exception e)
             {
                 throw e;
@@ -360,4 +269,71 @@ public class ActivitiController extends CommonController{
        }
         throw new AppException(Error.PARAMS_ERROR);
     }
+
+    //加载流程定义
+    @RequestMapping(value = "list_processDefinition",method = RequestMethod.POST)
+    public List<ProcessDefinitionBean> listProcessDefinition() {
+        ProcessDefinitionQuery processDefinitionQuery = repositoryService.createProcessDefinitionQuery().orderByDeploymentId().desc();
+        List<ProcessDefinition> processDefinitionList = processDefinitionQuery.list();
+        List<ProcessDefinitionBean> result = Lists.newArrayList();
+
+        for (ProcessDefinition processDefinition : processDefinitionList) {
+            ProcessDefinitionBean pd = new ProcessDefinitionBean();
+            String deploymentId = processDefinition.getDeploymentId();
+            Deployment deployment = repositoryService.createDeploymentQuery().deploymentId(deploymentId).singleResult();
+            //封装到ProcessDefinitionEntity中
+            pd.setId(processDefinition.getId());
+            pd.setName(processDefinition.getName());
+            pd.setKey(processDefinition.getKey());
+            pd.setDeploymentId(processDefinition.getDeploymentId());
+            pd.setVersion(processDefinition.getVersion());
+            pd.setResourceName(processDefinition.getResourceName());
+            pd.setDiagramResourceName(processDefinition.getDiagramResourceName());
+            pd.setDeploymentTime(deployment.getDeploymentTime());
+            pd.setSuspended(processDefinition.isSuspended());
+            result.add(pd);
+        }
+        return result;
+    }
+
+    //设置流程定义的状态
+    @RequestMapping(value = "update_pdf_status",method = RequestMethod.POST)
+    public void updateProcessStatusByProDefinitionId(String status, String processDefinitionId) {
+        Subject subject = SecurityUtils.getSubject();
+        if(!subject .isAuthenticated())
+        {
+            throw new AppException(Error.UN_AUTHORIZATION);
+        }
+        User user = getUserBySubject(subject);
+        if (status.equals("active")) {
+            repositoryService.activateProcessDefinitionById(processDefinitionId, true, null);
+            return;
+        } else if (status.equals("suspend")) {
+            repositoryService.suspendProcessDefinitionById(processDefinitionId, true, null);
+            return;
+        }
+        throw new AppException(Error.PARAMS_ERROR);
+    }
+
+    //设置流程实例的状态
+    @RequestMapping(value = "update_pin_status",method = RequestMethod.POST)
+    public void updateProcessStatusByProInstanceId(String status,String processInstanceId) {
+        Subject subject = SecurityUtils.getSubject();
+        if(!subject .isAuthenticated())
+        {
+            throw new AppException(Error.UN_AUTHORIZATION);
+        }
+        if (status.equals("active")) {
+            processDefinitionService.activateProcessInstance(processInstanceId);
+            return;
+        } else if (status.equals("suspend")) {
+            processDefinitionService.suspendProcessInstance(processInstanceId);
+            return;
+        }
+        throw new AppException(Error.PARAMS_ERROR);
+    }
+
+
+
+
 }

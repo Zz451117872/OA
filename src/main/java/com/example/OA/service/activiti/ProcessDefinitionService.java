@@ -1,52 +1,40 @@
 package com.example.OA.service.activiti;
 
 import com.example.OA.model.activiti.ProcessDefinitionBean;
-import com.example.OA.model.activiti.TaskBean;
 import com.example.OA.mvc.common.ServerResponse;
 import com.example.OA.mvc.exception.AppException;
 import com.example.OA.mvc.exception.Error;
 import com.example.OA.service.CommonService;
 import com.google.common.collect.Lists;
-import org.activiti.engine.HistoryService;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.RuntimeService;
-import org.activiti.engine.TaskService;
-import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.repository.DeploymentBuilder;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.ProcessInstance;
-import org.activiti.engine.task.Task;
+import org.activiti.engine.runtime.ProcessInstanceQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.text.SimpleDateFormat;
 import java.util.List;
-import java.util.Map;
 
 /**
- * Created by aa on 2017/11/7.
+ * Created by aa on 2017/11/10.
  */
 @Service
-public class WorkflowProcessDefinitionService extends CommonService{
+public class ProcessDefinitionService extends CommonService{
 
     Logger logger = LoggerFactory.getLogger(this.getClass());
-
-    @Autowired
-    RuntimeService runtimeService;
 
     @Autowired
     RepositoryService repositoryService;
 
     @Autowired
-    HistoryService historyService;
+    RuntimeService runtimeService;
 
-    @Autowired
-    TaskService taskService;
-
-
+    //部署单个流程定义
     public String deploymentProcessDefinition(String processName,String deploymentName) {
         try{
             DeploymentBuilder deploymentBuilder =  repositoryService.createDeployment().name(deploymentName);
@@ -63,6 +51,7 @@ public class WorkflowProcessDefinitionService extends CommonService{
         }
     }
 
+    //获取所有流程定义
     public List<ProcessDefinitionBean> getAllProcessDefinition() {
         try{
             List<ProcessDefinition> processDefinitionList = repositoryService.createProcessDefinitionQuery().list();
@@ -82,6 +71,7 @@ public class WorkflowProcessDefinitionService extends CommonService{
         }
     }
 
+    //获取单个流程定义
     public ProcessDefinitionBean get(String processId) {
         try{
             ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().processDefinitionId(processId).singleResult();
@@ -96,7 +86,8 @@ public class WorkflowProcessDefinitionService extends CommonService{
         }
     }
 
-    public ServerResponse deleteProcessDefinition(String processId) {
+    //删除单个流程定义
+    public void deleteProcessDefinition(String processId) {
         logger.info("invoke->deleteProcessDefinition");
         try{
             ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().processDefinitionId(processId).singleResult();
@@ -104,10 +95,10 @@ public class WorkflowProcessDefinitionService extends CommonService{
             {
                 repositoryService.deleteDeployment(processDefinition.getDeploymentId(),true);
                 logger.info("deleteDeployment:"+processDefinition.getDeploymentId());
-                return ServerResponse.createBySuccess();
+                return;
             }else {
                 logger.info(processId+"->没有对应的部署对象");
-                return ServerResponse.createByError();
+                throw new AppException(Error.NO_EXISTS,"没有对应的部署对象");
             }
         }catch (Exception e)
         {
@@ -115,7 +106,7 @@ public class WorkflowProcessDefinitionService extends CommonService{
         }
     }
 
-
+    //删除所有流程定义
     public void deleteAllProcessDefinition() {
         logger.info("invoke->deleteAllProcessDefinition");
         try {
@@ -134,32 +125,22 @@ public class WorkflowProcessDefinitionService extends CommonService{
         }
     }
 
+    //加载所有运行的流程实例
+    public List<ProcessInstance> listRuningProcess(){
 
-    public List<TaskBean> todoList(String username) {
-        if(username != null)
-        {
-            try{
-                List<TaskBean> result = Lists.newArrayList();
-                // 个人任务
-                List<Task> todoList = taskService.createTaskQuery().taskAssignee(username).active().list();
-                for (Task task : todoList) {
-                    TaskBean taskBean = convertTask(task);
-                    taskBean.setStatus("todo");
-                    result.add(taskBean);
-                }
-                // 组任务
-                List<Task> toClaimList = taskService.createTaskQuery().taskCandidateUser(username).active().list();
-                for (Task task : toClaimList) {
-                    TaskBean taskBean = convertTask(task);
-                    taskBean.setStatus("clima");
-                    result.add(taskBean);
-                }
-                return result;
-            }catch (Exception e)
-            {
-                throw e;
-            }
-        }
-        throw new AppException(Error.PARAMS_ERROR);
+        ProcessInstanceQuery processInstanceQuery = runtimeService.createProcessInstanceQuery();
+        List<ProcessInstance> list = processInstanceQuery.orderByProcessInstanceId().desc().list();
+        return list;
     }
+
+    //激活流程实例
+    public void activateProcessInstance(String processInstanceId) {
+        runtimeService.activateProcessInstanceById(processInstanceId);
+    }
+
+    //冻结流程实例
+    public void suspendProcessInstance(String processInstanceId) {
+        runtimeService.suspendProcessInstanceById(processInstanceId);
+    }
+
 }

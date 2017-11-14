@@ -9,25 +9,17 @@ import java.util.Date;
 public class ProcessDefinitionBean implements Serializable{
 
     private String id;
+    private String name;
     private String key;
-    private String pro_defi_name;
-    private String pro_devl_name;
-    private Date pro_devl_time;
-    private String version;
-    private String devloyment_id;
+    private int revision = 1;
+    private int version;
+    private String category;
+    private String deploymentId;
+    private String resourceName;
+    private Date deploymentTime;
+    private String diagramResourceName;
+    private Boolean suspended;
 
-    public ProcessDefinitionBean() {
-    }
-
-    public ProcessDefinitionBean(String id, String key, String pro_defi_name, String pro_devl_name, Date pro_devl_time, String version, String devloyment_id) {
-        this.id = id;
-        this.key = key;
-        this.pro_defi_name = pro_defi_name;
-        this.pro_devl_name = pro_devl_name;
-        this.pro_devl_time = pro_devl_time;
-        this.version = version;
-        this.devloyment_id = devloyment_id;
-    }
 
     public String getId() {
         return id;
@@ -35,6 +27,14 @@ public class ProcessDefinitionBean implements Serializable{
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getKey() {
@@ -45,44 +45,68 @@ public class ProcessDefinitionBean implements Serializable{
         this.key = key;
     }
 
-    public String getPro_defi_name() {
-        return pro_defi_name;
+    public int getRevision() {
+        return revision;
     }
 
-    public void setPro_defi_name(String pro_defi_name) {
-        this.pro_defi_name = pro_defi_name;
+    public void setRevision(int revision) {
+        this.revision = revision;
     }
 
-    public String getPro_devl_name() {
-        return pro_devl_name;
-    }
-
-    public void setPro_devl_name(String pro_devl_name) {
-        this.pro_devl_name = pro_devl_name;
-    }
-
-    public Date getPro_devl_time() {
-        return pro_devl_time;
-    }
-
-    public void setPro_devl_time(Date pro_devl_time) {
-        this.pro_devl_time = pro_devl_time;
-    }
-
-    public String getVersion() {
+    public int getVersion() {
         return version;
     }
 
-    public void setVersion(String version) {
+    public void setVersion(int version) {
         this.version = version;
     }
 
-    public String getDevloyment_id() {
-        return devloyment_id;
+    public String getCategory() {
+        return category;
     }
 
-    public void setDevloyment_id(String devloyment_id) {
-        this.devloyment_id = devloyment_id;
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public String getDeploymentId() {
+        return deploymentId;
+    }
+
+    public void setDeploymentId(String deploymentId) {
+        this.deploymentId = deploymentId;
+    }
+
+    public String getResourceName() {
+        return resourceName;
+    }
+
+    public void setResourceName(String resourceName) {
+        this.resourceName = resourceName;
+    }
+
+    public Date getDeploymentTime() {
+        return deploymentTime;
+    }
+
+    public void setDeploymentTime(Date deploymentTime) {
+        this.deploymentTime = deploymentTime;
+    }
+
+    public String getDiagramResourceName() {
+        return diagramResourceName;
+    }
+
+    public void setDiagramResourceName(String diagramResourceName) {
+        this.diagramResourceName = diagramResourceName;
+    }
+
+    public Boolean getSuspended() {
+        return suspended;
+    }
+
+    public void setSuspended(Boolean suspended) {
+        this.suspended = suspended;
     }
 }
 

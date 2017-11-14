@@ -1,0 +1,44 @@
+package com.example.OA.mvc.controller.activiti.serverListener.salary;
+
+import java.math.BigDecimal;
+import java.util.Date;
+
+import com.example.OA.dao.UserMapper;
+import com.example.OA.dao.activiti.SalaryAdjustMapper;
+import com.example.OA.model.User;
+import com.example.OA.model.activiti.SalaryAdjust;
+import com.example.OA.util.BigDecimalUtil;
+import org.activiti.engine.delegate.DelegateExecution;
+import org.activiti.engine.delegate.JavaDelegate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+
+@Component
+public class ContentSalary implements JavaDelegate {
+
+	private Logger logger = LoggerFactory.getLogger(this.getClass());
+
+	@Autowired
+	private UserMapper userMapper;
+	
+	@Autowired
+	private SalaryAdjustMapper salaryAdjustMapper;
+	
+	@Override
+	public void execute(DelegateExecution execution) throws Exception {
+		Integer businessKey = (Integer) execution.getVariable("businessKey");
+		SalaryAdjust salaryAdjust = salaryAdjustMapper.selectByPrimaryKey(businessKey);
+
+		User user = userMapper.selectByPrimaryKey(salaryAdjust.getApplication());
+		BigDecimal old = user.getSalary();
+		user.setSalary(BigDecimalUtil.add(user.getSalary().doubleValue(),salaryAdjust.getAdjustmoney().doubleValue()));
+		user.setUpdateTime(new Date());
+
+		userMapper.updateByPrimaryKeySelective(user);
+		logger.info(user.getUsername()+" 更新了工资，从 "+old+" 到 "+ user.getSalary());
+	}
+
+}

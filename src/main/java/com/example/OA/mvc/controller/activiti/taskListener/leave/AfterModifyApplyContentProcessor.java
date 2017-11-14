@@ -1,7 +1,8 @@
-package com.example.OA.mvc.controller.activiti.listener;
+package com.example.OA.mvc.controller.activiti.taskListener.leave;
 
-import com.example.OA.dao.LeaveMapper;
-import com.example.OA.model.Leave;
+import com.example.OA.dao.activiti.LeaveMapper;
+import com.example.OA.model.activiti.Leave;
+import com.example.OA.mvc.common.Const;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.delegate.DelegateTask;
 import org.activiti.engine.delegate.TaskListener;
@@ -31,15 +32,23 @@ public class AfterModifyApplyContentProcessor implements TaskListener {
     这个方法是在“complete”时调用的，还有“create,assignment,delete"等
      */
     public void notify(DelegateTask delegateTask) {
+
+        boolean reApply = (Boolean)delegateTask.getVariable("reApply");
+
         String processInstanceId = delegateTask.getProcessInstanceId();
         ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
         Leave leave = leaveMapper.selectByPrimaryKey(Integer.parseInt(processInstance.getBusinessKey()));
-
-        leave.setLeaveType((String) delegateTask.getVariable("leaveType"));//这些都是前台传进来的参数，完成任务时被设置进来
-        leave.setStartTime((Date) delegateTask.getVariable("startTime"));
-        leave.setEndTime((Date) delegateTask.getVariable("endTime"));
-        leave.setReason((String) delegateTask.getVariable("reason"));
-
+        if(reApply) {
+            leave.setLeaveType((String) delegateTask.getVariable("leaveType"));//这些都是前台传进来的参数，完成任务时被设置进来
+            leave.setStartTime((Date) delegateTask.getVariable("startTime"));
+            leave.setEndTime((Date) delegateTask.getVariable("endTime"));
+            leave.setReason((String) delegateTask.getVariable("reason"));
+            leave.setLeaveNumber((Integer) delegateTask.getVariable("leaveNumber"));
+            leave.setStatus(Const.WorkflowStatus.APPLICATION.getCode());
+            leave.setUpdateTime(new Date());
+        }else {
+            leave.setStatus(Const.WorkflowStatus.CANCELED.getCode());
+        }
         leaveMapper.updateByPrimaryKeySelective(leave);
     }
 

@@ -1,6 +1,7 @@
 package com.example.OA.model;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Date;
 
 public class User implements Serializable{
@@ -16,17 +17,28 @@ public class User implements Serializable{
 
     private Date updateTime;
 
-    public User(Integer id, String username, String password, Integer partId, Date createTime, Date updateTime) {
+    private BigDecimal salary;
+
+    public User(Integer id, String username, String password, Integer partId, Date createTime, Date updateTime,BigDecimal salary) {
         this.id = id;
         this.username = username;
         this.password = password;
         this.partId = partId;
         this.createTime = createTime;
         this.updateTime = updateTime;
+        this.salary = salary;
     }
 
     public User() {
         super();
+    }
+
+    public BigDecimal getSalary() {
+        return salary;
+    }
+
+    public void setSalary(BigDecimal salary) {
+        this.salary = salary;
     }
 
     public Integer getId() {

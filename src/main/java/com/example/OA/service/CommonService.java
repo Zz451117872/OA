@@ -26,15 +26,6 @@ public class CommonService {
     @Autowired
     RepositoryService repositoryService;
 
-    public void verification(Integer userId ) {
-        if(userId != null)
-        {
-            if(userMapper.selectByPrimaryKey(userId) == null)
-                throw new AppException(Error.UN_AUTHORIZATION);
-        }
-        throw new AppException(Error.PARAMS_ERROR,"param error");
-    }
-
     public TaskBean convertTask(Task task) {
         TaskBean taskBean = new TaskBean();
         taskBean.setId(task.getId());
@@ -53,12 +44,14 @@ public class CommonService {
             Deployment deployment = repositoryService.createDeploymentQuery().deploymentId(processDefinition.getDeploymentId()).singleResult();
             ProcessDefinitionBean processDefinitionBean = new ProcessDefinitionBean();
             processDefinitionBean.setId(processDefinition.getId());
+            processDefinitionBean.setDeploymentId(processDefinition.getDeploymentId());
+            processDefinitionBean.setDeploymentTime(deployment.getDeploymentTime());
+            processDefinitionBean.setCategory(processDefinition.getCategory());
+            processDefinitionBean.setDiagramResourceName(processDefinition.getDiagramResourceName());
             processDefinitionBean.setKey(processDefinition.getKey());
-            processDefinitionBean.setDevloyment_id(processDefinition.getDeploymentId());
-            processDefinitionBean.setPro_defi_name(processDefinition.getName());
-            processDefinitionBean.setPro_devl_name(deployment.getName());
-            processDefinitionBean.setPro_devl_time(deployment.getDeploymentTime());
-            processDefinitionBean.setVersion(processDefinition.getVersion()+"");
+            processDefinitionBean.setName(processDefinition.getName());
+            processDefinitionBean.setSuspended(processDefinition.isSuspended());
+            processDefinitionBean.setVersion(processDefinition.getVersion());
             return processDefinitionBean;
         }
         throw new AppException(Error.PARAMS_ERROR,"convertProcessDefinitionBean error");

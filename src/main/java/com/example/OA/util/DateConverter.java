@@ -21,7 +21,7 @@ public class DateConverter implements Converter {
 
     private static final String MONTH_PATTERN = "yyyy-MM";
 
-    @SuppressWarnings("rawtypes")
+ //   @SuppressWarnings("rawtypes")
     public Object convert(Class type, Object value) {
         Object result = null;
         if (type == Date.class) {
@@ -36,13 +36,6 @@ public class DateConverter implements Converter {
         return result;
     }
 
-    /**
-     * Convert String to Date
-     *
-     * @param value
-     * @return
-     * @throws ParseException
-     */
     private Date doConvertToDate(Object value) throws ParseException {
         Date result = null;
 
@@ -77,12 +70,7 @@ public class DateConverter implements Converter {
         return result;
     }
 
-    /**
-     * Convert Date to String
-     *
-     * @param value
-     * @return
-     */
+
     private String doConvertToString(Object value) {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(DATETIME_PATTERN);
         String result = null;

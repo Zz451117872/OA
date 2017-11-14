@@ -1,8 +1,8 @@
 package com.example.OA.mvc.controller.activiti;
 
-import com.example.OA.dao.activiti.LeaveMapper;
-import com.example.OA.model.activiti.Leave;
+import com.example.OA.dao.activiti.SalaryAdjustMapper;
 import com.example.OA.model.User;
+import com.example.OA.model.activiti.SalaryAdjust;
 import com.example.OA.mvc.common.Const;
 import com.example.OA.mvc.controller.CommonController;
 import com.example.OA.mvc.exception.AppException;
@@ -13,22 +13,26 @@ import com.google.common.collect.Maps;
 import org.activiti.engine.RuntimeService;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-import java.util.*;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 
 /**
- * Created by aa on 2017/11/3.
+ * Created by aa on 2017/11/10.
  */
 @RestController
-@RequestMapping("leave")
-public class LeaveController extends CommonController{
+@RequestMapping("salary")
+public class SalaryAdjustController extends CommonController{
 
     @Autowired
-    LeaveMapper leaveMapper;
+    SalaryAdjustMapper salaryAdjustMapper;
 
     @Autowired
     WorkflowService workflowService;
@@ -36,30 +40,33 @@ public class LeaveController extends CommonController{
     @Autowired
     RuntimeService runtimeService;
 
-    //启动请假流程   要进行表单验证
-    @RequestMapping(value = "start_leave_workflow",method = RequestMethod.POST)
-    public String startWorkflow(Leave leave) {
+    //开启薪资调整流程   要进行表单验证
+    @RequestMapping(value = "start_salary_workflow",method = RequestMethod.POST)
+    public String startWorkflow(SalaryAdjust salaryAdjust) {
         Subject subject = SecurityUtils.getSubject();
         if(!subject .isAuthenticated())
         {
             throw new AppException(Error.UN_AUTHORIZATION);
         }
-        if(leave != null)
+        User user = getUserBySubject(subject);
+        if(salaryAdjust != null)
         {
             try{
-                //BaseVO 相关属性
-                User user = getUserBySubject(subject);
-                leave.setApplication(user.getId()); //设置申请人
-                leave.setApplicationName(user.getUsername());
-                leave.setBusinesstype(Const.BusinessType.LEAVE);
 
-                //leave 相关相关属性
-                leave.setCreateTime(new Date());
-                leave.setStatus(Const.WorkflowStatus.APPLICATION.getCode());
+                   //BaseVO 相关信息
+                   salaryAdjust.setApplication(user.getId());
+                   salaryAdjust.setApplicationName(user.getUsername());
+                   salaryAdjust.setBusinesstype(Const.BusinessType.SALARY);
 
-                Map<String, Object> variables = new HashMap<String, Object>();
-                variables.put("inputUser",user.getUsername());//设置申请人变量
-                return workflowService.startLeaveWorkflow(leave, variables);
+                   //SalaryAdjust相关信息
+                   salaryAdjust.setCreateTime(new Date());
+                   salaryAdjust.setStatus(Const.WorkflowStatus.APPLICATION.getCode());
+
+                   Map<String, Object> variables = new HashMap<String, Object>();
+                   variables.put("baseMoney", user.getSalary());  //原有薪金(回滚用)
+                   variables.put("inputUser",user.getUsername());   //设置申请人
+                   return workflowService.startSalaryAdjustWorkflow(salaryAdjust, variables);
+
             }catch (Exception e)
             {
                 throw e;
@@ -68,9 +75,8 @@ public class LeaveController extends CommonController{
         throw new AppException(Error.PARAMS_ERROR);
     }
 
-    //按状态获取请假单信息,若不传 则表示查询所有
-    @RequestMapping(value = "leave_by_status",method = RequestMethod.POST)
-    public List<Leave> getLeavesByStatus(Integer status) {
+    @RequestMapping(value = "salary_by_status",method = RequestMethod.POST)
+    public List<SalaryAdjust> getSalaryAddustByStatus(Integer status) {
         Subject subject = SecurityUtils.getSubject();
         if(!subject .isAuthenticated())
         {
@@ -83,29 +89,29 @@ public class LeaveController extends CommonController{
             throw new AppException(Error.PARAMS_ERROR,"status 参数错误");
         }
         User user = getUserBySubject(subject);
-       return leaveMapper.getByApplicationAndStatus(user.getId(),status);
+        return salaryAdjustMapper.getByApplicationAndStatus(null,status);
     }
 
-    //获取 请假单详细
-    @RequestMapping(value = "leave_by_id",method = RequestMethod.POST)
-    public Leave getLeave(Integer leaveId) {
+    //获取 薪资调整详细
+    @RequestMapping(value = "salary_by_id",method = RequestMethod.POST)
+    public SalaryAdjust getSalaryAdjust(Integer salaryId) {
         Subject subject = SecurityUtils.getSubject();
         if(!subject .isAuthenticated())
         {
             throw new AppException(Error.UN_AUTHORIZATION);
         }
-        if(leaveId != null)
+        if(salaryId != null)
         {
-            return leaveMapper.selectByPrimaryKey(leaveId);
+            return salaryAdjustMapper.selectByPrimaryKey(salaryId);
         }
         throw new AppException(Error.PARAMS_ERROR);
     }
 
-    //完成任务
-    @RequestMapping(value = "complete_leave",method = RequestMethod.POST)
-    public void complete(String comment,Boolean isPass,String taskId) {
+    //办理任务
+    @RequestMapping(value = "complete_salary",method = RequestMethod.POST)
+    public void complete(String comment,String taskId,Boolean isPass) {
         Subject subject = SecurityUtils.getSubject();
-        if(!subject.isAuthenticated())
+        if(!subject .isAuthenticated())
         {
             throw new AppException(Error.UN_AUTHORIZATION);
         }
@@ -113,9 +119,7 @@ public class LeaveController extends CommonController{
         try{
             Map<String,Object> variables = Maps.newHashMap();
             variables.put("isPass",isPass);
-
             workflowService.completeTask(user,taskId,variables,comment);
-
             return;
         }catch (Exception e)
         {
@@ -123,11 +127,11 @@ public class LeaveController extends CommonController{
         }
     }
 
-    //请假申请修改，重新申请
-    @RequestMapping(value = "modify_leave",method = RequestMethod.POST)
-    public void modifyLeave(Leave leave,Boolean reApply,String taskId,String comment) {
+    //修改申请
+    @RequestMapping(value = "modify_salary",method = RequestMethod.POST)
+    public void modifySalaryAdjust(SalaryAdjust salaryAdjust,Boolean reApply,String taskId,String comment) {
         Subject subject = SecurityUtils.getSubject();
-        if(!subject.isAuthenticated())
+        if(!subject .isAuthenticated())
         {
             throw new AppException(Error.UN_AUTHORIZATION);
         }
@@ -135,13 +139,11 @@ public class LeaveController extends CommonController{
         try{
             Map<String,Object> variables = Maps.newHashMap();
             variables.put("reApply",reApply);
+
             if(reApply)
             {
-                variables.put("leaveNumber",leave.getLeaveNumber());
-                variables.put("reason",leave.getReason());
-                variables.put("startTime",leave.getStartTime());
-                variables.put("endTime",leave.getEndTime());
-                variables.put("leaveType",leave.getLeaveType());
+                variables.put("adjustMoney",salaryAdjust.getAdjustmoney());
+                variables.put("description",salaryAdjust.getDescription());
             }
             workflowService.completeTask(user,taskId,variables,comment);
             return;
@@ -150,6 +152,4 @@ public class LeaveController extends CommonController{
             throw e;
         }
     }
-
-
 }

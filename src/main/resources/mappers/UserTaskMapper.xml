@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.example.OA.dao.activiti.UserTaskMapper" >
+  <resultMap id="BaseResultMap" type="com.example.OA.model.activiti.UserTask" >
+    <constructor >
+      <idArg column="id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="procDefKey" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="procDefName" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="taskDefKey" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="taskName" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="taskType" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="candidate_name" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="candidate_ids" jdbcType="VARCHAR" javaType="java.lang.String" />
+    </constructor>
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, procDefKey, procDefName, taskDefKey, taskName, taskType, candidate_name, candidate_ids
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from usertask
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from usertask
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.example.OA.model.activiti.UserTask" useGeneratedKeys="true" keyProperty="id">
+    insert into usertask (id, procDefKey, procDefName, 
+      taskDefKey, taskName, taskType, 
+      candidate_name, candidate_ids)
+    values (#{id,jdbcType=INTEGER}, #{procdefkey,jdbcType=VARCHAR}, #{procdefname,jdbcType=VARCHAR}, 
+      #{taskdefkey,jdbcType=VARCHAR}, #{taskname,jdbcType=VARCHAR}, #{tasktype,jdbcType=VARCHAR}, 
+      #{candidateName,jdbcType=VARCHAR}, #{candidateIds,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.example.OA.model.activiti.UserTask" useGeneratedKeys="true" keyProperty="id">
+    insert into usertask
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="procdefkey != null" >
+        procDefKey,
+      </if>
+      <if test="procdefname != null" >
+        procDefName,
+      </if>
+      <if test="taskdefkey != null" >
+        taskDefKey,
+      </if>
+      <if test="taskname != null" >
+        taskName,
+      </if>
+      <if test="tasktype != null" >
+        taskType,
+      </if>
+      <if test="candidateName != null" >
+        candidate_name,
+      </if>
+      <if test="candidateIds != null" >
+        candidate_ids,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="procdefkey != null" >
+        #{procdefkey,jdbcType=VARCHAR},
+      </if>
+      <if test="procdefname != null" >
+        #{procdefname,jdbcType=VARCHAR},
+      </if>
+      <if test="taskdefkey != null" >
+        #{taskdefkey,jdbcType=VARCHAR},
+      </if>
+      <if test="taskname != null" >
+        #{taskname,jdbcType=VARCHAR},
+      </if>
+      <if test="tasktype != null" >
+        #{tasktype,jdbcType=VARCHAR},
+      </if>
+      <if test="candidateName != null" >
+        #{candidateName,jdbcType=VARCHAR},
+      </if>
+      <if test="candidateIds != null" >
+        #{candidateIds,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.example.OA.model.activiti.UserTask" >
+    update usertask
+    <set >
+      <if test="procdefkey != null" >
+        procDefKey = #{procdefkey,jdbcType=VARCHAR},
+      </if>
+      <if test="procdefname != null" >
+        procDefName = #{procdefname,jdbcType=VARCHAR},
+      </if>
+      <if test="taskdefkey != null" >
+        taskDefKey = #{taskdefkey,jdbcType=VARCHAR},
+      </if>
+      <if test="taskname != null" >
+        taskName = #{taskname,jdbcType=VARCHAR},
+      </if>
+      <if test="tasktype != null" >
+        taskType = #{tasktype,jdbcType=VARCHAR},
+      </if>
+      <if test="candidateName != null" >
+        candidate_name = #{candidateName,jdbcType=VARCHAR},
+      </if>
+      <if test="candidateIds != null" >
+        candidate_ids = #{candidateIds,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.example.OA.model.activiti.UserTask" >
+    update usertask
+    set procDefKey = #{procdefkey,jdbcType=VARCHAR},
+      procDefName = #{procdefname,jdbcType=VARCHAR},
+      taskDefKey = #{taskdefkey,jdbcType=VARCHAR},
+      taskName = #{taskname,jdbcType=VARCHAR},
+      taskType = #{tasktype,jdbcType=VARCHAR},
+      candidate_name = #{candidateName,jdbcType=VARCHAR},
+      candidate_ids = #{candidateIds,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  
+  
+  
+  <!-- ===================================-->
+  <select id="getByPdfKey" parameterType="string" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List"/>
+    from  usertask
+    where  procDefKey = #{processDefinitionKey}
+  </select>
+
+  <delete id="deleteAll">
+    delete  from usertask where 1=1
+  </delete>
+</mapper>

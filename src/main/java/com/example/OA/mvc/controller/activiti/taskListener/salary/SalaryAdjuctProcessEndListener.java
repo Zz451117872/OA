@@ -1,8 +1,7 @@
-package com.example.OA.mvc.controller.activiti.listener;
+package com.example.OA.mvc.controller.activiti.taskListener.salary;
 
-import com.example.OA.dao.LeaveMapper;
-import com.example.OA.dao.activiti.ActivitiMapper;
-import com.example.OA.model.Leave;
+import com.example.OA.dao.activiti.SalaryAdjustMapper;
+import com.example.OA.model.activiti.SalaryAdjust;
 import com.example.OA.mvc.common.Const;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.RuntimeService;
@@ -21,7 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 @Transactional
-public class LeaveProcessEndListener implements ExecutionListener {
+public class SalaryAdjuctProcessEndListener implements ExecutionListener {
 
     protected Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -32,7 +31,7 @@ public class LeaveProcessEndListener implements ExecutionListener {
     RuntimeService runtimeService;
 
     @Autowired
-    LeaveMapper leaveMapper;
+    SalaryAdjustMapper salaryAdjustMapper;
 
     /*
     这个方法是在流程“end”时调用，还有“start,take”等
@@ -43,23 +42,23 @@ public class LeaveProcessEndListener implements ExecutionListener {
         ProcessInstance instance = runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
         String businessKey = instance.getBusinessKey();
 
-        Leave leave = leaveMapper.selectByPrimaryKey(Integer.parseInt(businessKey));
+        SalaryAdjust salaryAdjust = salaryAdjustMapper.selectByPrimaryKey(Integer.parseInt(businessKey));
        Object result = execution.getVariable("result");//这个参数是以“expression”形式设置在连线的监听器上
       if("pass".equals(result))
       {
-          leave.setStatus(Const.LeaveStatus.APPROVED.getCode());
-          logger.info("请假流程通过+++++++++++++++++++++++++++++++++");
+          salaryAdjust.setStatus(Const.WorkflowStatus.APPROVED.getCode());
+          logger.info("薪资调整流程通过+++++++++++++++++++++++++++++++++");
       }else if("reject".equals(result))
       {
-          leave.setStatus(Const.LeaveStatus.REJECTED.getCode());
-          logger.info("请假流程被拒绝+++++++++++++++++++++++++++++++++");
+          salaryAdjust.setStatus(Const.WorkflowStatus.REJECTED.getCode());
+          logger.info("薪资调整流程被拒绝+++++++++++++++++++++++++++++++++");
       }else if("cancled".equals(result))
       {
-          leave.setStatus(Const.LeaveStatus.CANCELED.getCode());
-          logger.info("请假流程已取消+++++++++++++++++++++++++++++++++");
+          salaryAdjust.setStatus(Const.WorkflowStatus.CANCELED.getCode());
+          logger.info("薪资调整流程已取消+++++++++++++++++++++++++++++++++");
       }else {
-          logger.info("请假流程异常+++++++++++++++++++++++++++++++++");
+          logger.info("薪资调整流程异常+++++++++++++++++++++++++++++++++");
       }
-        leaveMapper.updateByPrimaryKeySelective(leave);
+        salaryAdjustMapper.updateByPrimaryKeySelective(salaryAdjust);
     }
 }

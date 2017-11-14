@@ -6,8 +6,28 @@ public class Const {
 
     public static String salt = "geelysdafaqj23ou89ZXcj@#$@#$#@KJdjklj;D../dSF.";
 
+    public interface processDefinitionKey{
+        String LEAVE = "leave";
+        String SALARY = "salaryAdjuct";
+        String EXPENSE = "expense";
+    }
+
+    //用户任务类型
+    public interface userTaskType{
+        String ASSIGNEE = "assignee";
+        String CANDIDATEUSER = "candidateUser";
+        String CANDIDATEGROUP = "candidateGroup";
+    }
+
+    //工作流业务类型
+    public interface BusinessType{
+        String LEAVE = "leave";
+        String SALARY = "salary";
+        String EXPENSE = "expense";
+    }
+
     // 请假单状态
-    public enum  LeaveStatus{
+    public enum  WorkflowStatus{
         APPLICATION(1,"审批中"),
         APPROVED(10,"已批准"),
         CANCELED(100,"已取消"),
@@ -15,7 +35,7 @@ public class Const {
         REJECTED(101,"已拒绝");
         private String value;
         private Integer code;
-        LeaveStatus(Integer code,String value)
+        WorkflowStatus(Integer code,String value)
         {
             this.code = code;
             this.value = value;
@@ -27,9 +47,9 @@ public class Const {
             return code;
         }
 
-        public static LeaveStatus codeof(Integer code)
+        public static WorkflowStatus codeof(Integer code)
         {
-            for(LeaveStatus leaveStatus : values())
+            for(WorkflowStatus leaveStatus : values())
             {
                 if(leaveStatus.getCode() == code)
                 {
