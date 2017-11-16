@@ -22,4 +22,10 @@ public interface PrivilegeMapper {
     Privilege getByUrl(String url);
 
     List<Privilege> getByIds(@Param("privilegeIds") List<Integer> privilegeIds);
+
+    List<Privilege> getChild(Integer parentId);
+
+    //===========
+
+    Privilege getRoot(int parent);
 }

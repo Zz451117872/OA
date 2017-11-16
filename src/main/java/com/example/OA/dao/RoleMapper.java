@@ -22,4 +22,7 @@ public interface RoleMapper {
     Role getByRolename(String roleName);
 
     List<Role> getByRoleIds(@Param("roleIds") List<Integer> roleIds);
+
+    //==========================
+    List<Role> getAll();
 }

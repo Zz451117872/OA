@@ -1,15 +1,25 @@
 package com.example.OA.model;
 
+import org.hibernate.validator.constraints.NotEmpty;
+
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.Date;
 
 public class Forum implements Serializable {
     private Integer id;
 
+    @NotEmpty
     private String forumName;
 
+    @Size(max = 100)
     private String description;
 
+    @Max(value = 100)
+    @Min(value = 1)
     private Integer sorts;
 
     private Integer topCount;

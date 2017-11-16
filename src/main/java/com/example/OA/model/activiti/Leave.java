@@ -1,7 +1,13 @@
 package com.example.OA.model.activiti;
 
 
+import org.apache.ibatis.plugin.Signature;
+import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.format.annotation.DateTimeFormat;
+
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -9,10 +15,17 @@ public class Leave extends BaseVO implements Serializable{
 
     private Integer id;
 
+    @NotEmpty
+    @Size(max = 10)
     private String leaveType;
 
+    @NotEmpty
+    @Max(value = 7)
+    @Min(value = 1)
     private Integer leaveNumber;
 
+    @NotEmpty
+    @Size(max = 100)
     private String reason;
 
     private Integer status;

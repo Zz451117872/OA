@@ -15,9 +15,13 @@ import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.validation.Valid;
 import java.util.*;
 
 /**
@@ -38,15 +42,20 @@ public class LeaveController extends CommonController{
 
     //启动请假流程   要进行表单验证
     @RequestMapping(value = "start_leave_workflow",method = RequestMethod.POST)
-    public String startWorkflow(Leave leave) {
+    public String startWorkflow(@Valid Leave leave , BindingResult bindingResult) {
         Subject subject = SecurityUtils.getSubject();
         if(!subject .isAuthenticated())
         {
             throw new AppException(Error.UN_AUTHORIZATION);
         }
-        if(leave != null)
+        if(bindingResult.hasErrors())
         {
+            throw new AppException(Error.PARAMS_ERROR,bindingResult.getFieldError().getDefaultMessage());
+        }
+
             try{
+                if(leave != null)
+                {
                 //BaseVO 相关属性
                 User user = getUserBySubject(subject);
                 leave.setApplication(user.getId()); //设置申请人
@@ -60,12 +69,12 @@ public class LeaveController extends CommonController{
                 Map<String, Object> variables = new HashMap<String, Object>();
                 variables.put("inputUser",user.getUsername());//设置申请人变量
                 return workflowService.startLeaveWorkflow(leave, variables);
+                }
+                throw new AppException(Error.PARAMS_ERROR);
             }catch (Exception e)
             {
                 throw e;
             }
-        }
-        throw new AppException(Error.PARAMS_ERROR);
     }
 
     //按状态获取请假单信息,若不传 则表示查询所有
@@ -88,43 +97,48 @@ public class LeaveController extends CommonController{
 
     //获取 请假单详细
     @RequestMapping(value = "leave_by_id",method = RequestMethod.POST)
-    public Leave getLeave(Integer leaveId) {
+    public Leave getLeave(@RequestParam(value = "leaveId",required = true) Integer leaveId) {
         Subject subject = SecurityUtils.getSubject();
         if(!subject .isAuthenticated())
         {
             throw new AppException(Error.UN_AUTHORIZATION);
         }
-        if(leaveId != null)
-        {
-            return leaveMapper.selectByPrimaryKey(leaveId);
-        }
-        throw new AppException(Error.PARAMS_ERROR);
+        return leaveMapper.selectByPrimaryKey(leaveId);
     }
 
 
 
     //请假申请修改，重新申请
     @RequestMapping(value = "modify_leave",method = RequestMethod.POST)
-    public void modifyLeave(Leave leave,Boolean reApply,String taskId,String comment) {
+    public void modifyLeave(@Valid Leave leave, BindingResult bindingResult,
+                            @RequestParam(value = "reApply",required = true) Boolean reApply,
+                            @RequestParam(value = "taskId",required = true) String taskId,
+                            @RequestParam(value = "comment",required = false,defaultValue = "我无语")String comment) {
         Subject subject = SecurityUtils.getSubject();
         if(!subject.isAuthenticated())
         {
             throw new AppException(Error.UN_AUTHORIZATION);
         }
+        if(bindingResult.hasErrors())
+        {
+            throw new AppException(Error.PARAMS_ERROR,bindingResult.getFieldError().getDefaultMessage());
+        }
         User user = getUserBySubject(subject);
         try{
-            Map<String,Object> variables = Maps.newHashMap();
-            variables.put("reApply",reApply);
-            if(reApply)
-            {   //可以修改的内容：请假天数，原因，开始结束时间，请假类型
-                variables.put("leaveNumber",leave.getLeaveNumber());
-                variables.put("reason",leave.getReason());
-                variables.put("startTime",leave.getStartTime());
-                variables.put("endTime",leave.getEndTime());
-                variables.put("leaveType",leave.getLeaveType());
+            if(leave != null) {
+                Map<String, Object> variables = Maps.newHashMap();
+                variables.put("reApply", reApply);
+                if (reApply) {   //可以修改的内容：请假天数，原因，开始结束时间，请假类型
+                    variables.put("leaveNumber", leave.getLeaveNumber());
+                    variables.put("reason", leave.getReason());
+                    variables.put("startTime", leave.getStartTime());
+                    variables.put("endTime", leave.getEndTime());
+                    variables.put("leaveType", leave.getLeaveType());
+                }
+                workflowService.completeTask(user, taskId, variables, comment);
+                return;
             }
-            workflowService.completeTask(user,taskId,variables,comment);
-            return;
+            throw new AppException(Error.PARAMS_ERROR);
         }catch (Exception e)
         {
             throw e;

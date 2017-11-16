@@ -7,14 +7,19 @@ import com.example.OA.mvc.exception.AppException;
 import com.example.OA.mvc.exception.Error;
 import com.example.OA.service.manager.UserService;
 import com.example.OA.util.MD5Util;
+import org.apache.ibatis.annotations.Param;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.UsernamePasswordToken;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
 import java.util.List;
 
 
@@ -29,7 +34,8 @@ public class UserController {
     UserService userService;
 
     @RequestMapping(value = "login",method = RequestMethod.POST)
-    public String login(String username, String password)
+    public String login(@RequestParam(value = "username",required = true) String username,
+                        @RequestParam(value = "password",required = true) String password)
     {
         Subject subject = SecurityUtils.getSubject();
         if(!subject.isAuthenticated())
@@ -42,48 +48,41 @@ public class UserController {
         return username;
     }
 
-    @RequestMapping(value = "add_user",method = RequestMethod.POST)
-    public String add(User user)
+    @RequiresPermissions(value = "user_add")
+    @RequestMapping(value = "add_or_update_user",method = RequestMethod.POST)
+    public void addOrUpdate(@Valid User user , BindingResult bindingResult)
     {
         Subject subject = SecurityUtils.getSubject();
         if(!subject.isAuthenticated()) {
             throw new AppException(Error.UN_AUTHORIZATION);
         }
-        if(user != null)
+        if(bindingResult.hasErrors())
         {
-            user.setPassword(MD5Util.MD5EncodeUtf8(user.getPassword()));
-            return userService.addUser(user);
+            throw new AppException(Error.PARAMS_ERROR,bindingResult.getFieldError().getDefaultMessage());
         }
-       throw new AppException(Error.PARAMS_ERROR);
+            if (user != null) {
+                user.setPassword(MD5Util.MD5EncodeUtf8(user.getPassword()));
+                if (user.getId() != null) {
+                    userService.updateUser(user);
+                    return;
+                } else {
+                    userService.addUser(user);
+                    return;
+                }
+            }
+            throw new AppException(Error.PARAMS_ERROR);
     }
 
-    @RequestMapping(value = "update_user",method = RequestMethod.POST)
-    public String update(User user)
-    {
-        Subject subject = SecurityUtils.getSubject();
-        if(!subject.isAuthenticated()) {
-            throw new AppException(Error.UN_AUTHORIZATION);
-        }
-        if(user != null)
-        {
-            user.setPassword(MD5Util.MD5EncodeUtf8(user.getPassword()));
-            return userService.updateUser(user);
-        }
-        throw new AppException(Error.PARAMS_ERROR);
-    }
-
+    @RequiresPermissions(value = "user_delete")
     @RequestMapping(value = "delete_user",method = RequestMethod.POST)
-    public String delete(Integer userId)
+    public void delete(@RequestParam(value = "userId",required = true) Integer userId)
     {
         Subject subject = SecurityUtils.getSubject();
         if(!subject.isAuthenticated()) {
             throw new AppException(Error.UN_AUTHORIZATION);
         }
-        if(userId != null)
-        {
-            return userService.deleteUser(userId);
-        }
-        throw new AppException(Error.PARAMS_ERROR);
+        userService.deleteUser(userId);
+        return;
     }
 
     @RequestMapping(value = "logout",method = RequestMethod.GET)
@@ -96,60 +95,50 @@ public class UserController {
         subject.logout();
     }
 
+    @RequiresPermissions(value = "endow_role_to_user")
     @RequestMapping(value = "endow_role_to_user",method = RequestMethod.POST)
-    public int endowRoleToUser(Integer userId,String roleIds)
+    public void endowRoleToUser(@RequestParam(value = "userId",required = true) Integer userId,
+                               @RequestParam(value = "roleIds",required = true) String roleIds)
     {
         Subject subject = SecurityUtils.getSubject();
         if(!subject.isAuthenticated()) {
             throw new AppException(Error.UN_AUTHORIZATION);
         }
-        if(userId != null && roleIds != null)
-        {
-           return userService.endowRoleToUser(userId,roleIds);
-        }
-        throw new AppException(Error.PARAMS_ERROR);
+        userService.endowRoleToUser(userId,roleIds);
+        return;
     }
 
+    @RequiresPermissions(value = "back_role_from_user")
     @RequestMapping(value = "takeback_role_from_user",method = RequestMethod.POST)
-    public int takebackRoleFromUser(Integer userId,String roleIds)
+    public void takebackRoleFromUser(@RequestParam(value = "userId",required = true) Integer userId,
+                                    @RequestParam(value = "roleIds",required = true) String roleIds)
     {
         Subject subject = SecurityUtils.getSubject();
         if(!subject.isAuthenticated()) {
             throw new AppException(Error.UN_AUTHORIZATION);
         }
-        if(userId != null && roleIds != null)
-        {
-            return userService.takebackRoleFromUser(userId,roleIds);
-        }
-        throw new AppException(Error.PARAMS_ERROR);
+        userService.takebackRoleFromUser(userId,roleIds);
+        return;
     }
 
-    @RequestMapping(value = "all_role_user",method = RequestMethod.POST)
-    public List<Role> getAllRoleByUserId(Integer userId)
+    @RequestMapping(value = "all_role_by_user",method = RequestMethod.POST)
+    public List<Role> getAllRoleByUserId(@RequestParam(value = "userId",required = true) Integer userId)
     {
         Subject subject = SecurityUtils.getSubject();
         if(!subject.isAuthenticated()) {
             throw new AppException(Error.UN_AUTHORIZATION);
         }
-        if(userId != null )
-        {
-            return userService.getAllRoleByUserId(userId);
-        }
-        throw new AppException(Error.PARAMS_ERROR);
+        return userService.getAllRoleByUserId(userId);
     }
 
 
-    @RequestMapping(value = "all_privilege_user",method = RequestMethod.POST)
-    public List<Privilege> getAllPrivilegeByUserId(Integer userId)
+    @RequestMapping(value = "all_privilege_by_user",method = RequestMethod.POST)
+    public List<Privilege> getAllPrivilegeByUserId(@RequestParam(value = "userId",required = true) Integer userId)
     {
         Subject subject = SecurityUtils.getSubject();
         if(!subject.isAuthenticated()) {
             throw new AppException(Error.UN_AUTHORIZATION);
         }
-        if(userId != null )
-        {
-            return userService.getAllPrivilegeByUserId(userId);
-        }
-        throw new AppException(Error.PARAMS_ERROR);
+        return userService.getAllPrivilegeByUserId(userId);
     }
 }

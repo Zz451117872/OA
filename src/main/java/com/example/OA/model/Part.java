@@ -1,11 +1,14 @@
 package com.example.OA.model;
 
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Date;
+
 
 public class Part implements Serializable {
     private Integer id;
 
+    @NotNull
     private String partName;
 
     private String description;

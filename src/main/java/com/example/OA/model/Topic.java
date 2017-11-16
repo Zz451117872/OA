@@ -1,13 +1,20 @@
 package com.example.OA.model;
 
+import org.hibernate.validator.constraints.NotEmpty;
+
+import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.Date;
 
 public class Topic implements Serializable {
     private Integer id;
 
+    @Size(max = 100)
+    @NotEmpty
     private String title;
 
+    @Size(max = 400)
+    @NotEmpty
     private String content;
 
     private Date createTime;
@@ -16,8 +23,10 @@ public class Topic implements Serializable {
 
     private Short status;
 
+    @NotEmpty
     private Integer author;
 
+    @NotEmpty
     private String ip;
 
     private Integer replyCount;

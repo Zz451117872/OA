@@ -1,13 +1,17 @@
 package com.example.OA.model;
 
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 public class Privilege implements Serializable {
     private Integer id;
 
+    @NotNull
     private String privilegeName;
 
+    @NotNull
     private String url;
 
     private Integer parent;
@@ -16,6 +20,8 @@ public class Privilege implements Serializable {
 
     private Date updateTime;
 
+    private List<Privilege> childs;
+
     public Privilege(Integer id, String privilegeName, String url, Integer parent, Date createTime, Date updateTime) {
         this.id = id;
         this.privilegeName = privilegeName;
@@ -23,6 +29,15 @@ public class Privilege implements Serializable {
         this.parent = parent;
         this.createTime = createTime;
         this.updateTime = updateTime;
+    }
+
+
+    public List<Privilege> getChilds() {
+        return childs;
+    }
+
+    public void setChilds(List<Privilege> childs) {
+        this.childs = childs;
     }
 
     public Privilege() {

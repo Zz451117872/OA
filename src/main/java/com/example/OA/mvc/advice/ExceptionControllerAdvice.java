@@ -4,6 +4,7 @@ import com.example.OA.mvc.common.ServerResponse;
 import com.example.OA.mvc.exception.AppException;
 import com.example.OA.mvc.exception.AuthorizationException;
 import com.example.OA.mvc.exception.Error;
+import org.apache.shiro.authz.UnauthorizedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.validation.BindException;
@@ -23,7 +24,7 @@ import javax.validation.ConstraintViolationException;
 @ResponseBody
 public class ExceptionControllerAdvice {
 
-    Logger log = LoggerFactory.getLogger(getClass());
+    Logger logger = LoggerFactory.getLogger(getClass());
 
     @ExceptionHandler(AppException.class)
     public ServerResponse appException(AppException ex) {
@@ -31,33 +32,23 @@ public class ExceptionControllerAdvice {
     }
 
     @ExceptionHandler(AuthorizationException.class)
-    public ServerResponse authException(HttpServletResponse response) {
+    public ServerResponse authException(HttpServletResponse response,AuthorizationException ex) {
         response.setStatus(401);
-        return appExceptionToServerResponse(new AppException(Error.UN_AUTHORIZATION));
+        logger.error(ex.getMessage(), ex);
+        return appExceptionToServerResponse(new AppException(Error.UN_AUTHENTICATION,"未认证"));
     }
 
-//    @ExceptionHandler(ParamValidException.class)
-//    public ServerResponse paramValidExceptionHandler(ParamValidException ex, HttpServletResponse response) {
-//        response.setStatus(400);
-//        ServerResponse result = appException(new AppException(Error.INVALID_PARAMS, ex.getMessage()));
-//        result.setData(ex.getFieldErrors());
-//        return result;
-//    }
-
-//    @ExceptionHandler(BindException.class)
-//    public ServerResponse bindExceptionHandler(BindException ex, HttpServletResponse response){
-//        return paramValidExceptionHandler(new ParamValidException(ex), response);
-//    }
-//
-//    @ExceptionHandler(ConstraintViolationException.class)
-//    public ServerResponse constraintViolationExceptionHandler(ConstraintViolationException ex, HttpServletResponse response, HandlerMethod handlerMethod) {
-//        return paramValidExceptionHandler(new ParamValidException(ex, handlerMethod.getMethodParameters()), response);
-//    }
+    @ExceptionHandler(UnauthorizedException.class)
+    public ServerResponse authz(HttpServletResponse response ,UnauthorizedException ex) {
+        response.setStatus(401);
+        logger.error(ex.getMessage(), ex);
+        return appExceptionToServerResponse(new AppException(Error.UN_AUTHORIZATION,"未授权"));
+    }
 
     @ExceptionHandler(Exception.class)
     public ServerResponse exception(Exception ex, HttpServletResponse response) {
         response.setStatus(500);
-        log.error(ex.getMessage(), ex);
+        logger.error(ex.getMessage(), ex);
         return appExceptionToServerResponse(new AppException(Error.UNKNOW_EXCEPTION));
     }
 

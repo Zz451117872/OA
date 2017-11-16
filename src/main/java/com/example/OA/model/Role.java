@@ -1,11 +1,13 @@
 package com.example.OA.model;
 
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Date;
 
 public class Role implements Serializable {
     private Integer id;
 
+    @NotNull
     private String roleName;
 
     private String description;

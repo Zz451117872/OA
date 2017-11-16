@@ -26,6 +26,7 @@ public class ForumService extends CommonService{
     @Autowired
     TopicMapper topicMapper;
 
+    //添加版块
     public Forum add(Forum forum) {
         if(forum != null)
         {
@@ -36,11 +37,12 @@ public class ForumService extends CommonService{
                 forumMapper.insertSelective(forum);
                 return forum;
             }
-            throw new AppException(Error.TARGET_EXISTSED,"target existed");
+            throw new AppException(Error.DATA_VERIFY_ERROR,"版块名已存在");
         }
-        throw new AppException(Error.PARAMS_ERROR,"param error");
+        throw new AppException(Error.PARAMS_ERROR);
     }
 
+    //更新版块
     public Forum update(Forum forum) {
         if(forum != null)
         {
@@ -54,12 +56,12 @@ public class ForumService extends CommonService{
                 forumMapper.updateByPrimaryKeySelective(forum);
                 return forum;
             }
-            throw new AppException(Error.TARGET_EXISTSED,"target existed");
+            throw new AppException(Error.DATA_VERIFY_ERROR,"版块名已存在");
         }
-        throw new AppException(Error.PARAMS_ERROR,"param error");
+        throw new AppException(Error.PARAMS_ERROR);
     }
 
-
+    //得到该版块所有主题
     public List<Topic> getAllTopic(Integer forumId) {
         if(forumId != null)
         {
@@ -67,11 +69,12 @@ public class ForumService extends CommonService{
             {
                 return topicMapper.getAllByForum(forumId);
             }
-            throw new AppException(Error.TARGET_NO_EXISTS,"target not existed");
+            throw new AppException(Error.DATA_VERIFY_ERROR,"版块不存在");
         }
-        throw new AppException(Error.PARAMS_ERROR,"param error");
+        throw new AppException(Error.PARAMS_ERROR);
     }
 
+    //得到该版块的最后主题
     public Topic getLastTopicByForum(Integer forumId) {
         if(forumId != null)
         {
@@ -83,22 +86,24 @@ public class ForumService extends CommonService{
                 {
                     return topicMapper.selectByPrimaryKey(topicId);
                 }
-                throw new AppException(Error.TARGET_NO_EXISTS,"target not existed");
+                throw new AppException(Error.TARGET_NO_EXISTS,"没有最后主题");
             }
-            throw new AppException(Error.TARGET_NO_EXISTS,"target not existed");
+            throw new AppException(Error.DATA_VERIFY_ERROR,"版块不存在");
         }
-        throw new AppException(Error.PARAMS_ERROR,"param error");
+        throw new AppException(Error.PARAMS_ERROR);
     }
 
+    //所有版块
     public List<Forum> getAllForum() {
         return forumMapper.getAll();
     }
 
+    //通过主键或者名称获取版块
     public Forum getByIdOrName(Integer forumId, String forumName) {
-        if(forumId != null || StringUtils.isNotBlank(forumName))
-        {
-            return forumMapper.getByIdOrName(forumId,forumName);
-        }
-        throw new AppException(Error.PARAMS_ERROR,"param error");
+
+            if (forumId != null || StringUtils.isNotBlank(forumName)) {
+                return forumMapper.getByIdOrName(forumId, forumName);
+            }
+            throw new AppException(Error.PARAMS_ERROR, "param error");
     }
 }

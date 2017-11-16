@@ -1,6 +1,10 @@
 package com.example.OA.model.activiti;
 
 
+import org.hibernate.validator.constraints.NotEmpty;
+
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
@@ -10,6 +14,9 @@ public class SalaryAdjust extends BaseVO implements Serializable{
 
     private Integer id;
 
+    @NotEmpty
+    @Max(value = 10000)
+    @Min(value = 1000)
     private BigDecimal adjustmoney;
 
     private Date createTime;

@@ -83,7 +83,6 @@ public class WorkflowController extends CommonController{
             throw new AppException(Error.UN_AUTHORIZATION);
         }
         User user = getUserBySubject(subject);
-
         workflowService.claim(user.getUsername(),taskId);
         return;
     }
@@ -98,7 +97,6 @@ public class WorkflowController extends CommonController{
             throw new AppException(Error.UN_AUTHORIZATION);
         }
         User user = getUserBySubject(subject);
-
         workflowService.doDelegateTask(user.getUsername(),toUserId,taskId);
         return;
     }
@@ -162,8 +160,8 @@ public class WorkflowController extends CommonController{
         }
         User user = getUserBySubject(subject);
 
-            List<BaseVO> baseVOs =  workflowService.findFinishedTaskInstances(user.getUsername());
-            List<Map<String,Object>> result = Lists.newArrayList();
+        List<BaseVO> baseVOs =  workflowService.findFinishedTaskInstances(user.getUsername());
+        List<Map<String,Object>> result = Lists.newArrayList();
         try{
             if(baseVOs != null && !baseVOs.isEmpty())
             {

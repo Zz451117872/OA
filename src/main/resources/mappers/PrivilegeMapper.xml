@@ -124,4 +124,11 @@
       #{item}
     </foreach>
   </select>
+
+  <select id="getChild" parameterType="int" resultMap="BaseResultMap">
+    SELECT
+    <include refid="Base_Column_List"/>
+    from privilege
+    where parent = #{parentId}
+  </select>
 </mapper>

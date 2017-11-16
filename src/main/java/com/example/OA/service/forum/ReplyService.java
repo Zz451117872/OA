@@ -12,6 +12,7 @@ import com.example.OA.mvc.exception.Error;
 import com.example.OA.service.CommonService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
@@ -31,8 +32,8 @@ public class ReplyService extends CommonService{
     @Autowired
     ForumMapper forumMapper;
 
+    //更新回复状态
     public int updateReplyStatus(Integer replyId,Short status) {
-
         if(replyId != null && status != null)
         {
             if(replyMapper.selectByPrimaryKey(replyId) != null)
@@ -46,11 +47,13 @@ public class ReplyService extends CommonService{
                 replyMapper.setStatusById(replyId,status);
                 return replyId;
             }
-            throw new AppException(Error.TARGET_NO_EXISTS,"target not existed");
+            throw new AppException(Error.DATA_VERIFY_ERROR,"回复不存在");
         }
-        throw new AppException(Error.PARAMS_ERROR,"param error");
+        throw new AppException(Error.PARAMS_ERROR);
     }
 
+    //添加一个回复
+    @Transactional
     public Reply add(Reply reply) {
         //增加一个回复后，对应的主题，版块 回复数加1
         if(reply != null)
@@ -71,21 +74,24 @@ public class ReplyService extends CommonService{
                     {
                         forum.setReplyCount(forum.getReplyCount()+1);//版块 回复数加1
                         forumMapper.updateByPrimaryKey(forum);
+                        return reply;
                     }
+                    throw new AppException(Error.DATA_VERIFY_ERROR,"版块不存在");
                 }
-                return reply;
+                throw new AppException(Error.DATA_VERIFY_ERROR,"主题不存在");
             }
             throw new AppException(Error.UNKNOW_EXCEPTION,"datebase error");
         }
-        throw new AppException(Error.PARAMS_ERROR,"param error");
+        throw new AppException(Error.PARAMS_ERROR);
     }
 
+    //获取该用户的所有回复
     public List<Reply> getAllReplyByUser(Integer id) {
         if(id != null)
         {
             return replyMapper.getAllReplyByUser(id);
         }
-        throw new AppException(Error.PARAMS_ERROR,"param error");
+        throw new AppException(Error.PARAMS_ERROR);
     }
 
 

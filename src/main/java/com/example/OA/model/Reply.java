@@ -1,23 +1,31 @@
 package com.example.OA.model;
 
+import org.hibernate.validator.constraints.NotEmpty;
+
+import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.Date;
 
 public class Reply implements Serializable {
     private Integer id;
 
+    @Size(max = 100)
     private String title;
 
+    @Size(max = 400)
     private String content;
 
     private Short status;
 
     private Date replayTime;
 
+    @NotEmpty
     private Integer author;
 
+    @NotEmpty
     private String ip;
 
+    @NotEmpty
     private Integer topicId;
 
     public Reply(Integer id, String title, String content, Short status, Date replayTime, Integer author, String ip, Integer topicId) {

@@ -77,8 +77,7 @@ public class AuthRealm extends AuthorizingRealm {
                         if(privileges != null && !privileges.isEmpty())
                         {
                             for(Privilege privilege : privileges){
-                                info.addStringPermission(privilege.getUrl());
-                                logger.info("addStringPermission:"+privilege.getUrl());
+                                initPrivilegeToShiro(privilege,info);
                             }
                         }
                     }else {
@@ -90,6 +89,21 @@ public class AuthRealm extends AuthorizingRealm {
             logger.info("用户 "+user.getUsername()+" 没有角色");
         }
         return info;
+    }
+
+    private void initPrivilegeToShiro(Privilege privilege, SimpleAuthorizationInfo info) {
+
+        info.addStringPermission(privilege.getUrl());
+        logger.info("addStringPermission:"+privilege.getUrl());
+
+        List<Privilege> childs = privilegeMapper.getChild(privilege.getId());
+        if(childs != null && !childs.isEmpty())
+        {
+            for(Privilege child : childs)
+            {
+                initPrivilegeToShiro(child,info);
+            }
+        }
     }
 
     /*

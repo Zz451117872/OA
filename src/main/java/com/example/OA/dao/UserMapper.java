@@ -29,4 +29,7 @@ public interface UserMapper {
     List<User> getByUsernames(@Param("usernames")List<String> usernames);
 
     String getUsernameById(Integer userId);
+
+    ///////////////////////
+    List<User> getAll();
 }

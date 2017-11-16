@@ -2,6 +2,8 @@ package com.example.OA.dao;
 
 import com.example.OA.model.Part;
 
+import java.util.List;
+
 public interface PartMapper {
     int deleteByPrimaryKey(Integer id);
 
@@ -17,4 +19,6 @@ public interface PartMapper {
 
     //-------------------------------------------------------
     Part getByPartname(String partName);
+
+    List<Part> getAll();
 }

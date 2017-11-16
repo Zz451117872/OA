@@ -1,5 +1,6 @@
 package com.example.OA.model;
 
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
@@ -7,16 +8,20 @@ import java.util.Date;
 public class User implements Serializable{
     private Integer id;
 
+    @NotNull
     private String username;
 
+    @NotNull
     private String password;
 
+    @NotNull
     private Integer partId;
 
     private Date createTime;
 
     private Date updateTime;
 
+    @NotNull
     private BigDecimal salary;
 
     public User(Integer id, String username, String password, Integer partId, Date createTime, Date updateTime,BigDecimal salary) {

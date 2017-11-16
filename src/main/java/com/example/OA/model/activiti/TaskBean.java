@@ -1,5 +1,7 @@
 package com.example.OA.model.activiti;
 
+import org.hibernate.validator.constraints.NotEmpty;
+
 import java.io.Serializable;
 import java.util.Date;
 
@@ -9,6 +11,8 @@ import java.util.Date;
 public class TaskBean implements Serializable {
 
     private String id;
+
+    @NotEmpty
     private String name;
     private Date createTime;
     private String assignee;

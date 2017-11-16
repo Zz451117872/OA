@@ -14,10 +14,13 @@ import org.activiti.engine.RuntimeService;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -42,11 +45,15 @@ public class SalaryAdjustController extends CommonController{
 
     //开启薪资调整流程   要进行表单验证
     @RequestMapping(value = "start_salary_workflow",method = RequestMethod.POST)
-    public String startWorkflow(SalaryAdjust salaryAdjust) {
+    public String startWorkflow(@Valid SalaryAdjust salaryAdjust , BindingResult bindingResult) {
         Subject subject = SecurityUtils.getSubject();
         if(!subject .isAuthenticated())
         {
             throw new AppException(Error.UN_AUTHORIZATION);
+        }
+        if(bindingResult.hasErrors())
+        {
+            throw new AppException(Error.PARAMS_ERROR,bindingResult.getFieldError().getDefaultMessage());
         }
         User user = getUserBySubject(subject);
         if(salaryAdjust != null)
@@ -69,7 +76,7 @@ public class SalaryAdjustController extends CommonController{
     }
 
     @RequestMapping(value = "salary_by_status",method = RequestMethod.POST)
-    public List<SalaryAdjust> getSalaryAddustByStatus(Integer status) {
+    public List<SalaryAdjust> getSalaryAddustByStatus(@RequestParam(value = "status",required = false,defaultValue = "1") Integer status) {
         Subject subject = SecurityUtils.getSubject();
         if(!subject .isAuthenticated())
         {
@@ -87,27 +94,30 @@ public class SalaryAdjustController extends CommonController{
 
     //获取 薪资调整详细
     @RequestMapping(value = "salary_by_id",method = RequestMethod.POST)
-    public SalaryAdjust getSalaryAdjust(Integer salaryId) {
+    public SalaryAdjust getSalaryAdjust(@RequestParam(value = "salaryId",required = true) Integer salaryId) {
         Subject subject = SecurityUtils.getSubject();
         if(!subject .isAuthenticated())
         {
             throw new AppException(Error.UN_AUTHORIZATION);
         }
-        if(salaryId != null)
-        {
-            return salaryAdjustMapper.selectByPrimaryKey(salaryId);
-        }
-        throw new AppException(Error.PARAMS_ERROR);
+        return salaryAdjustMapper.selectByPrimaryKey(salaryId);
     }
 
 
     //修改申请 ，要进行表单验证
     @RequestMapping(value = "modify_salary",method = RequestMethod.POST)
-    public void modifySalaryAdjust(SalaryAdjust salaryAdjust,Boolean reApply,String taskId,String comment) {
+    public void modifySalaryAdjust(@Valid SalaryAdjust salaryAdjust,BindingResult bindingResult,
+                                   @RequestParam(value = "reApply",required = true) Boolean reApply,
+                                   @RequestParam(value = "taskId",required = true) String taskId,
+                                   @RequestParam(value = "comment",required = false,defaultValue = "我无语") String comment) {
         Subject subject = SecurityUtils.getSubject();
         if(!subject .isAuthenticated())
         {
             throw new AppException(Error.UN_AUTHORIZATION);
+        }
+        if(bindingResult.hasErrors())
+        {
+            throw new AppException(Error.PARAMS_ERROR,bindingResult.getFieldError().getDefaultMessage());
         }
         User user = getUserBySubject(subject);
         Map<String,Object> variables = Maps.newHashMap();

@@ -5,11 +5,16 @@ import com.example.OA.mvc.exception.AppException;
 import com.example.OA.mvc.exception.Error;
 import com.example.OA.service.manager.PrivilegeService;
 import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.validation.Valid;
 
 /**
  * Created by aa on 2017/10/31.
@@ -22,47 +27,43 @@ public class PrivilegeController {
     PrivilegeService privilegeService;
 
 
-
-    @RequestMapping(value = "add_privilege",method = RequestMethod.POST)
-    public String add(Privilege privilege)
+    @RequiresPermissions(value = "privilege_add")
+    @RequestMapping(value = "add_or_update_privilege",method = RequestMethod.POST)
+    public void addOrUpdate(@Valid Privilege privilege , BindingResult bindingResult)
     {
         Subject subject = SecurityUtils.getSubject();
         if(!subject.isAuthenticated()) {
             throw new AppException(Error.UN_AUTHORIZATION);
         }
-        if(privilege != null)
+
+        if(bindingResult.hasErrors())
         {
-            return privilegeService.add(privilege);
+            throw new AppException(Error.PARAMS_ERROR,bindingResult.getFieldError().getDefaultMessage());
         }
-        throw new AppException(Error.PARAMS_ERROR);
+
+            if(privilege != null)
+            {
+                if(privilege.getId() != null)
+                {
+                    privilegeService.update(privilege);
+                    return;
+                }else {
+                    privilegeService.add(privilege);
+                    return;
+                }
+            }
+            throw new AppException(Error.PARAMS_ERROR);
     }
 
-    @RequestMapping(value = "update_privilege",method = RequestMethod.POST)
-    public String update(Privilege privilege)
-    {
-        Subject subject = SecurityUtils.getSubject();
-        if(!subject.isAuthenticated()) {
-            throw new AppException(Error.UN_AUTHORIZATION);
-        }
-        if(privilege != null)
-        {
-            return privilegeService.update(privilege);
-        }
-        throw new AppException(Error.PARAMS_ERROR);
-    }
-
+    @RequiresPermissions(value = "privilege_delete")
     @RequestMapping(value = "delete_privilege",method = RequestMethod.POST)
-    public String delete(Integer privilegeId)
+    public void delete(@RequestParam(value = "privilegeId", required = true) Integer privilegeId)
     {
-
         Subject subject = SecurityUtils.getSubject();
         if(!subject.isAuthenticated()) {
             throw new AppException(Error.UN_AUTHORIZATION);
         }
-        if(privilegeId != null)
-        {
-            return privilegeService.deleteById(privilegeId);
-        }
-        throw new AppException(Error.PARAMS_ERROR);
+        privilegeService.deleteById(privilegeId);
+        return;
     }
 }

@@ -13,6 +13,7 @@ import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
@@ -35,38 +36,43 @@ public class UserService {
     @Autowired
     RoleService roleService;
 
-    public String addUser(User user) {
-        if(user != null)
+    //添加一个用户
+    public void addUser(User user) {
+        try{
+            String username = user.getUsername(); //用户名唯一
+            if(userMapper.getByUsername(username) == null)
+            {
+                user.setCreateTime(new Date());
+                 userMapper.insert(user);
+                 return ;
+             }
+            throw new AppException(Error.TARGET_EXISTSED,"用户名已存在");
+        }catch (AppException e)
         {
-            String username = user.getUsername();
-          if(StringUtils.isNotBlank(username) && userMapper.getByUsername(username) == null)
-          {
-              user.setCreateTime(new Date());
-              userMapper.insert(user);
-              return username;
-          }
-            throw new AppException(Error.TARGET_EXISTSED);
-
+            throw e;
+        }catch (Exception e) {
+            throw new AppException(Error.UNKNOW_EXCEPTION);
         }
-        throw new AppException(Error.PARAMS_ERROR);
     }
 
-    public String updateUser(User user) {
-        if(user != null)
-        {
-            user.setUsername(null);
+    //更新一个用户
+    public void updateUser(User user) {
+        try{
+            user.setUsername(null); //用户名不能修改
             user.setCreateTime(null);
             user.setUpdateTime(new Date());
             userMapper.updateByPrimaryKeySelective(user);
-            return user.getId()+"";
+            return ;
+        }catch (Exception e) {
+            throw new AppException(Error.UNKNOW_EXCEPTION);
         }
-        throw new AppException(Error.PARAMS_ERROR);
     }
 
-    public String deleteUser(Integer userId) {
+    //删除一个用户
+    @Transactional
+    public void deleteUser(Integer userId) {
         //删除用户时，用户与角色的对应关系也要删除
-        if(userId != null)
-        {
+        try{
             if(userMapper.selectByPrimaryKey(userId) != null)
             {
                 int result = userMapper.deleteByPrimaryKey(userId);
@@ -76,63 +82,67 @@ public class UserService {
                     if(roleIds != null && !roleIds.isEmpty())
                     {
                         userRoleMapper.deleteByRoleidsAndUserid(userId,roleIds);
-                        return "success";
+                        return ;
                     }
                 }
-                throw new AppException(Error.UNKNOW_EXCEPTION,"delete faild");
+                throw new AppException(Error.UNKNOW_EXCEPTION,"database inner error");
             }
-            throw new AppException(Error.TARGET_NO_EXISTS);
+            throw new AppException(Error.TARGET_NO_EXISTS,"用户不存在");
+        }catch (AppException e)
+        {
+            throw e;
+        }catch (Exception e) {
+            throw new AppException(Error.UNKNOW_EXCEPTION);
         }
-        throw new AppException(Error.PARAMS_ERROR);
     }
 
-    public int endowRoleToUser(Integer userId, String roleIds) {
-        if(userId != null && StringUtils.isNotBlank(roleIds))
-        {
+    //授予角色给该用户
+    @Transactional
+    public void endowRoleToUser(Integer userId, String roleIds) {
+        try{
             User user = userMapper.selectByPrimaryKey(userId);
-            if(user == null) throw new AppException(Error.TARGET_NO_EXISTS,"user no exist");
+            if(user != null) {
+                String[] roleIdArr = roleIds.split(",");
+                for (int i = 0; i < roleIdArr.length; i++) {
+                    Integer roleId = Integer.parseInt(roleIdArr[i]);
 
-            int result = 0;
-            String[] roleIdArr = roleIds.split(",");
-            for(int i=0; i<roleIdArr.length; i++)
-            {
-                Integer roleId = Integer.parseInt(roleIdArr[i]);
-                if(roleMapper.selectByPrimaryKey(roleId) != null)
-                {
-                    //授予 用户 角色时，要判断该用户是否已拥有该角色了
-                    UserRoleKey userRoleKey = new UserRoleKey(userId,roleId);
-                    userRoleMapper.insert(userRoleKey);
-                    result++;
+                    if(roleMapper.selectByPrimaryKey(roleId) != null) {
+                        UserRoleKey userRoleKey = new UserRoleKey(userId, roleId);
+                        userRoleMapper.insert(userRoleKey);
+                    }
                 }
+                return;
             }
-            return result;
+            throw new AppException(Error.TARGET_NO_EXISTS,"用户不存在");
+        }catch (AppException e)
+        {
+            throw e;
+        }catch (Exception e) {
+            throw new AppException(Error.UNKNOW_EXCEPTION);
         }
-        throw new AppException(Error.PARAMS_ERROR,"param error");
     }
 
-    public int takebackRoleFromUser(Integer userId, String roleIds) {
-        if(userId != null && StringUtils.isNotBlank(roleIds))
-        {
+    //从该用户收回角色
+    @Transactional
+    public void takebackRoleFromUser(Integer userId, String roleIds) {
+       try{
             User user = userMapper.selectByPrimaryKey(userId);
-            if(user == null)
-            {
-                throw new AppException(Error.TARGET_NO_EXISTS,"user no exist");
-            }
-            int result = 0;
-            String[] roleIdArr = roleIds.split(",");
-            for(int i=0; i<roleIdArr.length; i++)
-            {
-                //收回 用户 角色时，要判断是否该用户是否有该角色
-                Integer roleId = Integer.parseInt(roleIdArr[i]);
-                if(roleMapper.selectByPrimaryKey(roleId) != null)
-                {
-                    userRoleMapper.deleteByRoleidAndUserid(userId,roleId);
-                    result++;
+            if(user != null) {
+                String[] roleIdArr = roleIds.split(",");
+                for (int i = 0; i < roleIdArr.length; i++) {
+
+                    Integer roleId = Integer.parseInt(roleIdArr[i]);
+                    userRoleMapper.deleteByRoleidAndUserid(userId, roleId);
                 }
+                return;
             }
-            return result;
-        }
-        throw new AppException(Error.PARAMS_ERROR,"param error");
+           throw new AppException(Error.TARGET_NO_EXISTS,"用户不存在");
+        }catch (AppException e)
+       {
+           throw e;
+       }catch (Exception e) {
+           throw new AppException(Error.UNKNOW_EXCEPTION);
+       }
     }
 
     public List<Role> getAllRoleByUserId(Integer userId) {
@@ -185,5 +195,10 @@ public class UserService {
             return userMapper.getByUsername(username);
         }
         throw new AppException(Error.PARAMS_ERROR,"param error");
+    }
+
+    public List<User> getAll()
+    {
+        return userMapper.getAll();
     }
 }
