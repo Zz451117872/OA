@@ -131,4 +131,26 @@
     from privilege
     where parent = #{parentId}
   </select>
+
+  <select id="getRoot" parameterType="int" resultMap="BaseResultMap">
+    SELECT
+    <include refid="Base_Column_List"/>
+    from privilege
+    where parent = #{parent}
+  </select>
+
+  <select id="getTopPrivilege" resultMap="BaseResultMap">
+    SELECT
+    <include refid="Base_Column_List"/>
+    from privilege
+    where parent = 0;
+  </select>
+
+  <select id="getByUrlEorId" parameterType="map" resultMap="BaseResultMap">
+    SELECT
+    <include refid="Base_Column_List"/>
+    from privilege
+    where url = #{url}
+    and id != #{privilegeId}
+  </select>
 </mapper>

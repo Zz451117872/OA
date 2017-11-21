@@ -19,9 +19,9 @@ public interface RolePrivilegeMapper {
 
     int deleteByRoleidAndPrivilegeid(@Param("roleId") Integer roleId, @Param("privilegeId")Integer privilegeId);
 
-    List<Privilege> getByRoleId(Integer roleId);
-
     int deleteByPrivilegeId(Integer privilegeId);
 
     List<Integer> getPrivilegeIdByRoleid(Integer roleId);
+
+    RolePrivilegeKey getByRoleAndPrivilege(@Param("roleId") Integer roleId, @Param("privilegeId")Integer privilegeId);
 }

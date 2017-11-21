@@ -42,12 +42,19 @@
     role_id,privilege_id
   </sql>
 
+  <select id="getByRoleAndPrivilege" parameterType="map" resultMap="BaseResultMap">
+    SELECT
+    <include refid="Base_Column_List"/>
+    from role_privilege
+    where role_id = #{roleId}
+    and privilege_id = #{privilegeId}
+  </select>
 
   <!-- ===================================    -->
   <delete id="deleteByRoleId" parameterType="int">
     DELETE
     from role_privilege
-    where role_id = {roleId}
+    where role_id = #{roleId}
   </delete>
 
   <delete id="deleteByRoleidAndPrivilegeid" parameterType="map" >

@@ -74,4 +74,25 @@
       #{item}
     </foreach>
   </delete>
+
+
+  <delete id="deleteAll">
+    DELETE
+    from user_role
+    where 1=1
+  </delete>
+
+  <delete id="deleteByUserId" parameterType="int">
+    DELETE
+    from user_role
+    where user_id = #{userId}
+  </delete>
+
+  <select id="getByUserAndRole" parameterType="map" resultMap="BaseResultMap">
+    SELECT
+    <include refid="Base_Column_List"/>
+    from user_role
+    where user_id = #{userId}
+    and role_id = #{roleId}
+  </select>
 </mapper>

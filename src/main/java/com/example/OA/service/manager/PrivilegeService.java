@@ -3,6 +3,7 @@ package com.example.OA.service.manager;
 import com.example.OA.dao.PrivilegeMapper;
 import com.example.OA.dao.RolePrivilegeMapper;
 import com.example.OA.model.Privilege;
+import com.example.OA.model.VO.PrivilegeVO;
 import com.example.OA.mvc.exception.AppException;
 import com.example.OA.mvc.exception.Error;
 import com.google.common.collect.Lists;
@@ -26,14 +27,17 @@ public class PrivilegeService {
     @Autowired
     RolePrivilegeMapper rolePrivilegeMapper;
 
-    public List<Privilege> getAll()
+    //获取 顶级权限，并填充子权限
+    public List<Privilege> getTopPrivilege()
     {
         try{
-            List<Privilege> result = Lists.newArrayList();
-            Privilege root = privilegeMapper.getRoot(0); //得到根权限
-            if(root != null)
+            List<Privilege> result = privilegeMapper.getTopPrivilege();//得到顶级权限
+            if(result != null)
             {
-                addPrivilegeToResult(root,result);  //递归填充子权限
+                for(Privilege privilege : result)
+                {
+                    fillChildToParent(privilege);   //递归填充子权限
+                }
                 return result;
             }
             throw new AppException(Error.DATA_VERIFY_ERROR,"权限数据未初始化");
@@ -46,21 +50,25 @@ public class PrivilegeService {
         }
     }
 
-    private void addPrivilegeToResult(Privilege root, List<Privilege> result) {
-        try {
-            List<Privilege> childs = privilegeMapper.getChild(root.getId());
-            root.setChilds(childs);
-            result.add(root);
-            if (childs != null && !childs.isEmpty()) {
-                for (Privilege child : childs) {
-                    addPrivilegeToResult(child, result);
-                }
-            }
-        }catch (Exception e)
+    //递归 填充子权限
+    private void fillChildToParent(Privilege privilege) {
+        if(privilege != null)
         {
-            throw new AppException(Error.UNKNOW_EXCEPTION,"addPrivilegeToResult");
+            List<Privilege> childs = privilegeMapper.getChild(privilege.getId());
+            privilege.setChilds(childs);
+            if(childs != null && !childs.isEmpty())
+            {
+                for (Privilege child : childs)
+                {
+                    fillChildToParent(child);
+                }
+                return;
+            }
+            return;
         }
+        return;
     }
+
 
     //添加一个权限
     public String add(Privilege privilege) {
@@ -84,7 +92,7 @@ public class PrivilegeService {
         {
             if(privilegeMapper.selectByPrimaryKey(privilege.getId()) != null) {
                 String url = privilege.getUrl(); //权限url唯一
-                if (privilegeMapper.getByUrl(url) == null) {
+                if (privilegeMapper.getByUrlEorId(url,privilege.getId()) == null) {
                     privilege.setUpdateTime(new Date());
                     privilegeMapper.updateByPrimaryKeySelective(privilege);
                     return url;
@@ -115,5 +123,9 @@ public class PrivilegeService {
             throw new AppException(Error.TARGET_NO_EXISTS,"权限不存在");
         }
         throw new AppException(Error.PARAMS_ERROR);
+    }
+
+    public List<Privilege> getChild(Integer parentId) {
+        return privilegeMapper.getChild(parentId);
     }
 }

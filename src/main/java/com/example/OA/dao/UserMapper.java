@@ -30,6 +30,5 @@ public interface UserMapper {
 
     String getUsernameById(Integer userId);
 
-    ///////////////////////
     List<User> getAll();
 }

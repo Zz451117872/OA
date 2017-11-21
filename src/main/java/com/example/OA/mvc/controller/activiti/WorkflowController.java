@@ -209,7 +209,8 @@ public class WorkflowController extends CommonController{
                     pie.setSuspended(processInstance.isSuspended());
 
                     ProcessDefinitionCache.setRepositoryService(this.repositoryService);
-                    String taskName = ProcessDefinitionCache.getActivityName(processInstance.getProcessDefinitionId(), processInstance.getActivityId());
+//                    String taskName = ProcessDefinitionCache.getActivityName(processInstance.getProcessDefinitionId(), processInstance.getActivityId());
+                    String taskName = "";
                     pie.setTaskName(taskName);
                     result.add(pie);
                 }

@@ -4,6 +4,7 @@ import com.example.OA.model.Privilege;
 import com.example.OA.mvc.exception.AppException;
 import com.example.OA.mvc.exception.Error;
 import com.example.OA.service.manager.PrivilegeService;
+import com.google.common.collect.Lists;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.apache.shiro.subject.Subject;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.util.List;
 
 /**
  * Created by aa on 2017/10/31.
@@ -28,7 +30,7 @@ public class PrivilegeController {
 
 
     @RequiresPermissions(value = "privilege_add")
-    @RequestMapping(value = "add_or_update_privilege",method = RequestMethod.POST)
+    @RequestMapping(value = "add_or_update_privilege.do",method = RequestMethod.POST)
     public void addOrUpdate(@Valid Privilege privilege , BindingResult bindingResult)
     {
         Subject subject = SecurityUtils.getSubject();
@@ -56,7 +58,7 @@ public class PrivilegeController {
     }
 
     @RequiresPermissions(value = "privilege_delete")
-    @RequestMapping(value = "delete_privilege",method = RequestMethod.POST)
+    @RequestMapping(value = "delete_privilege.do",method = RequestMethod.POST)
     public void delete(@RequestParam(value = "privilegeId", required = true) Integer privilegeId)
     {
         Subject subject = SecurityUtils.getSubject();
@@ -65,5 +67,27 @@ public class PrivilegeController {
         }
         privilegeService.deleteById(privilegeId);
         return;
+    }
+
+    //获取顶级权限
+    @RequestMapping(value = "get_top_privilege.do",method = RequestMethod.POST)
+    public List<Privilege> getTopPrivilege()
+    {
+        Subject subject = SecurityUtils.getSubject();
+        if(!subject.isAuthenticated()) {
+            throw new AppException(Error.UN_AUTHORIZATION);
+        }
+        return privilegeService.getTopPrivilege();
+    }
+
+    //获取顶级权限
+    @RequestMapping(value = "get_child.do",method = RequestMethod.POST)
+    public List<Privilege> getChild(@RequestParam(value = "parentId", required = true) Integer parentId)
+    {
+        Subject subject = SecurityUtils.getSubject();
+        if(!subject.isAuthenticated()) {
+            throw new AppException(Error.UN_AUTHORIZATION);
+        }
+        return privilegeService.getChild(parentId);
     }
 }

@@ -56,13 +56,13 @@ public class ProcessDefinitionCache {
         return null;
     }
 
-    public static String getActivityName(String processDefinitionId, String activityId) {
-        ActivityImpl activity = getActivity(processDefinitionId, activityId);
-        if (activity != null) {
-            return ObjectUtils.toString(activity.getProperty("name"));
-        }
-        return null;
-    }
+//    public static String getActivityName(String processDefinitionId, String activityId) {
+//        ActivityImpl activity = getActivity(processDefinitionId, activityId);
+//        if (activity != null) {
+//            return ObjectUtils.toString(activity.getProperty("name"));
+//        }
+//        return null;
+//    }
 
     public static void setRepositoryService(RepositoryService repositoryService) {
         ProcessDefinitionCache.repositoryService = repositoryService;

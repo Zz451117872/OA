@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.util.List;
 
 /**
  * Created by aa on 2017/10/31.
@@ -27,7 +28,7 @@ public class PartController {
     PartService partService;
 
     @RequiresPermissions(value = "part_add")
-    @RequestMapping(value = "add_or_update_part",method = RequestMethod.POST)
+    @RequestMapping(value = "add_or_update_part.do",method = RequestMethod.POST)
     public void addOrUpdate(@Valid Part part , BindingResult bindingResult)
     {
         Subject subject = SecurityUtils.getSubject();
@@ -54,7 +55,7 @@ public class PartController {
     }
 
     @RequiresPermissions(value = "part_delete")
-    @RequestMapping(value = "delete_part",method = RequestMethod.POST)
+    @RequestMapping(value = "delete_part.do",method = RequestMethod.POST)
     public void delete(@RequestParam(value = "partId",required = true) Integer partId)
     {
         Subject subject = SecurityUtils.getSubject();
@@ -65,4 +66,13 @@ public class PartController {
         return;
     }
 
+    @RequestMapping(value = "all_part.do",method = RequestMethod.POST)
+    public List<Part> getAll()
+    {
+        Subject subject = SecurityUtils.getSubject();
+        if(!subject.isAuthenticated()) {
+            throw new AppException(Error.UN_AUTHORIZATION);
+        }
+        return partService.getAll();
+    }
 }

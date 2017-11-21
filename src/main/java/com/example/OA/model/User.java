@@ -34,6 +34,7 @@ public class User implements Serializable{
         this.salary = salary;
     }
 
+
     public User() {
         super();
     }

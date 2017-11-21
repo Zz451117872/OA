@@ -23,6 +23,5 @@ public interface RoleMapper {
 
     List<Role> getByRoleIds(@Param("roleIds") List<Integer> roleIds);
 
-    //==========================
     List<Role> getAll();
 }

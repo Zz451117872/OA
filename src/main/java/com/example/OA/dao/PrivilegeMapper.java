@@ -25,7 +25,7 @@ public interface PrivilegeMapper {
 
     List<Privilege> getChild(Integer parentId);
 
-    //===========
+    List<Privilege> getTopPrivilege();
 
-    Privilege getRoot(int parent);
+    Privilege getByUrlEorId(@Param("url") String url,@Param("privilegeId")Integer privilegeId);
 }

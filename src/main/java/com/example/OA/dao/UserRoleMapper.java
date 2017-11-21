@@ -20,4 +20,10 @@ public interface UserRoleMapper {
     List<Integer> getRoleidByUserid(Integer userId);
 
     int deleteByRoleidsAndUserid(@Param("userId")Integer userId, @Param("roleIds")List<Integer> roleIds);
+
+    void deleteAll();
+
+    void deleteByUserId(Integer userId);
+
+    UserRoleKey getByUserAndRole(@Param("userId")Integer userId, @Param("roleId")Integer roleId);
 }
