@@ -26,16 +26,17 @@ public class Const {
         String EXPENSE = "expense";
     }
 
-    // 请假单状态
-    public enum  WorkflowStatus{
-        APPLICATION(1,"审批中"),
-        APPROVED(10,"已批准"),
-        CANCELED(100,"已取消"),
-        CLOSED(10000,"已关闭"),
-        REJECTED(101,"已拒绝");
+    // 业务状态
+    public enum  BusinessStatus{
+        APPLICATION(201,"审批中"),
+        REJECTED(202,"已拒绝"),
+        PASSED(203,"已通过"),
+        CANCELED(204,"已取消"),
+        CLOSED(205,"已关闭");
         private String value;
-        private Integer code;
-        WorkflowStatus(Integer code,String value)
+        private int code;
+
+        BusinessStatus(int code,String value)
         {
             this.code = code;
             this.value = value;
@@ -43,17 +44,17 @@ public class Const {
         public String getValue() {
             return value;
         }
-        public Integer getCode() {
+        public int getCode() {
             return code;
         }
 
-        public static WorkflowStatus codeof(Integer code)
+        public static BusinessStatus codeof(int code)
         {
-            for(WorkflowStatus leaveStatus : values())
+            for(BusinessStatus businessStatus : values())
             {
-                if(leaveStatus.getCode() == code)
+                if(businessStatus.getCode() == code)
                 {
-                    return leaveStatus;
+                    return businessStatus;
                 }
             }
             throw new RuntimeException("没有找到对应的枚举");
@@ -62,10 +63,12 @@ public class Const {
 
 
 
+
     //回复状态
     public enum  ReplyStatus{
-        DISABLE((short)0,"不显示"),
-        ENABLE((short)1,"显示");
+        APPLY((short)1,"申请"),
+        INVALID((short)100,"无效的"),
+        PASS((short)2,"通过");
         private String value;
         private Short code;
         ReplyStatus(Short code,String value)
@@ -78,6 +81,18 @@ public class Const {
         }
         public Short getCode() {
             return code;
+        }
+
+        public static ReplyStatus getReplyStatus(String replyStatusStr)
+        {
+            for(ReplyStatus replyStatus : values())
+            {
+                if(replyStatus.name().equals(replyStatusStr))
+                {
+                    return replyStatus;
+                }
+            }
+            throw new RuntimeException("没有找到对应的枚举");
         }
 
         public static ReplyStatus codeof(Short code)
@@ -96,7 +111,7 @@ public class Const {
     //主题状态
     public enum TopicStatus{
         APPLY((short)1,"申请"),
-        REJECT((short)0,"拒绝"),
+        INVALID((short)100,"无效的"),
         PASS((short)2,"通过"),
         CLOSED((short)10,"关闭");
         private String value;
@@ -114,6 +129,18 @@ public class Const {
             return code;
         }
 
+        public static TopicStatus getTopicStatus(String topicStatusStr)
+        {
+            for(TopicStatus topicStatus : values())
+            {
+                if(topicStatus.name().equals(topicStatusStr))
+                {
+                    return topicStatus;
+                }
+            }
+            throw new RuntimeException("没有找到对应的枚举");
+        }
+
         public static TopicStatus codeof(Short code)
         {
             for(TopicStatus topicStatus : values())
@@ -124,71 +151,6 @@ public class Const {
                 }
             }
             throw new RuntimeException("没有找到对应的枚举");
-        }
-    }
-
-
-    public enum Error {
-        UNKNOW_EXCEPTION(0, "unknow exception"),
-        UN_AUTHORIZATION(10, "un authorization"),
-        PARAMS_ERROR(100, "parasm valid %s"),
-        USERNAME_OR_PASSWORD_ERROR(1000, "username or password error"),
-        INVALID_PARAMS(10000, "invalid params: %s"),
-        EXISTSED(1001,"target existsed"),
-        NO_EXISTS(1002,"target NO existsed"),
-        ;
-
-        private int code;
-        private String msg;
-
-        Error(int code) {
-            this.code = code;
-            this.msg = this.name();
-        }
-
-        Error(int code, String msg){
-            this.code = code;
-            this.msg = msg;
-        }
-
-        public int getCode() {
-            return code;
-        }
-        public String getMsg() {
-            return msg;
-        }
-
-        public static Error codeof(Short code)
-        {
-            for(Error error : values())
-            {
-                if(error.getCode() == code)
-                {
-                    return error;
-                }
-            }
-            throw new RuntimeException("没有找到对应的枚举");
-        }
-    }
-
-    public enum PropertyType {
-        S(String.class),
-        I(Integer.class),
-        L(Long.class),
-        F(Float.class),
-        N(Double.class),
-        D(Date.class),
-        SD(java.sql.Date.class),
-        B(Boolean.class);
-
-        private Class<?> clazz;
-
-        private PropertyType(Class<?> clazz) {
-            this.clazz = clazz;
-        }
-
-        public Class<?> getValue() {
-            return clazz;
         }
     }
 

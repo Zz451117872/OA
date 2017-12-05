@@ -2,41 +2,39 @@ package com.example.OA.model.activiti;
 
 
 import org.hibernate.validator.constraints.NotEmpty;
-
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
 
-public class SalaryAdjust extends BaseVO implements Serializable{
+public class SalaryAdjust implements Serializable{
 
     private Integer id;
-
-    @NotEmpty
+    //薪资调整金额
+    @NotNull
     @Max(value = 10000)
     @Min(value = 1000)
     private BigDecimal adjustmoney;
-
+    //创建时间
     private Date createTime;
 
     private Date updateTime;
 
     private String processinstanceid;
-
+    //状态
     private Integer status;
-
+    //描述
     private String description;
+
+    private Integer application;
 
     public SalaryAdjust() {
     }
 
-    public SalaryAdjust(Integer id,Integer application,String applicationName,String businessType, BigDecimal adjustmoney, Date createTime, Date updateTime, String processinstanceid, Integer status, String description) {
-        this.setApplication(application);
-        this.setApplicationName(applicationName);
-        this.setBusinesstype(businessType);
-
+    public SalaryAdjust(Integer id,Integer application, BigDecimal adjustmoney, Date createTime, Date updateTime, String processinstanceid, Integer status, String description) {
         this.id = id;
         this.adjustmoney = adjustmoney;
         this.createTime = createTime;
@@ -44,36 +42,16 @@ public class SalaryAdjust extends BaseVO implements Serializable{
         this.processinstanceid = processinstanceid;
         this.status = status;
         this.description = description;
+        this.application = application;
     }
 
-    public SalaryAdjust(Integer id,Integer application,String applicationName,String businessType, BigDecimal adjustmoney, Date createTime, Date updateTime, String processinstanceid, Integer status, String description,byte[] bytes) {
-        this.setApplication(application);
-        this.setApplicationName(applicationName);
-        this.setBusinesstype(businessType);
-        System.out.println("你是个什么东西：：："+new String(bytes));
-        this.id = id;
-        this.adjustmoney = adjustmoney;
-        this.createTime = createTime;
-        this.updateTime = updateTime;
-        this.processinstanceid = processinstanceid;
-        this.status = status;
-        this.description = description;
+    public Integer getApplication() {
+        return application;
     }
 
-    public SalaryAdjust(Integer id,Integer application,String applicationName,String businessType, BigDecimal adjustmoney, Date createTime, Date updateTime, String processinstanceid, Integer status, String description,String businessKey) {
-        this.setApplication(application);
-        this.setApplicationName(applicationName);
-        this.setBusinesstype(businessType);
-        this.setBusinesskey(businessKey);
-        this.id = id;
-        this.adjustmoney = adjustmoney;
-        this.createTime = createTime;
-        this.updateTime = updateTime;
-        this.processinstanceid = processinstanceid;
-        this.status = status;
-        this.description = description;
+    public void setApplication(Integer application) {
+        this.application = application;
     }
-
 
     public Integer getId() {
         return id;

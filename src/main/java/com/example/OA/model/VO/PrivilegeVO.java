@@ -1,6 +1,7 @@
 package com.example.OA.model.VO;
 
 import com.example.OA.model.Privilege;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -19,12 +20,15 @@ public class PrivilegeVO implements Serializable {
 
     private String parentName;
 
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private Date createTime;
 
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private Date updateTime;
 
     private List<PrivilegeVO> childs;
 
+    //当前用户是否拥有该权限
     private Boolean checked;
 
     public PrivilegeVO() {

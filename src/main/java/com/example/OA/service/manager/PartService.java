@@ -5,6 +5,8 @@ import com.example.OA.dao.UserMapper;
 import com.example.OA.model.Part;
 import com.example.OA.mvc.exception.AppException;
 import com.example.OA.mvc.exception.Error;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,8 +78,9 @@ public class PartService {
         throw new AppException(Error.PARAMS_ERROR);
     }
 
-    public List<Part> getAll()
+    public PageInfo getAll(Integer pageNum,Integer pageSize)
     {
-        return partMapper.getAll();
+        PageHelper.startPage(pageNum,pageSize);
+        return new PageInfo(partMapper.getAll());
     }
 }

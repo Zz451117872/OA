@@ -11,6 +11,10 @@ import org.springframework.web.filter.CorsFilter;
 /**
  * Created by aa on 2017/11/20.
  */
+
+/*
+解决跨域问题
+ */
 @Configuration
 public class SecurityCorsConfiguration {
 

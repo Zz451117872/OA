@@ -173,7 +173,7 @@
 
 
   <!--  ========================================  -->
-  <select id="getByApplicationAndStatus" parameterType="map" resultMap="BaseResultMap">
+  <select id="getByApplicationOrStatus" parameterType="map" resultMap="BaseResultMap">
     SELECT
     <include refid="Base_Column_List"/>
     from leavess

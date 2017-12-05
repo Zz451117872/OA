@@ -20,5 +20,6 @@ public interface SalaryAdjustMapper {
     int updateByPrimaryKey(SalaryAdjust record);
 
     //////////////////////
-    List<SalaryAdjust> getByApplicationAndStatus(@Param("application") Integer application, @Param("status")Integer status);
+    List<SalaryAdjust> getByApplicationOrStatus(@Param("application") Integer application, @Param("status")Integer status);
+
 }

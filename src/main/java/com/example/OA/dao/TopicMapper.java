@@ -25,4 +25,8 @@ public interface TopicMapper {
     List<Topic> getAllByAuthor(Integer userId);
 
     Topic getByIdOrName(@Param("topicId") Integer topicId, @Param("topicName")String topicName);
+
+    List<Topic> getAll();
+
+    List<Topic> getAllTopicByForum(Integer forumId);
 }

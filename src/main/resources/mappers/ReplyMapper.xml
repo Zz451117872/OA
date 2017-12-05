@@ -155,7 +155,17 @@
     where topic_id = #{topicId}
   </select>
 
+<select id="getAll" resultMap="BaseResultMap">
+  SELECT
+  <include refid="Base_Column_List"/>
+  from reply
+  where 1=1
+</select>
 
-
-
+<select id="getAllReplyByTopic" parameterType="int" resultMap="BaseResultMap">
+  SELECT
+  <include refid="Base_Column_List"/>
+  from reply
+  where topic_id = #{topicId}
+</select>
 </mapper>

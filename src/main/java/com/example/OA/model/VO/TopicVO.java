@@ -1,56 +1,50 @@
-package com.example.OA.model;
+package com.example.OA.model.VO;
 
+import com.example.OA.model.Reply;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.github.pagehelper.PageInfo;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.Date;
-import java.util.List;
 
-public class Topic implements Serializable {
+/**
+ * Created by aa on 2017/12/2.
+ */
+public class TopicVO implements Serializable{
+
     private Integer id;
 
-    @Size(max = 100)
-    @NotEmpty
     private String title;
 
-    @Size(max = 400)
-    @NotEmpty
     private String content;
 
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private Date createTime;
 
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private Date updateTime;
 
-    private Short status;
+    private String status;
 
-    private Integer author;
+    private String statusName;
+    private String authorName;
 
     private String ip;
 
     private Integer replyCount;
 
-    private Integer forumId;
+    private String forumName;
 
     private Integer lastReply;
 
-    public Topic(Integer id, String title, String content, Date createTime, Date updateTime, Short status, Integer author, String ip, Integer replyCount, Integer forumId, Integer lastReply) {
-        this.id = id;
-        this.title = title;
-        this.content = content;
-        this.createTime = createTime;
-        this.updateTime = updateTime;
-        this.status = status;
-        this.author = author;
-        this.ip = ip;
-        this.replyCount = replyCount;
-        this.forumId = forumId;
-        this.lastReply = lastReply;
+    public String getStatusName() {
+        return statusName;
     }
 
-    public Topic() {
-        super();
+    public void setStatusName(String statusName) {
+        this.statusName = statusName;
     }
 
     public Integer getId() {
@@ -66,7 +60,7 @@ public class Topic implements Serializable {
     }
 
     public void setTitle(String title) {
-        this.title = title == null ? null : title.trim();
+        this.title = title;
     }
 
     public String getContent() {
@@ -74,7 +68,7 @@ public class Topic implements Serializable {
     }
 
     public void setContent(String content) {
-        this.content = content == null ? null : content.trim();
+        this.content = content;
     }
 
     public Date getCreateTime() {
@@ -93,20 +87,20 @@ public class Topic implements Serializable {
         this.updateTime = updateTime;
     }
 
-    public Short getStatus() {
+    public String getStatus() {
         return status;
     }
 
-    public void setStatus(Short status) {
+    public void setStatus(String status) {
         this.status = status;
     }
 
-    public Integer getAuthor() {
-        return author;
+    public String getAuthorName() {
+        return authorName;
     }
 
-    public void setAuthor(Integer author) {
-        this.author = author;
+    public void setAuthorName(String authorName) {
+        this.authorName = authorName;
     }
 
     public String getIp() {
@@ -114,7 +108,7 @@ public class Topic implements Serializable {
     }
 
     public void setIp(String ip) {
-        this.ip = ip == null ? null : ip.trim();
+        this.ip = ip;
     }
 
     public Integer getReplyCount() {
@@ -125,12 +119,12 @@ public class Topic implements Serializable {
         this.replyCount = replyCount;
     }
 
-    public Integer getForumId() {
-        return forumId;
+    public String getForumName() {
+        return forumName;
     }
 
-    public void setForumId(Integer forumId) {
-        this.forumId = forumId;
+    public void setForumName(String forumName) {
+        this.forumName = forumName;
     }
 
     public Integer getLastReply() {

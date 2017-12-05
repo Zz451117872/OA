@@ -5,8 +5,11 @@ import com.example.OA.model.Privilege;
 import com.example.OA.model.Role;
 import com.example.OA.model.RolePrivilegeKey;
 import com.example.OA.model.VO.PrivilegeVO;
+import com.example.OA.model.VO.RoleVO;
 import com.example.OA.mvc.exception.AppException;
 import com.example.OA.mvc.exception.Error;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,7 +62,8 @@ public class RoleService {
     public void updateRole(Role role) {
         try{
             if (roleMapper.selectByPrimaryKey(role.getId()) != null) {
-                if(roleMapper.getByRolename(role.getRoleName()) == null) {
+                Role temp = roleMapper.getByRolename(role.getRoleName());
+                if(temp == null || temp.getRoleName().equals(role.getRoleName())) {
                     role.setUpdateTime(new Date());
                     roleMapper.updateByPrimaryKeySelective(role);
                     return;
@@ -227,7 +231,6 @@ public class RoleService {
             if(privilegeIds != null && !privilegeIds.isEmpty())
             {                                  //获取顶级权限
                 List<Privilege> topPrivileges = privilegeService.getTopPrivilege();
-
                 filtrateMyPrivilege(topPrivileges,privilegeIds,result);//筛选出属于该角色的权限
             }
             return result;
@@ -261,8 +264,56 @@ public class RoleService {
         return;
     }
 
-    public List<Role> getAll()
+    public PageInfo getAll(Integer pageNum,Integer pageSize)
     {
-        return roleMapper.getAll();
+        try{
+            PageHelper.startPage(pageNum,pageSize);
+            List<Role>  roles = roleMapper.getAll();
+            List<RoleVO> roleVOs = convertRoleVOs(roles);
+            PageInfo pageInfo = new PageInfo(roles);
+            pageInfo.setList(roleVOs);
+            return pageInfo;
+        }catch (Exception e)
+        {
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+    private List<RoleVO> convertRoleVOs(List<Role> roles) {
+        try{
+            if(roles != null && !roles.isEmpty())
+            {
+                List<RoleVO> result = Lists.newArrayList();
+                for(Role role : roles)
+                {
+                    result.add(convertVO(role));
+                }
+                return result;
+            }
+            return null;
+        }catch (Exception e)
+        {
+            throw e;
+        }
+    }
+
+    private RoleVO convertVO(Role role) {
+        try{
+            if(role != null)
+            {
+                RoleVO roleVO = new RoleVO();
+                roleVO.setId(role.getId());
+                roleVO.setCreateTime(role.getCreateTime());
+                roleVO.setUpdateTime(role.getUpdateTime());
+                roleVO.setDescription(role.getDescription());
+                roleVO.setRoleName(role.getRoleName());
+                return roleVO;
+            }
+            return null;
+        }catch (Exception e)
+        {
+            throw e;
+        }
     }
 }

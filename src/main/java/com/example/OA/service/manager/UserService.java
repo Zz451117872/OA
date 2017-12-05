@@ -1,5 +1,6 @@
 package com.example.OA.service.manager;
 
+import com.example.OA.dao.PartMapper;
 import com.example.OA.dao.RoleMapper;
 import com.example.OA.dao.UserMapper;
 import com.example.OA.dao.UserRoleMapper;
@@ -9,8 +10,12 @@ import com.example.OA.model.User;
 import com.example.OA.model.UserRoleKey;
 import com.example.OA.model.VO.PrivilegeVO;
 import com.example.OA.model.VO.RoleVO;
+import com.example.OA.model.VO.UserVO;
+import com.example.OA.mvc.common.ServerResponse;
 import com.example.OA.mvc.exception.AppException;
 import com.example.OA.mvc.exception.Error;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -40,17 +45,24 @@ public class UserService {
     RoleMapper roleMapper;
 
     @Autowired
+    PartMapper partMapper;
+
+    @Autowired
     RoleService roleService;
 
     //添加一个用户
-    public void addUser(User user) {
+    public ServerResponse addUser(User user) {
         try{
             String username = user.getUsername(); //用户名唯一
             if(userMapper.getByUsername(username) == null)
             {
                 user.setCreateTime(new Date());
-                 userMapper.insert(user);
-                 return ;
+                 int result = userMapper.insert(user);
+                if(result > 0)
+                {
+                    return ServerResponse.createBySuccess();
+                }
+                return ServerResponse.createByError();
              }
             throw new AppException(Error.TARGET_EXISTSED,"用户名已存在");
         }catch (AppException e)
@@ -62,21 +74,26 @@ public class UserService {
     }
 
     //更新一个用户
-    public void updateUser(User user) {
+    public ServerResponse updateUser(User user) {
         try{
             user.setUsername(null); //用户名不能修改
             user.setCreateTime(null);
             user.setUpdateTime(new Date());
-            userMapper.updateByPrimaryKeySelective(user);
-            return ;
+            int result = userMapper.updateByPrimaryKeySelective(user);
+            if(result > 0)
+            {
+                return ServerResponse.createBySuccess();
+            }
+            return ServerResponse.createByErrorMessage("known exception");
         }catch (Exception e) {
+            e.printStackTrace();
             throw new AppException(Error.UNKNOW_EXCEPTION);
         }
     }
 
     //删除一个用户
     @Transactional
-    public void deleteUser(Integer userId) {
+    public ServerResponse deleteUser(Integer userId) {
         //删除用户时，用户与角色的对应关系也要删除
         try{
             if(userMapper.selectByPrimaryKey(userId) != null)
@@ -89,7 +106,7 @@ public class UserService {
                     {
                         userRoleMapper.deleteByRoleidsAndUserid(userId,roleIds);
                     }
-                    return ;
+                    return ServerResponse.createBySuccess();
                 }
                 throw new AppException(Error.UNKNOW_EXCEPTION,"database inner error");
             }
@@ -243,8 +260,57 @@ public class UserService {
         throw new AppException(Error.PARAMS_ERROR,"param error");
     }
 
-    public List<User> getAll()
+    public PageInfo<UserVO> getAll(Integer pageNum,Integer pageSize)
     {
-        return userMapper.getAll();
+        try{
+            PageHelper.startPage(pageNum,pageSize);//分页组件是与mybatis 一起使用 才会生效，且只对第一次查询生效
+            List<User> users =  userMapper.getAll();
+            List<UserVO> userVOs = convertUserVOs(users);
+            PageInfo pageInfo = new PageInfo(users);    //users带有分页信息，所以创建pageInfo时 需要使用users,
+            pageInfo.setList(userVOs);                  //重新设置正确的数据
+            return pageInfo;
+        }catch (Exception e)
+        {
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+    private List<UserVO> convertUserVOs(List<User> users) {
+        try{
+            if(users != null && !users.isEmpty())
+            {
+                List<UserVO> userVOs = Lists.newArrayList();
+                for(User user : users)
+                {
+                    userVOs.add(convertUserVO(user));
+                }
+                return userVOs;
+            }
+            return null;
+        }catch (Exception e)
+        {
+            throw e;
+        }
+    }
+
+    private UserVO convertUserVO(User user) {
+        try{
+            if(user != null)
+            {
+                UserVO userVO = new UserVO();
+                userVO.setId(user.getId());
+                userVO.setUsername(user.getUsername());
+                userVO.setCreateTime(user.getCreateTime());
+                userVO.setSalary(user.getSalary());
+                userVO.setUpdateTime(user.getUpdateTime());
+                userVO.setPartName(partMapper.selectByPrimaryKey(user.getPartId()).getPartName());
+                return userVO;
+            }
+            return null;
+        }catch (Exception e)
+        {
+            throw e;
+        }
     }
 }

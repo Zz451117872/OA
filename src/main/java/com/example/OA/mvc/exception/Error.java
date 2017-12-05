@@ -1,14 +1,15 @@
 package com.example.OA.mvc.exception;
 
 public enum Error {
-    UNKNOW_EXCEPTION(0, "unknow exception"),
-    UN_AUTHORIZATION(10, "un authorization"),
-    UN_AUTHENTICATION(11,"un authentication"),
-    PARAMS_ERROR(100, "parasm error"),
-    DATA_VERIFY_ERROR(101, "数据验证错误"),
-    TARGET_EXISTSED(1001,"target existsed"),
-    TARGET_NO_EXISTS(1002,"target NO existsed"),
-    WORKFLOW_INNER_ERROR(1003,"工作流内部错误"),
+    UNKNOW_EXCEPTION(101, "unknow exception"),
+    UN_AUTHORIZATION(102, "un authorization"),
+    UN_AUTHENTICATION(103,"un authentication"),
+    PARAMS_ERROR(104, "参数错误"),
+    DATA_VERIFY_ERROR(105, "数据验证错误"),
+    TARGET_EXISTSED(106,"目标已存在"),
+    TARGET_NO_EXISTS(107,"目标不存在 "),
+    WORKFLOW_INNER_ERROR(108,"工作流内部错误"),
+    DATABASE_OPERATION(109,"数据库操作错误"),
     ;
 
     private int code;

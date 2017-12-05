@@ -1,14 +1,18 @@
 package com.example.OA.mvc.controller.activiti;
 
+import com.example.OA.dao.RoleMapper;
+import com.example.OA.dao.UserRoleMapper;
 import com.example.OA.dao.activiti.LeaveMapper;
+import com.example.OA.model.Role;
 import com.example.OA.model.activiti.Leave;
 import com.example.OA.model.User;
+import com.example.OA.model.VO.LeaveVO;
 import com.example.OA.mvc.common.Const;
+import com.example.OA.mvc.common.ServerResponse;
 import com.example.OA.mvc.controller.CommonController;
 import com.example.OA.mvc.exception.AppException;
 import com.example.OA.mvc.exception.Error;
 import com.example.OA.service.activiti.WorkflowService;
-import com.example.OA.util.BeanUtils;
 import com.google.common.collect.Maps;
 import org.activiti.engine.RuntimeService;
 import org.apache.shiro.SecurityUtils;
@@ -40,9 +44,15 @@ public class LeaveController extends CommonController{
     @Autowired
     RuntimeService runtimeService;
 
+    @Autowired
+    UserRoleMapper userRoleMapper;
+
+    @Autowired
+    RoleMapper roleMapper;
+
     //启动请假流程   要进行表单验证
-    @RequestMapping(value = "start_leave_workflow",method = RequestMethod.POST)
-    public String startWorkflow(@Valid Leave leave , BindingResult bindingResult) {
+    @RequestMapping(value = "start_leave_workflow.do",method = RequestMethod.POST)
+    public ServerResponse startWorkflow(@Valid Leave leave , BindingResult bindingResult) {
         Subject subject = SecurityUtils.getSubject();
         if(!subject .isAuthenticated())
         {
@@ -52,22 +62,26 @@ public class LeaveController extends CommonController{
         {
             throw new AppException(Error.PARAMS_ERROR,bindingResult.getFieldError().getDefaultMessage());
         }
-
-            try{
-                if(leave != null)
-                {
-                //BaseVO 相关属性
+        try{
+            if(leave != null)
+            {
                 User user = getUserBySubject(subject);
-                leave.setApplication(user.getId()); //设置申请人
-                leave.setApplicationName(user.getUsername());
-                leave.setBusinesstype(Const.BusinessType.LEAVE);//业务类型
-
                 //leave 相关相关属性
+                leave.setApplication(user.getId()); //设置申请人
                 leave.setCreateTime(new Date());
-                leave.setStatus(Const.WorkflowStatus.APPLICATION.getCode());
+                leave.setStatus(Const.BusinessStatus.APPLICATION.getCode());
 
                 Map<String, Object> variables = new HashMap<String, Object>();
                 variables.put("inputUser",user.getUsername());//设置申请人变量
+                List<Integer> roleIds = userRoleMapper.getRoleidByUserid(user.getId());
+                if(roleIds != null)
+                {       //目前一个用户只有一个角色，后期优化
+                    Role role = roleMapper.selectByPrimaryKey(roleIds.get(0));
+                    variables.put("role",role.getRoleName());
+                }else{
+                    variables.put("role","employee");
+                }
+
                 return workflowService.startLeaveWorkflow(leave, variables);
                 }
                 throw new AppException(Error.PARAMS_ERROR);
@@ -77,39 +91,21 @@ public class LeaveController extends CommonController{
             }
     }
 
-    //按状态获取请假单信息,若不传 则表示查询所有
-    @RequestMapping(value = "leave_by_status",method = RequestMethod.POST)
-    public List<Leave> getLeavesByStatus(Integer status) {
-        Subject subject = SecurityUtils.getSubject();
-        if(!subject .isAuthenticated())
-        {
-            throw new AppException(Error.UN_AUTHORIZATION);
-        }
-        try{
-            Const.WorkflowStatus.codeof(status);   // 检查传入状态参数
-        }catch (Exception e)
-        {
-            throw new AppException(Error.PARAMS_ERROR,"status 参数错误");
-        }
-        User user = getUserBySubject(subject);
-       return leaveMapper.getByApplicationAndStatus(user.getId(),status);
-    }
 
     //获取 请假单详细
-    @RequestMapping(value = "leave_by_id",method = RequestMethod.POST)
-    public Leave getLeave(@RequestParam(value = "leaveId",required = true) Integer leaveId) {
+    @RequestMapping(value = "get_leave_detail.do",method = RequestMethod.POST)
+    public LeaveVO getLeaveDetail(@RequestParam(value = "leaveId",required = true) Integer leaveId) {
         Subject subject = SecurityUtils.getSubject();
         if(!subject .isAuthenticated())
         {
             throw new AppException(Error.UN_AUTHORIZATION);
         }
-        return leaveMapper.selectByPrimaryKey(leaveId);
+        return workflowService.getLeaveDetail(leaveId);
     }
-
 
 
     //请假申请修改，重新申请
-    @RequestMapping(value = "modify_leave",method = RequestMethod.POST)
+    @RequestMapping(value = "modify_leave.do",method = RequestMethod.POST)
     public void modifyLeave(@Valid Leave leave, BindingResult bindingResult,
                             @RequestParam(value = "reApply",required = true) Boolean reApply,
                             @RequestParam(value = "taskId",required = true) String taskId,

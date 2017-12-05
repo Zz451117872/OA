@@ -6,10 +6,12 @@ import com.example.OA.model.User;
 import com.example.OA.model.VO.PrivilegeVO;
 import com.example.OA.model.VO.RoleVO;
 import com.example.OA.mvc.common.ServerResponse;
+import com.example.OA.mvc.controller.CommonController;
 import com.example.OA.mvc.exception.AppException;
 import com.example.OA.mvc.exception.Error;
 import com.example.OA.service.manager.UserService;
 import com.example.OA.util.MD5Util;
+import com.github.pagehelper.PageInfo;
 import org.apache.ibatis.annotations.Param;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.UsernamePasswordToken;
@@ -31,9 +33,8 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("user")
-public class UserController {
+public class UserController extends CommonController{
 
-    Logger logger = LoggerFactory.getLogger(this.getClass());
     @Autowired
     UserService userService;
 
@@ -42,7 +43,6 @@ public class UserController {
     public ServerResponse login(@RequestParam(value = "username",required = true) String username,
                                 @RequestParam(value = "password",required = true) String password)
     {
-        System.out.println(username+": "+password);
         Subject subject = SecurityUtils.getSubject();
         if(!subject.isAuthenticated())
         {
@@ -70,16 +70,9 @@ public class UserController {
             if (user != null) {
                 user.setPassword(MD5Util.MD5EncodeUtf8(user.getPassword()));
                 if (user.getId() != null) {
-                    logger.info("updateUser ing!");
-                    userService.updateUser(user);
-                    logger.info("updateUser end!");
-
-                    return ServerResponse.createBySuccess();
+                    return userService.updateUser(user);
                 } else {
-                    logger.info("addUser ing!");
-                    userService.addUser(user);
-                    logger.info("addUser end!");
-                    return ServerResponse.createBySuccess();
+                    return userService.addUser(user);
                 }
             }
             throw new AppException(Error.PARAMS_ERROR);
@@ -87,14 +80,13 @@ public class UserController {
 
     @RequiresPermissions(value = "user_delete")
     @RequestMapping(value = "delete_user.do",method = RequestMethod.POST)
-    public void delete(@RequestParam(value = "userId",required = true) Integer userId)
+    public ServerResponse delete(@RequestParam(value = "userId",required = true) Integer userId)
     {
         Subject subject = SecurityUtils.getSubject();
         if(!subject.isAuthenticated()) {
             throw new AppException(Error.UN_AUTHORIZATION);
         }
-        userService.deleteUser(userId);
-        return;
+        return userService.deleteUser(userId);
     }
 
     @RequestMapping(value = "logout.do",method = RequestMethod.GET)
@@ -143,12 +135,13 @@ public class UserController {
     }
 
     @RequestMapping(value = "all_user.do",method = {RequestMethod.POST,RequestMethod.OPTIONS})
-    public List<User> getAll()
+    public PageInfo getAll(@RequestParam(value = "pageNum",required = false,defaultValue = "1") Integer pageNum,
+                           @RequestParam(value = "pageSize",required = false,defaultValue = "3") Integer pageSize)
     {
         Subject subject = SecurityUtils.getSubject();
         if(!subject.isAuthenticated()) {
             throw new AppException(Error.UN_AUTHORIZATION);
         }
-        return userService.getAll();
+        return userService.getAll(pageNum,pageSize);
     }
 }

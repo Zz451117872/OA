@@ -4,33 +4,29 @@ import com.example.OA.dao.activiti.LeaveMapper;
 import com.example.OA.dao.UserMapper;
 import com.example.OA.dao.activiti.SalaryAdjustMapper;
 import com.example.OA.model.User;
+import com.example.OA.model.VO.*;
 import com.example.OA.model.activiti.*;
 import com.example.OA.mvc.common.Const;
+import com.example.OA.mvc.common.ServerResponse;
+import com.example.OA.mvc.common._PageInfo;
 import com.example.OA.mvc.exception.AppException;
 import com.example.OA.mvc.exception.Error;
 import com.example.OA.service.CommonService;
-import com.example.OA.util.BeanUtils;
-import com.example.OA.util.BigDecimalUtil;
 import com.google.common.collect.Lists;
 import org.activiti.engine.*;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.history.HistoricVariableInstance;
-import org.activiti.engine.repository.ProcessDefinition;
-import org.activiti.engine.runtime.Execution;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Comment;
 import org.activiti.engine.task.DelegationState;
 import org.activiti.engine.task.Task;
-import org.activiti.engine.task.TaskQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.math.BigDecimal;
-import java.util.Date;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -66,62 +62,79 @@ public class WorkflowService extends CommonService{
     @Autowired
     UserMapper userMapper;
 
+//===============任务操作流程=======================
     // 开启请假流程
     @Transactional
-    public String startLeaveWorkflow(Leave leave, Map<String, Object> variables) {
+    public ServerResponse startLeaveWorkflow(Leave leave, Map<String, Object> variables) {
         try {
-            leaveMapper.insertSelective(leave); //存储业务对象，自动返回主键
-            logger.info("save leave: {}", leave);   //保存请假单
+            int result = leaveMapper.insertSelective(leave); //存储业务对象，自动返回主键
+            if(result < 1)
+            {
+                throw new AppException(Error.DATABASE_OPERATION);
+            }
             identityService.setAuthenticatedUserId(leave.getApplication().toString());
 
+            variables.put("businessKey", leave.getId());
             String businessKey = leave.getId().toString();  //流程实例  与  请假单的一种对应关系
-            leave.setBusinesskey(businessKey);
+
             variables.put("entry",leave);
 
             ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(Const.processDefinitionKey.LEAVE, businessKey, variables);
             String processInstanceId = processInstance.getId();
 
             leave.setProcessinstanceid(processInstanceId);  //流程实例id 放入 请假单
-            leave.setBusinesskey(businessKey);
-            leaveMapper.updateByPrimaryKeySelective(leave);
-
-            runtimeService.setVariable(processInstanceId,"entry",leave); //业务对象更新后，同步更新下变量
-            return processInstanceId;
-        }catch (Exception e) {
-            throw new AppException(Error.WORKFLOW_INNER_ERROR,e.getMessage());
-        }finally
+            result = leaveMapper.updateByPrimaryKeySelective(leave);
+            if(result < 1)
+            {
+                throw new AppException(Error.DATABASE_OPERATION);
+            }
+            runtimeService.setVariable(processInstanceId,"entry",leave);
+            return ServerResponse.createBySuccess();
+        }catch (AppException e) {
+            throw e;
+        }catch (Exception e)
         {
+            logger.debug(e.getMessage());
+            throw new AppException(Error.WORKFLOW_INNER_ERROR,e.getMessage());
+        }finally {
             identityService.setAuthenticatedUserId(null);
         }
     }
 
     // 开启薪资调整流程
     @Transactional
-    public String startSalaryAdjustWorkflow(SalaryAdjust salaryAdjust, Map<String, Object> variables) {
+    public ServerResponse startSalaryAdjustWorkflow(SalaryAdjust salaryAdjust, Map<String, Object> variables) {
         // 保存 薪资调整 对象
         try {
-            salaryAdjustMapper.insertSelective(salaryAdjust);   //存储业务对象，自动 返回主键
-            logger.info("save salaryAdjust: {}", salaryAdjust);   //保存请假单
+            int result = salaryAdjustMapper.insertSelective(salaryAdjust);   //存储业务对象，自动 返回主键
+            if(result < 1)
+            {
+                throw new AppException(Error.DATABASE_OPERATION);
+            }
 
             identityService.setAuthenticatedUserId(salaryAdjust.getApplication().toString());//这个听说要这样写。。。
-            variables.put("entry",salaryAdjust);
-            variables.put("businessKey", salaryAdjust.getId()); //这个变量在薪资统计时可以获取对应的用户
 
             String businessKey = salaryAdjust.getId()+"";  //流程实例  与  业务的一种对应关系
+            variables.put("businessKey", salaryAdjust.getId()); //这个变量在薪资统计时可以获取对应的用户
+            variables.put("entry",salaryAdjust);
+
             ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(Const.processDefinitionKey.SALARY, businessKey, variables);
             String processInstanceId = processInstance.getId();
 
             salaryAdjust.setProcessinstanceid(processInstanceId);  //流程实例id 放入 请假单
-            salaryAdjust.setBusinesskey(businessKey);
-            salaryAdjustMapper.updateByPrimaryKeySelective(salaryAdjust);
-
+            result = salaryAdjustMapper.updateByPrimaryKeySelective(salaryAdjust);
+            if(result < 1)
+            {
+                throw new AppException(Error.DATABASE_OPERATION);
+            }
             runtimeService.setVariable(processInstanceId,"entry",salaryAdjust);
-
-            return processInstanceId;
-        }catch (Exception e) {
+            return ServerResponse.createBySuccess();
+        }catch (AppException e) {
+            throw e;
+        }catch (Exception e){
+            logger.debug(e.getMessage());
             throw new AppException(Error.WORKFLOW_INNER_ERROR,e.getMessage());
-        }finally
-        {
+        }finally {
             identityService.setAuthenticatedUserId(null);
         }
     }
@@ -136,6 +149,7 @@ public class WorkflowService extends CommonService{
                 if(user != null)
                 {
                     taskService.delegateTask(taskId,user.getUsername());
+                    return;
                 }
                 throw new AppException(Error.DATA_VERIFY_ERROR,"被委托人不存在");
             }
@@ -145,6 +159,7 @@ public class WorkflowService extends CommonService{
             throw e;
         }catch (Exception e)
         {
+            logger.debug(e.getMessage());
             throw new AppException(Error.WORKFLOW_INNER_ERROR);
         }
     }
@@ -162,15 +177,17 @@ public class WorkflowService extends CommonService{
                     String assign = task.getAssignee();
                     this.taskService.setAssignee(taskId, toUser.getUsername());
                     this.taskService.setOwner(taskId, assign);
+                    return;
                 }
                 throw new AppException(Error.DATA_VERIFY_ERROR,"被转办人不存在");
             }
             throw new AppException(Error.DATA_VERIFY_ERROR,"转办人没有该任务");
-        }catch (AppException e1)
+        }catch (AppException e)
         {
-            throw e1;
-        }catch (Exception e2)
+            throw e;
+        }catch (Exception e)
         {
+            logger.debug(e.getMessage());
             throw new AppException(Error.WORKFLOW_INNER_ERROR);
         }
     }
@@ -196,6 +213,7 @@ public class WorkflowService extends CommonService{
                         return;
                     }
                     //完成正常任务
+                    taskService.setVariablesLocal(taskId,var);
                     taskService.complete(taskId, var);
                     return ;
             }
@@ -205,6 +223,7 @@ public class WorkflowService extends CommonService{
             throw e;
         }catch (Exception e)
         {
+            logger.debug(e.getMessage());
             throw new AppException(Error.WORKFLOW_INNER_ERROR);
         }
     }
@@ -232,138 +251,110 @@ public class WorkflowService extends CommonService{
             throw e;
         }catch (Exception e)
         {
+            logger.debug(e.getMessage());
             throw new AppException(Error.WORKFLOW_INNER_ERROR);
         }
     }
 
-    // 获取个人任务列表
-    @Transactional
-    public List<BaseVO> findTodoTasks(String username) {
+///===========================================================
+    //查找人个 或者 所有 任务
+    public _PageInfo findTasks(String username,Integer pageNum,Integer pageSize) {
         try{
-            List<Task> tasks = taskService.createTaskQuery()//
-                    .taskCandidateOrAssigned(username)//
-                    .orderByProcessDefinitionId()//
-                    .orderByTaskCreateTime().desc().list();
-
-            List<BaseVO> taskList = getBaseVOList(tasks);
-            return taskList;
-        }catch (Exception e)
-        {
-            throw e;
-        }
-    }
-
-    //查询正在运行的 薪资调整 流程
-    @Transactional
-    public List<BaseVO> listRuningSalaryAdjust()  {
-        try{
-            List<SalaryAdjust> salaryAdjustList = salaryAdjustMapper.getByApplicationAndStatus(null,Const.WorkflowStatus.APPLICATION.getCode()) ;
-            List<BaseVO> result = Lists.newArrayList();
-
-            if(salaryAdjustList != null ){
-                for(SalaryAdjust salaryAdjust : salaryAdjustList){
-                    if(salaryAdjust.getProcessinstanceid() == null){
-                        continue;
-                    }
-                    // 查询流程实例
-                    String processInstanceId = salaryAdjust.getProcessinstanceid();
-                    result.add(getBaseVOByProcessInstance(processInstanceId));
-                }
+            List<Task> tasks = null;
+            if(username == null)
+            {
+                tasks = taskService.createTaskQuery()//
+                        .active().orderByProcessDefinitionId()//
+                        .asc().orderByTaskCreateTime().desc().list();
+            }else{
+                tasks = taskService.createTaskQuery()//
+                        .taskCandidateOrAssigned(username)//
+                        .orderByProcessDefinitionId()//
+                        .orderByTaskCreateTime().desc().list();
             }
-            return result;
-        }catch (Exception e)
-        {
-            throw e;
-        }
-    }
-
-    //查询正在运行的 请假 流程
-    public List<BaseVO> listRuningLeave()  {
-        try{
-            List<Leave> leaves = leaveMapper.getByApplicationAndStatus(null,Const.WorkflowStatus.APPLICATION.getCode()) ;
-            List<BaseVO> result = Lists.newArrayList();
-
-            if(leaves != null ){
-                for(Leave leave : leaves){
-                    if(leave.getProcessinstanceid() == null){
-                        continue;
-                    }
-                    // 查询流程实例
-                    String processInstanceId = leave.getProcessinstanceid();
-                    result.add(getBaseVOByProcessInstance(processInstanceId));
-                }
+            if(tasks != null)
+            {
+                List<BaseVO> baseVOs = getBaseVOList(tasks);
+                return general_PageInfo(baseVOs,pageNum,pageSize);
             }
-            return result;
+           return null;
+        }catch (AppException e) {
+            throw e;
         }catch (Exception e)
         {
-            throw e;
+            e.printStackTrace();
+            throw new AppException(Error.WORKFLOW_INNER_ERROR);
         }
-
     }
 
-    //获取所有运行中的流程实例
-    public List<BaseVO> findRunningProcessInstaces() {
-       try{
-           List<BaseVO> result = Lists.newArrayList();
-           List<ProcessInstance> processInstances = runtimeService//
-                   .createProcessInstanceQuery().active()//
-                   .orderByProcessDefinitionId().desc().list();
+    /*
+    通过 申请人 或者 业务状态 查找 个人 或者 所有 申请
+    application：申请人
+    status：业务状态，申请人和申请状态不可同时为null
+     */
+    public _PageInfo findApplications(Integer application, Integer status, Integer pageNum, Integer pageSize) {
+        try {
+            List<BaseVO> result = Lists.newArrayList();
+            List<BaseVO> salaryAdjusts = findSalaryAdjusts(application,status);
+            result.addAll(salaryAdjusts);
+            List<BaseVO> leaves = findLeaves(application,status);
+            result.addAll(leaves);
 
-           for(ProcessInstance instance : processInstances)
-           {
-               BaseVO baseVO = (BaseVO) runtimeService.getVariable(instance.getId(),"entry");
-               result.add(baseVO);
-           }
-           return result;
-       }catch (Exception e)
-       {
+            return general_PageInfo(result,pageNum,pageSize);
+        }catch (AppException e)
+        {
            throw e;
-       }
-    }
-
-    //获取所有已结束的流程实例
-    @Transactional
-    public List<BaseVO> findFinishedProcessInstaces() {
-        try {
-            List<HistoricProcessInstance> historicProcessInstances = historyService
-                        .createHistoricProcessInstanceQuery()//
-                        .finished().orderByProcessDefinitionId().desc().list();
-
-            List<BaseVO> result = Lists.newArrayList();
-            for (HistoricProcessInstance historicProcessInstance : historicProcessInstances) {
-                String processInstanceId = historicProcessInstance.getId();
-
-                List<HistoricVariableInstance> listVar = this.historyService//
-                        .createHistoricVariableInstanceQuery()//
-                        .processInstanceId(processInstanceId).list();
-
-                for (HistoricVariableInstance var : listVar) {
-                    if ("serializable".equals(var.getVariableTypeName()) && "entry".equals(var.getVariableName())) {
-                        BaseVO base = (BaseVO) var.getValue();
-                        base.setHistoricProcessInstance(historicProcessInstance);
-                        base.setProcessDefinition(getProcessDefinition(historicProcessInstance.getProcessDefinitionId()));
-                        result.add(base);
-                        break;
-                    }
-                }
-            }
-            return result;
         }catch (Exception e)
         {
-            throw e;
+            e.printStackTrace();
+            throw new AppException(Error.WORKFLOW_INNER_ERROR);
         }
     }
 
-    //查看个人历史完成任务
-    @Transactional
-    public List<BaseVO> findFinishedTaskInstances(String username){
-        try {
-            List<HistoricTaskInstance> list = historyService//
-                    .createHistoricTaskInstanceQuery()//
-                    .taskAssignee(username).finished()//
-                    .orderByHistoricTaskInstanceEndTime().desc().list();
-            List<BaseVO> result = Lists.newArrayList();
+    //生成 分页信息
+    private <T> _PageInfo  general_PageInfo(List<T> result, Integer pageNum, Integer pageSize) {
 
+        _PageInfo pageInfo = new _PageInfo();
+        if(result != null)
+        {
+            pageInfo.setTotal(result.size());
+            pageInfo.setPages((int)Math.ceil((result.size()*1.0)/pageSize));
+            pageInfo.setPageNum(pageNum);
+            pageInfo.setPageSize(pageSize);
+            int start = (pageNum - 1)*pageSize;
+            if(start >= result.size())
+            {
+                pageInfo.setList(null);
+            }else{
+                if((start + pageSize ) <= result.size())
+                {
+                    pageInfo.setList(result.subList(start,start + pageSize));
+                }else{
+                    pageInfo.setList(result.subList(start,result.size()));
+                }
+            }
+            return pageInfo;
+        }
+        return null;
+    }
+
+    //查看 个人 或者所有 历史完成任务
+    public _PageInfo findHisrotyTasks(String username,Integer pageNum ,Integer pageSize){
+        try {
+            List<HistoricTaskInstance> list = null;
+            if(username == null)
+            {
+                list = historyService//
+                        .createHistoricTaskInstanceQuery()//
+                        .finished().orderByProcessDefinitionId()//
+                        .asc().orderByHistoricTaskInstanceEndTime().desc().list();
+            }else {
+                list = historyService//
+                        .createHistoricTaskInstanceQuery()//
+                        .taskAssignee(username).finished()//
+                        .orderByHistoricTaskInstanceEndTime().desc().list();
+            }
+            List<HistoryTaskVO> result = Lists.newArrayList();
             for (HistoricTaskInstance historicTaskInstance : list) {
                 String processInstanceId = historicTaskInstance.getProcessInstanceId();
 
@@ -373,27 +364,136 @@ public class WorkflowService extends CommonService{
 
                 for (HistoricVariableInstance var : listVar) {
                     if ("serializable".equals(var.getVariableTypeName()) && "entry".equals(var.getVariableName())) {
-                        BaseVO base = (BaseVO) var.getValue();
-                        base.setHistoricTaskInstance(historicTaskInstance);
-                        base.setProcessDefinition(getProcessDefinition(historicTaskInstance.getProcessDefinitionId()));
-                        result.add(base);
-                        break;
+                        Object obj =  var.getValue();
+                        if(obj instanceof Leave)
+                        {
+                            result.add( convertHistoryTaskVOByLeave((Leave)obj,historicTaskInstance));
+                            break;
+                        }else if(obj instanceof SalaryAdjust)
+                        {
+                            result.add(convertHistoryTaskVOBySalary((SalaryAdjust)obj,historicTaskInstance));
+                            break;
+                        }
+                        throw new AppException(Error.DATA_VERIFY_ERROR);
                     }
                 }
             }
+            return general_PageInfo(result,pageNum,pageSize);
+        }catch (AppException e){
+            throw e;
+        }catch (Exception e)
+        {
+            e.printStackTrace();
+            throw new AppException(Error.WORKFLOW_INNER_ERROR);
+        }
+    }
+
+    /*
+    查找薪资调整流程，申请人 与 业务状态 不可同时为NULL
+    application：申请人
+    status：业务状态
+     */
+    public List<BaseVO> findSalaryAdjusts(Integer application,Integer status) {
+        try {
+            List<SalaryAdjust> salaryAdjustList = salaryAdjustMapper.getByApplicationOrStatus(application,status);
+            List<BaseVO> result = Lists.newArrayList();
+            if (salaryAdjustList != null && !salaryAdjustList.isEmpty()) {
+                for (SalaryAdjust salaryAdjust : salaryAdjustList) {
+                    result.add(convertBaseVOBySalary(salaryAdjust));
+                }
+            }
             return result;
-        }catch (Exception e){
+        }catch (Exception e)
+        {
+            e.printStackTrace();
+           throw e;
+        }
+    }
+
+    /*
+     查找请假流程，申请人 与 业务状态 不可同时为NULL
+     application：申请人
+     status：业务状态
+      */
+    public List<BaseVO> findLeaves(Integer application,Integer status)  {
+        try{
+            List<Leave> leaves = leaveMapper.getByApplicationOrStatus(application,status) ;
+            List<BaseVO> result = Lists.newArrayList();
+
+            if(leaves != null && !leaves.isEmpty()){
+                for(Leave leave : leaves){
+                    result.add(convertBaseVOByLeave(leave));
+                }
+            }
+            return result;
+        }catch (Exception e)
+        {
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+    //获取请假流程的详细信息
+    public LeaveVO getLeaveDetail(Integer leaveId) {
+       try{
+           Leave leave = leaveMapper.selectByPrimaryKey(leaveId);
+           return convertLeaveVO(leave);
+       }catch (Exception e)
+       {
+           e.printStackTrace();
+           throw new AppException(Error.UNKNOW_EXCEPTION);
+       }
+    }
+
+    //转化leave
+    private LeaveVO convertLeaveVO(Leave leave) {
+        try{
+            if(leave != null)
+            {
+                User user = userMapper.selectByPrimaryKey(leave.getApplication());
+                LeaveVO leaveVO = new LeaveVO(leave,user.getUsername());
+                return leaveVO;
+            }
+            return null;
+        }catch (Exception e)
+        {
+            throw e;
+        }
+    }
+
+    //获取薪资调整流程的详细信息，包括评论
+    public SalaryAdjustVO getSalaryDetail(Integer salaryId) {
+        try{
+            SalaryAdjust salary = salaryAdjustMapper.selectByPrimaryKey(salaryId);
+            return convertSalaryVO(salary);
+        }catch (Exception e)
+        {
+            logger.debug(e.getMessage());
+            throw new AppException(Error.UNKNOW_EXCEPTION);
+        }
+    }
+
+    //转化salary
+    private SalaryAdjustVO convertSalaryVO(SalaryAdjust salary) {
+        try{
+            if(salary != null)
+            {
+                User user = userMapper.selectByPrimaryKey(salary.getApplication());
+                SalaryAdjustVO salaryAdjustVO = new SalaryAdjustVO(salary,user.getUsername());
+                return salaryAdjustVO;
+            }
+            return null;
+        }catch (Exception e)
+        {
             throw e;
         }
     }
 
     //获取评论信息
-    @Transactional
-    public List<CommentVO> getComments(String taskId){
+    public _PageInfo<CommentVO> findComments(String processInstanceId,Integer pageNum, Integer pageSize){
         try{
-            Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
-            if(task != null) {
-                List<Comment> comments = this.taskService.getProcessInstanceComments(task.getProcessInstanceId());
+            if(processInstanceId != null) {
+                List<Comment> comments = this.taskService.getProcessInstanceComments(processInstanceId);
                 List<CommentVO> commnetList = Lists.newArrayList();
                 for (Comment comment : comments) {
                     User user = userMapper.selectByPrimaryKey(Integer.parseInt(comment.getUserId()));
@@ -403,73 +503,258 @@ public class WorkflowService extends CommonService{
                     vo.setUserName(user.getUsername());
                     commnetList.add(vo);
                 }
-                return commnetList;
+                commnetList.sort(new Comparator<CommentVO>() {
+                    @Override
+                    public int compare(CommentVO o1, CommentVO o2) {
+                        return o1.getTime().compareTo(o2.getTime());
+                    }
+                });
+                return general_PageInfo(commnetList,pageNum,pageSize);
             }
-            throw new AppException(Error.TARGET_NO_EXISTS,"任务不存在");
+            throw new AppException(Error.TARGET_NO_EXISTS,"流程不存在");
         }catch (Exception e)
         {
             throw e;
         }
     }
 
-    //薪资调整
-    public void contentSalary(Execution exe){
-        SalaryAdjust salaryAdjust = (SalaryAdjust) this.runtimeService.getVariable(exe.getProcessInstanceId(), "entity");
-        User user = userMapper.selectByPrimaryKey(salaryAdjust.getApplication());
-        user.setSalary(BigDecimalUtil.add(user.getSalary().doubleValue(),salaryAdjust.getAdjustmoney().doubleValue()));
-        user.setUpdateTime(new Date());
-        userMapper.updateByPrimaryKeySelective(user);
-    }
+//=============工具方法===============================================
 
-    //回滚薪资调整
-    public void rollbackApply(Execution exe){
-        SalaryAdjust salaryAdjust = (SalaryAdjust)this.runtimeService.getVariable(exe.getProcessInstanceId(), "entity");
-        BigDecimal baseMoney = (BigDecimal) this.runtimeService.getVariable(exe.getProcessInstanceId(), "baseMoney");
-        User user = userMapper.selectByPrimaryKey(salaryAdjust.getApplication());
-        user.setSalary(baseMoney);
-        user.setUpdateTime(new Date());
-        userMapper.updateByPrimaryKeySelective(user);
-    }
-
-    private ProcessDefinition getProcessDefinition(String processDefinitionId) {
-        return repositoryService.createProcessDefinitionQuery()//
-                .processDefinitionId(processDefinitionId).singleResult();
-    }
-
-    private List<BaseVO> getBaseVOList(List<Task> tasks) {
-        List<BaseVO> taskList = Lists.newArrayList();
-        for (Task task : tasks) {
-            String processInstanceId = task.getProcessInstanceId();
-            ProcessInstance processInstance = this.runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).active().singleResult();
-            if(BeanUtils.isBlank(processInstance)){
-                //如果有挂起的流程则continue
-                continue;
+    //将历史任务实例 与 业务对象 salaryAdjust 转化为 HistoryTaskVO,返回前台
+    private HistoryTaskVO convertHistoryTaskVOBySalary(SalaryAdjust salary, HistoricTaskInstance historicTaskInstance) {
+        try{
+            if(historicTaskInstance != null && salary != null)
+            {
+                HistoryTaskVO historyTaskVO = new HistoryTaskVO();
+                String username = userMapper.getUsernameById(salary.getApplication());
+                historyTaskVO.setApplicationName(username);
+                historyTaskVO.setBusinesstype(Const.BusinessType.LEAVE);
+                historyTaskVO.setStartTime(historicTaskInstance.getStartTime());
+                historyTaskVO.setEndTime(historicTaskInstance.getEndTime());
+                historyTaskVO.setApprover(historicTaskInstance.getAssignee());
+                historyTaskVO.setApproveResult(getApproveResultByHistoryTaskInstance(historicTaskInstance));
+                historyTaskVO.setClaimTime(historicTaskInstance.getClaimTime());
+                historyTaskVO.setTaskId(historicTaskInstance.getId());
+                historyTaskVO.setComment(getCommentByHistoryTaskInstance(historicTaskInstance));
+                historyTaskVO.setBusinessInfo("调整工资："+salary.getAdjustmoney()+"元");
+                return historyTaskVO;
             }
-            //获取当前流程下的key为entity的variable
-            BaseVO base = (BaseVO) this.runtimeService.getVariable(processInstance.getId(), "entry");
-            base.setTaskBean(convertTask(task));
-            base.setProcessInstance(processInstance);
-            base.setProcessDefinition(getProcessDefinition(processInstance.getProcessDefinitionId()));
-            taskList.add(base);
+            return null;
+        }catch (Exception e)
+        {
+            logger.debug(e.getMessage());
+            throw e;
         }
-        return taskList;
     }
 
-    private BaseVO getBaseVOByProcessInstance(String processInstanceId) {
-
-        ProcessInstance instance = this.runtimeService//
-                .createProcessInstanceQuery()//
-                .processInstanceId(processInstanceId).singleResult();
-
-        Task task = this.taskService.createTaskQuery()//
-                .processInstanceId(processInstanceId).singleResult();
-        if (instance != null) {
-            BaseVO base = (BaseVO) this.runtimeService.getVariable(instance.getId(), "entry");
-            base.setTaskBean(convertTask(task));
-            base.setProcessInstance(instance);
-            base.setProcessDefinition(getProcessDefinition(instance.getProcessDefinitionId()));
-            return base;
+    //将历史任务实例 与 业务对象 leave 转化为 HistoryTaskVO,返回前台
+    private HistoryTaskVO convertHistoryTaskVOByLeave(Leave leave, HistoricTaskInstance historicTaskInstance) {
+        try{
+            if(historicTaskInstance != null && leave != null)
+            {
+                HistoryTaskVO historyTaskVO = new HistoryTaskVO();
+                String username = userMapper.getUsernameById(leave.getApplication());
+                historyTaskVO.setApplicationName(username);
+                historyTaskVO.setBusinesstype(Const.BusinessType.LEAVE);
+                historyTaskVO.setStartTime(historicTaskInstance.getStartTime());
+                historyTaskVO.setEndTime(historicTaskInstance.getEndTime());
+                historyTaskVO.setApprover(historicTaskInstance.getAssignee());
+                historyTaskVO.setApproveResult(getApproveResultByHistoryTaskInstance(historicTaskInstance));
+                historyTaskVO.setClaimTime(historicTaskInstance.getClaimTime());
+                historyTaskVO.setTaskId(historicTaskInstance.getId());
+                historyTaskVO.setComment(getCommentByHistoryTaskInstance(historicTaskInstance));
+                historyTaskVO.setBusinessInfo(leave.getLeaveType()+"&&"+leave.getLeaveNumber()+"天");
+                return historyTaskVO;
+            }
+            return null;
+        }catch (Exception e)
+        {
+            logger.debug(e.getMessage());
+            throw e;
         }
-        throw new AppException(Error.TARGET_NO_EXISTS,"对应的流程实例不存在");
+    }
+
+    //将 Leave 业务对象 转化为 BaseVO,返回前台
+    private BaseVO convertBaseVOByLeave(Leave leave) {
+        try{
+            BaseVO baseVO = new BaseVO();
+            String username = userMapper.getUsernameById(leave.getApplication());
+            if(username == null)
+            {
+                throw new AppException(Error.DATA_VERIFY_ERROR,"申请人不存在");
+            }
+            baseVO.setApplication(leave.getApplication());
+            baseVO.setBusinesstype(Const.BusinessType.LEAVE);
+            baseVO.setBusinesskey(leave.getId().toString());
+            baseVO.setApplicationName(username);
+            baseVO.setStartTime(leave.getCreateTime());
+            baseVO.setStatus(Const.BusinessStatus.codeof(leave.getStatus().intValue()).getValue());
+            baseVO.setBusinessInfo("leave:" + leave.getLeaveType() + leave.getLeaveNumber() + "天");
+
+            if(leave.getStatus() == Const.BusinessStatus.APPLICATION.getCode()) {
+                ProcessInstance processInstance = getProcessInstanceById(leave.getProcessinstanceid());
+                Task task = getTaskByProcessInstance(leave.getProcessinstanceid());
+                if (processInstance != null && task != null) {
+                    baseVO.setProcessInstanceId(processInstance.getId());
+                    baseVO.setTaskId(task.getId());
+                    baseVO.setApprover(task.getAssignee());
+                    return baseVO;
+                }else{
+                    throw new AppException(Error.WORKFLOW_INNER_ERROR);
+                }
+
+            }else{
+                HistoricProcessInstance   historicProcessInstance = getHistoryProcessInstanceById(leave.getProcessinstanceid());
+                HistoricTaskInstance historicTaskInstance = getHistoricTaskInstance(leave.getProcessinstanceid());
+                if (historicProcessInstance != null && historicTaskInstance != null) {
+                    baseVO.setProcessInstanceId(historicProcessInstance.getId());
+                    baseVO.setTaskId(historicTaskInstance.getId());
+                    baseVO.setApprover(historicTaskInstance.getAssignee());
+                    return baseVO;
+                }else {
+                    throw new AppException(Error.WORKFLOW_INNER_ERROR);
+                }
+
+            }
+        }catch (AppException e)
+        {
+            throw e;
+        }catch (Exception e)
+        {
+            e.printStackTrace();
+            throw new AppException(Error.WORKFLOW_INNER_ERROR);
+        }
+    }
+
+    //将 SalaryAdjusy 业务对象 转化为 通过的 BaseVO,返回前台
+    private BaseVO convertBaseVOBySalary(SalaryAdjust salaryAdjust) {
+        try{
+            BaseVO baseVO = new BaseVO();
+            String username = userMapper.getUsernameById(salaryAdjust.getApplication());
+            baseVO.setApplication(salaryAdjust.getApplication());
+            baseVO.setBusinesstype(Const.BusinessType.SALARY);
+            baseVO.setBusinesskey(salaryAdjust.getId().toString());
+            baseVO.setApplicationName(username);
+            baseVO.setStartTime(salaryAdjust.getCreateTime());
+            baseVO.setStatus(Const.BusinessStatus.codeof(salaryAdjust.getStatus().intValue()).getValue());
+            baseVO.setBusinessInfo("salaryAdjust:"+salaryAdjust.getAdjustmoney());
+
+            if(salaryAdjust.getStatus() == Const.BusinessStatus.APPLICATION.getCode())
+            {
+                ProcessInstance   processInstance = getProcessInstanceById(salaryAdjust.getProcessinstanceid());
+                Task  task = getTaskByProcessInstance(salaryAdjust.getProcessinstanceid());
+                if (processInstance != null && task != null) {
+                    baseVO.setProcessInstanceId(processInstance.getId());
+                    baseVO.setTaskId(task.getId());
+                    baseVO.setApprover(task.getAssignee());
+                    return baseVO;
+                }
+                throw new AppException(Error.WORKFLOW_INNER_ERROR);
+            }else{
+                HistoricProcessInstance   historicProcessInstance = getHistoryProcessInstanceById(salaryAdjust.getProcessinstanceid());
+                HistoricTaskInstance  historicTaskInstance = getHistoricTaskInstance(salaryAdjust.getProcessinstanceid());
+                if (historicProcessInstance != null && historicTaskInstance != null) {
+                    baseVO.setProcessInstanceId(historicProcessInstance.getId());
+                    baseVO.setTaskId(historicTaskInstance.getId());
+                    baseVO.setApprover(historicTaskInstance.getAssignee());
+                    return baseVO;
+                }
+                throw new AppException(Error.WORKFLOW_INNER_ERROR);
+            }
+        }catch (AppException e)
+        {
+            throw e;
+        }catch (Exception e)
+        {
+            e.printStackTrace();
+            throw new AppException(Error.WORKFLOW_INNER_ERROR);
+        }
+    }
+
+    //将 任务 对象 转化 为 BaseVO对象，返回前台
+    private List<BaseVO> getBaseVOList(List<Task> tasks) {
+        try{
+            List<BaseVO> baseVOs = Lists.newArrayList();
+            for (Task task : tasks) {
+                String processInstanceId = task.getProcessInstanceId();
+                ProcessInstance processInstance = this.runtimeService//
+                        .createProcessInstanceQuery()//
+                        .processInstanceId(processInstanceId).singleResult();
+                if(processInstance != null){
+                    Object obj = this.runtimeService.getVariable(processInstance.getId(), "entry");
+                    if(obj instanceof Leave)
+                    {
+                        baseVOs.add(convertBaseVOByLeave((Leave)obj));
+                    }else if(obj instanceof SalaryAdjust)
+                    {
+                        baseVOs.add(convertBaseVOBySalary((SalaryAdjust)obj));
+                    }else {
+                        throw new AppException(Error.DATA_VERIFY_ERROR);
+                    }
+                }
+            }
+            return baseVOs;
+        }catch (AppException e)
+        {
+            throw e;
+        }catch (Exception e)
+        {
+            logger.debug(e.getMessage());
+            throw new AppException(Error.WORKFLOW_INNER_ERROR);
+        }
+    }
+
+    //通过历史任务 实例  获取 审批结果
+    private String getApproveResultByHistoryTaskInstance(HistoricTaskInstance historicTaskInstance) {
+
+        String result = "";
+        List<HistoricVariableInstance> historicVariableInstances = historyService
+                .createHistoricVariableInstanceQuery().taskId(historicTaskInstance.getId()).list();
+
+        for(HistoricVariableInstance hvi : historicVariableInstances)
+        {
+            if("isPass".equals(hvi.getVariableName()) || "reApply".equals(hvi.getVariableName()))
+            {
+                result =hvi.getVariableName()+" : " +hvi.getValue().toString();
+            }
+        }
+        return result;
+    }
+
+    //通过历史任务实例 获取 评论信息
+    private String getCommentByHistoryTaskInstance(HistoricTaskInstance historicTaskInstance) {
+
+        List<Comment> comments = taskService.getTaskComments(historicTaskInstance.getId());
+        String commentStr = "";
+        for(Comment comment : comments)
+        {
+            commentStr += comment.getFullMessage()+"       ";
+        }
+        return commentStr;
+    }
+
+    //任务对象
+    private Task getTaskByProcessInstance(String processInstanceId) {
+        return taskService.createTaskQuery().processInstanceId(processInstanceId).singleResult();
+    }
+
+    //获取 流程实例
+    private ProcessInstance getProcessInstanceById(String processInstanceId) {
+        return runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
+    }
+
+    //获取历史任务 实例
+    private HistoricTaskInstance getHistoricTaskInstance(String processinstanceid) {
+        List<HistoricTaskInstance> historicTaskInstances = historyService.createHistoricTaskInstanceQuery().processInstanceId(processinstanceid).orderByHistoricTaskInstanceEndTime().desc().list();
+        if(historicTaskInstances != null)
+        {
+            return historicTaskInstances.get(0);
+        }
+        return null;
+    }
+
+    //获取历史流程实例
+    private HistoricProcessInstance getHistoryProcessInstanceById(String processinstanceid) {
+        return historyService.createHistoricProcessInstanceQuery().processInstanceId(processinstanceid).singleResult();
     }
 }

@@ -4,8 +4,11 @@ import com.example.OA.dao.PrivilegeMapper;
 import com.example.OA.dao.RolePrivilegeMapper;
 import com.example.OA.model.Privilege;
 import com.example.OA.model.VO.PrivilegeVO;
+import com.example.OA.mvc.common.ServerResponse;
 import com.example.OA.mvc.exception.AppException;
 import com.example.OA.mvc.exception.Error;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +49,7 @@ public class PrivilegeService {
             throw e;
         }catch (Exception e)
         {
+            e.printStackTrace();
             throw new AppException(Error.UNKNOW_EXCEPTION);
         }
     }
@@ -71,7 +75,7 @@ public class PrivilegeService {
 
 
     //添加一个权限
-    public String add(Privilege privilege) {
+    public ServerResponse add(Privilege privilege) {
         if(privilege != null)
         {
             String url = privilege.getUrl();    //权限url唯一
@@ -79,7 +83,7 @@ public class PrivilegeService {
             {
                 privilege.setCreateTime(new Date());
                 privilegeMapper.insert(privilege);
-                return url;
+                return ServerResponse.createBySuccess();
             }
             throw new AppException(Error.TARGET_EXISTSED,"该权限已存在");
         }
@@ -87,7 +91,7 @@ public class PrivilegeService {
     }
 
     //更新一个权限
-    public String update(Privilege privilege) {
+    public ServerResponse update(Privilege privilege) {
         if(privilege != null)
         {
             if(privilegeMapper.selectByPrimaryKey(privilege.getId()) != null) {
@@ -95,7 +99,7 @@ public class PrivilegeService {
                 if (privilegeMapper.getByUrlEorId(url,privilege.getId()) == null) {
                     privilege.setUpdateTime(new Date());
                     privilegeMapper.updateByPrimaryKeySelective(privilege);
-                    return url;
+                    return ServerResponse.createBySuccess();
                 }
                 throw new AppException(Error.TARGET_EXISTSED, "权限url已存在");
             }
@@ -125,7 +129,47 @@ public class PrivilegeService {
         throw new AppException(Error.PARAMS_ERROR);
     }
 
-    public List<Privilege> getChild(Integer parentId) {
-        return privilegeMapper.getChild(parentId);
+    public List<PrivilegeVO> getChild(Integer parentId) {
+
+       try{
+           List<PrivilegeVO> result = Lists.newArrayList();
+           List<Privilege> privileges = privilegeMapper.getChild(parentId);
+           if(privileges != null && !privileges.isEmpty())
+           {
+               for(Privilege privilege : privileges)
+               {
+                   result.add(convertPrivilegeVO(privilege));
+               }
+               return result;
+           }
+           return null;
+       }catch (Exception e)
+       {
+           e.printStackTrace();
+           throw e;
+       }
+    }
+
+    private PrivilegeVO convertPrivilegeVO(Privilege privilege) {
+       try{
+           if(privilege != null)
+           {
+               PrivilegeVO privilegeVO = new PrivilegeVO();
+               privilegeVO.setId(privilege.getId());
+               privilegeVO.setUpdateTime(privilege.getUpdateTime());
+               privilegeVO.setCreateTime(privilege.getCreateTime());
+               privilegeVO.setPrivilegeName(privilege.getPrivilegeName());
+               privilegeVO.setUrl(privilege.getUrl());
+               Privilege parent = privilegeMapper.selectByPrimaryKey(privilege.getParent());
+               String parentName = parent == null ? "无":parent.getPrivilegeName();
+               privilegeVO.setParentName(parentName);
+
+               return privilegeVO;
+           }
+           return null;
+       }catch (Exception e)
+       {
+           throw e;
+       }
     }
 }

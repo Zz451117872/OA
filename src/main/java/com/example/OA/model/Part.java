@@ -1,5 +1,7 @@
 package com.example.OA.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Date;
@@ -13,8 +15,10 @@ public class Part implements Serializable {
 
     private String description;
 
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private Date createTime;
 
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private Date updateTime;
 
     public Part(Integer id, String partName, String description, Date createTime, Date updateTime) {

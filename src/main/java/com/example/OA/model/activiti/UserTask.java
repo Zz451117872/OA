@@ -1,23 +1,34 @@
 package com.example.OA.model.activiti;
 
+import org.hibernate.validator.constraints.NotEmpty;
+
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 public class UserTask implements Serializable{
 
+    @NotNull
     private Integer id;
     //流程定义
+    @NotEmpty
     private String procdefkey;
     //流程定义名
+    @NotEmpty
     private String procdefname;
     //任务定义key
+    @NotEmpty
     private String taskdefkey;
     //任务名
+    @NotEmpty
     private String taskname;
     //任务类型
+    @NotEmpty
     private String tasktype;
     //候选名
+    @NotEmpty
     private String candidateName;
     //候选id
+    @NotEmpty
     private String candidateIds;
 
     public UserTask() {

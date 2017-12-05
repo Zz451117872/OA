@@ -40,22 +40,23 @@ public class LeaveProcessEndListener implements ExecutionListener {
     public void notify(DelegateExecution execution) throws Exception {
         String processInstanceId = execution.getProcessInstanceId();
         ProcessInstance instance = runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
-        String businessKey = instance.getBusinessKey();
+
+        String businessKey  = instance.getBusinessKey();
 
         Leave leave = leaveMapper.selectByPrimaryKey(Integer.parseInt(businessKey));
 
        Object result = execution.getVariable("result");//这个参数是以“expression”形式设置在连线的监听器上
       if("pass".equals(result))
       {
-          leave.setStatus(Const.WorkflowStatus.APPROVED.getCode());
+          leave.setStatus(Const.BusinessStatus.PASSED.getCode());
           logger.info("请假流程通过+++++++++++++++++++++++++++++++++");
       }else if("reject".equals(result))
       {
-          leave.setStatus(Const.WorkflowStatus.REJECTED.getCode());
+          leave.setStatus(Const.BusinessStatus.REJECTED.getCode());
           logger.info("请假流程被拒绝+++++++++++++++++++++++++++++++++");
       }else if("cancled".equals(result))
       {
-          leave.setStatus(Const.WorkflowStatus.CANCELED.getCode());
+          leave.setStatus(Const.BusinessStatus.CANCELED.getCode());
           logger.info("请假流程已取消+++++++++++++++++++++++++++++++++");
       }else {
           logger.info("请假流程异常+++++++++++++++++++++++++++++++++");

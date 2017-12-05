@@ -24,4 +24,8 @@ public interface ReplyMapper {
     List<Reply> getAllReplyByUser(Integer userId);
 
     List<Reply> getAllByTopic(Integer topicId);
+
+    List<Reply> getAll();
+
+    List<Reply> getAllReplyByTopic(Integer topicId);
 }

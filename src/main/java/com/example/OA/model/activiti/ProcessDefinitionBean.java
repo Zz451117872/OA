@@ -1,5 +1,7 @@
 package com.example.OA.model.activiti;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import java.io.Serializable;
 import java.util.Date;
 
@@ -16,6 +18,7 @@ public class ProcessDefinitionBean implements Serializable{
     private String category;
     private String deploymentId;
     private String resourceName;
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private Date deploymentTime;
     private String diagramResourceName;
     private Boolean suspended;

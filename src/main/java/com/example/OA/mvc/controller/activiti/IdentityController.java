@@ -86,7 +86,7 @@ public class IdentityController {
     /**
      * 用户列表
      */
-    @RequestMapping("user_list")
+    @RequestMapping("user_list.do")
     public List<ActUser> userList() {
 
         List<User> userList = identityService.createUserQuery().list();

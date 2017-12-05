@@ -6,6 +6,7 @@ import com.example.OA.model.VO.PrivilegeVO;
 import com.example.OA.mvc.exception.AppException;
 import com.example.OA.mvc.exception.Error;
 import com.example.OA.service.manager.RoleService;
+import com.github.pagehelper.PageInfo;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.apache.shiro.subject.Subject;
@@ -100,12 +101,13 @@ public class RoleController {
 
 
     @RequestMapping(value = "all_role.do",method = RequestMethod.POST)
-    public List<Role> getAll()
+    public PageInfo getAll(@RequestParam(value = "pageNum",required = false,defaultValue = "1") Integer pageNum,
+                           @RequestParam(value = "pageSize",required = false,defaultValue = "13") Integer pageSize)
     {
         Subject subject = SecurityUtils.getSubject();
         if(!subject.isAuthenticated()) {
             throw new AppException(Error.UN_AUTHORIZATION);
         }
-        return roleService.getAll();
+        return roleService.getAll(pageNum,pageSize);
     }
 }

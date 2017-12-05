@@ -1,54 +1,47 @@
-package com.example.OA.model;
+package com.example.OA.model.VO;
 
-import com.github.pagehelper.PageInfo;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.Date;
-import java.util.List;
-import java.util.concurrent.LinkedBlockingDeque;
 
-public class Forum implements Serializable {
+/**
+ * Created by aa on 2017/12/4.
+ */
+public class ForumVO implements Serializable{
+
     private Integer id;
 
-    @NotEmpty
     private String forumName;
 
-    @Size(max = 100)
     private String description;
 
-    @Max(value = 100)
-    @Min(value = 1)
     private Integer sorts;
 
     private Integer topCount;
 
     private Integer replyCount;
 
+    private String lastTopicName;
+
     private Integer lastTopic;
 
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private Date createTime;
 
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private Date updateTime;
 
-    public Forum(Integer id, String forumName, String description, Integer sorts, Integer topCount, Integer replyCount, Integer lastTopic, Date createTime, Date updateTime) {
-        this.id = id;
-        this.forumName = forumName;
-        this.description = description;
-        this.sorts = sorts;
-        this.topCount = topCount;
-        this.replyCount = replyCount;
-        this.lastTopic = lastTopic;
-        this.createTime = createTime;
-        this.updateTime = updateTime;
+    public Integer getLastTopic() {
+        return lastTopic;
     }
 
-    public Forum() {
-        super();
+    public void setLastTopic(Integer lastTopic) {
+        this.lastTopic = lastTopic;
     }
 
     public Integer getId() {
@@ -64,7 +57,7 @@ public class Forum implements Serializable {
     }
 
     public void setForumName(String forumName) {
-        this.forumName = forumName == null ? null : forumName.trim();
+        this.forumName = forumName;
     }
 
     public String getDescription() {
@@ -72,7 +65,7 @@ public class Forum implements Serializable {
     }
 
     public void setDescription(String description) {
-        this.description = description == null ? null : description.trim();
+        this.description = description;
     }
 
     public Integer getSorts() {
@@ -99,12 +92,12 @@ public class Forum implements Serializable {
         this.replyCount = replyCount;
     }
 
-    public Integer getLastTopic() {
-        return lastTopic;
+    public String getLastTopicName() {
+        return lastTopicName;
     }
 
-    public void setLastTopic(Integer lastTopic) {
-        this.lastTopic = lastTopic;
+    public void setLastTopicName(String lastTopicName) {
+        this.lastTopicName = lastTopicName;
     }
 
     public Date getCreateTime() {

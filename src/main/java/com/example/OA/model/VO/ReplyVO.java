@@ -1,43 +1,49 @@
-package com.example.OA.model;
+package com.example.OA.model.VO;
 
-import org.hibernate.validator.constraints.NotEmpty;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.Date;
 
-public class Reply implements Serializable {
+/**
+ * Created by aa on 2017/12/2.
+ */
+public class ReplyVO implements Serializable {
+
     private Integer id;
 
-    @Size(max = 100)
     private String title;
 
-    @Size(max = 400)
     private String content;
 
-    private Short status;
+    private String status;
+    private String statusName;
 
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private Date replayTime;
 
-    private Integer author;
+    private String authorName;
 
     private String ip;
 
+    private String topicTitle;
     private Integer topicId;
 
-    public Reply(Integer id, String title, String content, Short status, Date replayTime, Integer author, String ip, Integer topicId) {
-        this.id = id;
-        this.title = title;
-        this.content = content;
-        this.status = status;
-        this.replayTime = replayTime;
-        this.author = author;
-        this.ip = ip;
-        this.topicId = topicId;
+    public String getStatusName() {
+        return statusName;
     }
 
-    public Reply() {
-        super();
+    public void setStatusName(String statusName) {
+        this.statusName = statusName;
+    }
+
+    public String getTopicTitle() {
+        return topicTitle;
+    }
+
+    public void setTopicTitle(String topicTitle) {
+        this.topicTitle = topicTitle;
     }
 
     public Integer getId() {
@@ -53,7 +59,7 @@ public class Reply implements Serializable {
     }
 
     public void setTitle(String title) {
-        this.title = title == null ? null : title.trim();
+        this.title = title;
     }
 
     public String getContent() {
@@ -61,14 +67,14 @@ public class Reply implements Serializable {
     }
 
     public void setContent(String content) {
-        this.content = content == null ? null : content.trim();
+        this.content = content;
     }
 
-    public Short getStatus() {
+    public String getStatus() {
         return status;
     }
 
-    public void setStatus(Short status) {
+    public void setStatus(String status) {
         this.status = status;
     }
 
@@ -80,12 +86,12 @@ public class Reply implements Serializable {
         this.replayTime = replayTime;
     }
 
-    public Integer getAuthor() {
-        return author;
+    public String getAuthorName() {
+        return authorName;
     }
 
-    public void setAuthor(Integer author) {
-        this.author = author;
+    public void setAuthorName(String authorName) {
+        this.authorName = authorName;
     }
 
     public String getIp() {
@@ -93,7 +99,7 @@ public class Reply implements Serializable {
     }
 
     public void setIp(String ip) {
-        this.ip = ip == null ? null : ip.trim();
+        this.ip = ip;
     }
 
     public Integer getTopicId() {

@@ -1,4 +1,6 @@
-package com.example.OA.model.activiti;
+package com.example.OA.model.VO;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -15,6 +17,7 @@ public class CommentVO implements Serializable{
     private String content;
 
     // 评论时间
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private Date time;
 
     public String getUserName() {
@@ -33,6 +36,7 @@ public class CommentVO implements Serializable{
         this.content = content;
     }
 
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     public Date getTime() {
         return time;
     }

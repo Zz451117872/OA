@@ -4,9 +4,15 @@ import com.example.OA.dao.ForumMapper;
 import com.example.OA.dao.TopicMapper;
 import com.example.OA.model.Forum;
 import com.example.OA.model.Topic;
+import com.example.OA.model.VO.ForumVO;
+import com.example.OA.mvc.common.ServerResponse;
 import com.example.OA.mvc.exception.AppException;
 import com.example.OA.mvc.exception.Error;
 import com.example.OA.service.CommonService;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,15 +33,19 @@ public class ForumService extends CommonService{
     TopicMapper topicMapper;
 
     //添加版块
-    public Forum add(Forum forum) {
+    public ServerResponse add(Forum forum) {
         if(forum != null)
         {
             String forumName = forum.getForumName();//版块名称是唯一的
             if(forumMapper.getByForumName(forumName) == null)
             {
                 forum.setCreateTime(new Date());
-                forumMapper.insertSelective(forum);
-                return forum;
+                int result = forumMapper.insertSelective(forum);
+                if(result > 0)
+                {
+                    return ServerResponse.createBySuccess();
+                }
+                return ServerResponse.createByErrorMessage("database inner error");
             }
             throw new AppException(Error.DATA_VERIFY_ERROR,"版块名已存在");
         }
@@ -43,67 +53,100 @@ public class ForumService extends CommonService{
     }
 
     //更新版块
-    public Forum update(Forum forum) {
+    public ServerResponse update(Forum forum) {
         if(forum != null)
         {
             String forumName = forum.getForumName();
-            if(forumMapper.getByForumName(forumName) == null)
+            Forum temp = forumMapper.getByForumName(forumName);
+            if(temp == null || (temp != null && temp.getId() == forum.getId()) )
             {
                 forum.setUpdateTime(new Date());
                 forum.setReplyCount(null);//一些数据不可以修改
                 forum.setTopCount(null);
                 forum.setLastTopic(null);
-                forumMapper.updateByPrimaryKeySelective(forum);
-                return forum;
+                int result = forumMapper.updateByPrimaryKeySelective(forum);
+                if(result > 0)
+                {
+                    return ServerResponse.createBySuccess();
+                }
+                return ServerResponse.createByErrorMessage("database inner error");
             }
             throw new AppException(Error.DATA_VERIFY_ERROR,"版块名已存在");
         }
         throw new AppException(Error.PARAMS_ERROR);
     }
 
-    //得到该版块所有主题
-    public List<Topic> getAllTopic(Integer forumId) {
-        if(forumId != null)
-        {
-            if(forumMapper.selectByPrimaryKey(forumId) != null)
-            {
-                return topicMapper.getAllByForum(forumId);
-            }
-            throw new AppException(Error.DATA_VERIFY_ERROR,"版块不存在");
-        }
-        throw new AppException(Error.PARAMS_ERROR);
-    }
-
-    //得到该版块的最后主题
-    public Topic getLastTopicByForum(Integer forumId) {
-        if(forumId != null)
-        {
-            Forum forum = forumMapper.selectByPrimaryKey(forumId);
-            if(forum != null)
-            {
-                Integer topicId = forum.getLastTopic();
-                if(topicId != null)
-                {
-                    return topicMapper.selectByPrimaryKey(topicId);
-                }
-                throw new AppException(Error.TARGET_NO_EXISTS,"没有最后主题");
-            }
-            throw new AppException(Error.DATA_VERIFY_ERROR,"版块不存在");
-        }
-        throw new AppException(Error.PARAMS_ERROR);
-    }
 
     //所有版块
-    public List<Forum> getAllForum() {
-        return forumMapper.getAll();
+    public PageInfo<ForumVO> getAllForum(Integer pageNum, Integer pageSize) {
+        try{
+            PageHelper.startPage(pageNum,pageSize);
+            List<Forum> forumList = forumMapper.getAll();
+            PageInfo pageInfo = new PageInfo(forumList);
+            pageInfo.setList(convertForumVOs(forumList));
+            return pageInfo;
+        }catch (Exception e)
+        {
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+    private List<ForumVO> convertForumVOs(List<Forum> forumList) {
+        try{
+            if(forumList != null && !forumList.isEmpty())
+            {
+                List<ForumVO> result = Lists.newArrayList();
+                for(Forum forum : forumList)
+                {
+                    result.add(convertForumVO(forum));
+                }
+                return result;
+            }
+            return null;
+        }catch (Exception e)
+        {
+            throw e;
+        }
+    }
+
+    private ForumVO convertForumVO(Forum forum) {
+        try{
+            if(forum != null)
+            {
+                ForumVO result = new ForumVO();
+                result.setId(forum.getId());
+                result.setForumName(forum.getForumName());
+                result.setCreateTime(forum.getCreateTime());
+                result.setUpdateTime(forum.getUpdateTime());
+                result.setDescription(forum.getDescription());
+                result.setReplyCount(forum.getReplyCount());
+                result.setTopCount(forum.getTopCount());
+                result.setSorts(forum.getSorts());
+                Topic topic = topicMapper.selectByPrimaryKey(forum.getLastTopic());
+                String lastTopicName = topic == null ? null:topic.getTitle();
+                result.setLastTopic(forum.getLastTopic());
+                result.setLastTopicName(lastTopicName);
+                return result;
+            }
+            return null;
+        }catch (Exception e)
+        {
+            throw e;
+        }
     }
 
     //通过主键或者名称获取版块
-    public Forum getByIdOrName(Integer forumId, String forumName) {
-
-            if (forumId != null || StringUtils.isNotBlank(forumName)) {
-                return forumMapper.getByIdOrName(forumId, forumName);
+    public ForumVO getByIdOrName(Integer forumId, String forumName) {
+            if (forumId != null || forumName != null) {
+                Forum forum = forumMapper.getByIdOrName(forumId,forumName);
+                return convertForumVO(forum);
             }
             throw new AppException(Error.PARAMS_ERROR, "param error");
+    }
+
+    //删除版块
+    public void deleteForumById(Integer forumId) {
+
     }
 }

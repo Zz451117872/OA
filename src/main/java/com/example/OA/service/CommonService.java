@@ -26,17 +26,7 @@ public class CommonService {
     @Autowired
     RepositoryService repositoryService;
 
-    public TaskBean convertTask(Task task) {
-        TaskBean taskBean = new TaskBean();
-        taskBean.setId(task.getId());
-        taskBean.setName(task.getName());
-        taskBean.setCreateTime(task.getCreateTime());
-        taskBean.setAssignee(task.getAssignee());
-        taskBean.setExecutionId(task.getExecutionId());
-        taskBean.setOwner(task.getOwner());
-        taskBean.setProcessInstanceId(task.getProcessInstanceId());
-        return taskBean;
-    }
+
 
     public ProcessDefinitionBean convertProcessDefinitionBean(ProcessDefinition processDefinition) {
         if(processDefinition != null)

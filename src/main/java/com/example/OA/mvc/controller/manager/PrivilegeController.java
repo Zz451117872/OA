@@ -1,9 +1,12 @@
 package com.example.OA.mvc.controller.manager;
 
 import com.example.OA.model.Privilege;
+import com.example.OA.model.VO.PrivilegeVO;
+import com.example.OA.mvc.common.ServerResponse;
 import com.example.OA.mvc.exception.AppException;
 import com.example.OA.mvc.exception.Error;
 import com.example.OA.service.manager.PrivilegeService;
+import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
@@ -31,7 +34,7 @@ public class PrivilegeController {
 
     @RequiresPermissions(value = "privilege_add")
     @RequestMapping(value = "add_or_update_privilege.do",method = RequestMethod.POST)
-    public void addOrUpdate(@Valid Privilege privilege , BindingResult bindingResult)
+    public ServerResponse addOrUpdate(@Valid Privilege privilege , BindingResult bindingResult)
     {
         Subject subject = SecurityUtils.getSubject();
         if(!subject.isAuthenticated()) {
@@ -47,11 +50,9 @@ public class PrivilegeController {
             {
                 if(privilege.getId() != null)
                 {
-                    privilegeService.update(privilege);
-                    return;
+                  return  privilegeService.update(privilege);
                 }else {
-                    privilegeService.add(privilege);
-                    return;
+                   return privilegeService.add(privilege);
                 }
             }
             throw new AppException(Error.PARAMS_ERROR);
@@ -66,7 +67,7 @@ public class PrivilegeController {
             throw new AppException(Error.UN_AUTHORIZATION);
         }
         privilegeService.deleteById(privilegeId);
-        return;
+        return ;
     }
 
     //获取顶级权限
@@ -80,9 +81,10 @@ public class PrivilegeController {
         return privilegeService.getTopPrivilege();
     }
 
-    //获取顶级权限
+
+    //获取子权限
     @RequestMapping(value = "get_child.do",method = RequestMethod.POST)
-    public List<Privilege> getChild(@RequestParam(value = "parentId", required = true) Integer parentId)
+    public List<PrivilegeVO> getChild(@RequestParam(value = "parentId", required = true) Integer parentId)
     {
         Subject subject = SecurityUtils.getSubject();
         if(!subject.isAuthenticated()) {

@@ -27,7 +27,9 @@ public class ExceptionControllerAdvice {
     Logger logger = LoggerFactory.getLogger(getClass());
 
     @ExceptionHandler(AppException.class)
-    public ServerResponse appException(AppException ex) {
+    public ServerResponse appException(AppException ex,HttpServletResponse response) {
+        response.setStatus(200);
+        logger.error(ex.getMessage(), ex);
         return appExceptionToServerResponse(ex);
     }
 

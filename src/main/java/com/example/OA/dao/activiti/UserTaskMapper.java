@@ -23,4 +23,6 @@ public interface UserTaskMapper {
     List<UserTask> getByPdfKey(String processDefinitionKey);
 
     void deleteAll();
+
+    void deleteByPDFkey(String procDefKey);
 }

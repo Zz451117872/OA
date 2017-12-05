@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.example.OA.dao.activiti.SalaryAdjustMapper" >
+
   <resultMap id="BaseResultMap" type="com.example.OA.model.activiti.SalaryAdjust" >
     <constructor >
       <idArg column="id" jdbcType="INTEGER" javaType="java.lang.Integer" />
       <arg column="application" jdbcType="INTEGER" javaType="java.lang.Integer" />
-      <arg column="application_name" jdbcType="VARCHAR" javaType="java.lang.String" />
-      <arg column="businessType" jdbcType="VARCHAR" javaType="java.lang.String" />
       <arg column="adjustMoney" jdbcType="DECIMAL" javaType="java.math.BigDecimal" />
       <arg column="create_time" jdbcType="TIMESTAMP" javaType="java.util.Date" />
       <arg column="update_time" jdbcType="TIMESTAMP" javaType="java.util.Date" />
@@ -15,34 +14,15 @@
       <arg column="description" jdbcType="VARCHAR" javaType="java.lang.String" />
     </constructor>
   </resultMap>
-  <resultMap id="ResultMapWithBLOBs" type="com.example.OA.model.activiti.SalaryAdjust" >
-    <constructor >
-      <idArg column="id" jdbcType="INTEGER" javaType="java.lang.Integer" />
-      <arg column="application" jdbcType="INTEGER" javaType="java.lang.Integer" />
-      <arg column="application_name" jdbcType="VARCHAR" javaType="java.lang.String" />
-      <arg column="businessType" jdbcType="VARCHAR" javaType="java.lang.String" />
-      <arg column="adjustMoney" jdbcType="DECIMAL" javaType="java.math.BigDecimal" />
-      <arg column="create_time" jdbcType="TIMESTAMP" javaType="java.util.Date" />
-      <arg column="update_time" jdbcType="TIMESTAMP" javaType="java.util.Date" />
-      <arg column="processInstanceId" jdbcType="VARCHAR" javaType="java.lang.String" />
-      <arg column="status" jdbcType="INTEGER" javaType="java.lang.Integer" />
-      <arg column="description" jdbcType="VARCHAR" javaType="java.lang.String" />
-      <arg column="businessKey" jdbcType="VARCHAR" javaType="java.lang.String" />
-    </constructor>
-  </resultMap>
+
   <sql id="Base_Column_List" >
-    id, application, application_name, businessType, adjustMoney, create_time, update_time, 
+    id, application, adjustMoney, create_time, update_time,
     processInstanceId, status, description
   </sql>
-  <sql id="Blob_Column_List" >
-    businessKey
-  </sql>
 
-  <select id="selectByPrimaryKey" resultMap="ResultMapWithBLOBs" parameterType="java.lang.Integer" >
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
     select 
     <include refid="Base_Column_List" />
-    ,
-    <include refid="Blob_Column_List" />
     from salaryadjust
     where id = #{id,jdbcType=INTEGER}
   </select>
@@ -53,14 +33,13 @@
   </delete>
 
   <insert id="insert" parameterType="com.example.OA.model.activiti.SalaryAdjust" useGeneratedKeys="true" keyProperty="id">
-    insert into salaryadjust (id, application, application_name, 
-      businessType, adjustMoney, create_time, 
+    insert into salaryadjust (id, application, adjustMoney, create_time,
       update_time, processInstanceId, status, 
-      description, businessKey)
-    values (#{id,jdbcType=INTEGER}, #{application,jdbcType=INTEGER}, #{applicationName,jdbcType=VARCHAR}, 
-      #{businesstype,jdbcType=VARCHAR}, #{adjustmoney,jdbcType=DECIMAL}, #{createTime,jdbcType=TIMESTAMP}, 
+      description)
+    values (#{id,jdbcType=INTEGER}, #{application,jdbcType=INTEGER}
+    , #{adjustmoney,jdbcType=DECIMAL}, #{createTime,jdbcType=TIMESTAMP},
       #{updateTime,jdbcType=TIMESTAMP}, #{processinstanceid,jdbcType=VARCHAR}, #{status,jdbcType=INTEGER}, 
-      #{description,jdbcType=VARCHAR}, #{businesskey,jdbcType=VARCHAR})
+      #{description,jdbcType=VARCHAR})
   </insert>
   <insert id="insertSelective" parameterType="com.example.OA.model.activiti.SalaryAdjust" useGeneratedKeys="true" keyProperty="id">
     insert into salaryadjust
@@ -71,12 +50,7 @@
       <if test="application != null" >
         application,
       </if>
-      <if test="applicationName != null" >
-        application_name,
-      </if>
-      <if test="businesstype != null" >
-        businessType,
-      </if>
+
       <if test="adjustmoney != null" >
         adjustMoney,
       </if>
@@ -95,9 +69,7 @@
       <if test="description != null" >
         description,
       </if>
-      <if test="businesskey != null" >
-        businessKey,
-      </if>
+
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides="," >
       <if test="id != null" >
@@ -106,12 +78,7 @@
       <if test="application != null" >
         #{application,jdbcType=INTEGER},
       </if>
-      <if test="applicationName != null" >
-        #{applicationName,jdbcType=VARCHAR},
-      </if>
-      <if test="businesstype != null" >
-        #{businesstype,jdbcType=VARCHAR},
-      </if>
+
       <if test="adjustmoney != null" >
         #{adjustmoney,jdbcType=DECIMAL},
       </if>
@@ -130,9 +97,6 @@
       <if test="description != null" >
         #{description,jdbcType=VARCHAR},
       </if>
-      <if test="businesskey != null" >
-        #{businesskey,jdbcType=VARCHAR},
-      </if>
     </trim>
   </insert>
   <update id="updateByPrimaryKeySelective" parameterType="com.example.OA.model.activiti.SalaryAdjust" >
@@ -141,12 +105,7 @@
       <if test="application != null" >
         application = #{application,jdbcType=INTEGER},
       </if>
-      <if test="applicationName != null" >
-        application_name = #{applicationName,jdbcType=VARCHAR},
-      </if>
-      <if test="businesstype != null" >
-        businessType = #{businesstype,jdbcType=VARCHAR},
-      </if>
+
       <if test="adjustmoney != null" >
         adjustMoney = #{adjustmoney,jdbcType=DECIMAL},
       </if>
@@ -165,31 +124,13 @@
       <if test="description != null" >
         description = #{description,jdbcType=VARCHAR},
       </if>
-      <if test="businesskey != null" >
-        businessKey = #{businesskey,jdbcType=VARCHAR},
-      </if>
     </set>
     where id = #{id,jdbcType=INTEGER}
   </update>
-  <update id="updateByPrimaryKeyWithBLOBs" parameterType="com.example.OA.model.activiti.SalaryAdjust" >
-    update salaryadjust
-    set application = #{application,jdbcType=INTEGER},
-      application_name = #{applicationName,jdbcType=VARCHAR},
-      businessType = #{businesstype,jdbcType=VARCHAR},
-      adjustMoney = #{adjustmoney,jdbcType=DECIMAL},
-      create_time = #{createTime,jdbcType=TIMESTAMP},
-      update_time = #{updateTime,jdbcType=TIMESTAMP},
-      processInstanceId = #{processinstanceid,jdbcType=VARCHAR},
-      status = #{status,jdbcType=INTEGER},
-      description = #{description,jdbcType=VARCHAR},
-      businessKey = #{businesskey,jdbcType=VARCHAR}
-    where id = #{id,jdbcType=INTEGER}
-  </update>
+
   <update id="updateByPrimaryKey" parameterType="com.example.OA.model.activiti.SalaryAdjust" >
     update salaryadjust
     set application = #{application,jdbcType=INTEGER},
-      application_name = #{applicationName,jdbcType=VARCHAR},
-      businessType = #{businesstype,jdbcType=VARCHAR},
       adjustMoney = #{adjustmoney,jdbcType=DECIMAL},
       create_time = #{createTime,jdbcType=TIMESTAMP},
       update_time = #{updateTime,jdbcType=TIMESTAMP},
@@ -201,7 +142,7 @@
 
 
   <!-- ==================================-->
-  <select id="getByApplicationAndStatus" parameterType="map" resultMap="BaseResultMap">
+  <select id="getByApplicationOrStatus" parameterType="map" resultMap="BaseResultMap">
     SELECT
     <include refid="Base_Column_List"/>
     from salaryadjust

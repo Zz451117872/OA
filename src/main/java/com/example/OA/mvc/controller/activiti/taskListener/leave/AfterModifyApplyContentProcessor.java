@@ -44,12 +44,12 @@ public class AfterModifyApplyContentProcessor implements TaskListener {
             leave.setEndTime((Date) delegateTask.getVariable("endTime"));
             leave.setReason((String) delegateTask.getVariable("reason"));
             leave.setLeaveNumber((Integer) delegateTask.getVariable("leaveNumber"));
-            leave.setStatus(Const.WorkflowStatus.APPLICATION.getCode());
             leave.setUpdateTime(new Date());
         }else {
-            leave.setStatus(Const.WorkflowStatus.CANCELED.getCode());
+            leave.setStatus(Const.BusinessStatus.CANCELED.getCode());
         }
         leaveMapper.updateByPrimaryKeySelective(leave);
+        runtimeService.setVariable(processInstanceId,"enrty",leave);
     }
 
 }

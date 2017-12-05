@@ -4,6 +4,7 @@ import com.example.OA.model.Part;
 import com.example.OA.mvc.exception.AppException;
 import com.example.OA.mvc.exception.Error;
 import com.example.OA.service.manager.PartService;
+import com.github.pagehelper.PageInfo;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.apache.shiro.subject.Subject;
@@ -67,12 +68,13 @@ public class PartController {
     }
 
     @RequestMapping(value = "all_part.do",method = RequestMethod.POST)
-    public List<Part> getAll()
+    public PageInfo getAll(@RequestParam(value = "pageNum",required = false,defaultValue = "1")Integer pageNum,
+                           @RequestParam(value = "pageSize",required =  false,defaultValue = "3")Integer pageSize)
     {
         Subject subject = SecurityUtils.getSubject();
         if(!subject.isAuthenticated()) {
             throw new AppException(Error.UN_AUTHORIZATION);
         }
-        return partService.getAll();
+        return partService.getAll(pageNum,pageSize);
     }
 }

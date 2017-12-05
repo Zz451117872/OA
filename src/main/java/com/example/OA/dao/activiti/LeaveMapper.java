@@ -19,5 +19,6 @@ public interface LeaveMapper {
     int updateByPrimaryKey(Leave record);
 
     //==================================
-    List<Leave> getByApplicationAndStatus(@Param("application") Integer application, @Param("status")Integer status);
+    List<Leave> getByApplicationOrStatus(@Param("application") Integer application, @Param("status")Integer status);
+
 }

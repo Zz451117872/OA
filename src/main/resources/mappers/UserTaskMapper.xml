@@ -141,4 +141,8 @@
   <delete id="deleteAll">
     delete  from usertask where 1=1
   </delete>
+
+<delete id="deleteByPDFkey" parameterType="string">
+  DELETE from usertask where procDefKey = #{procDefKey}
+</delete>
 </mapper>

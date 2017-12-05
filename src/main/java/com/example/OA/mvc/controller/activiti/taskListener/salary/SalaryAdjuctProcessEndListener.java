@@ -44,17 +44,17 @@ public class SalaryAdjuctProcessEndListener implements ExecutionListener {
 
         SalaryAdjust salaryAdjust = salaryAdjustMapper.selectByPrimaryKey(Integer.parseInt(businessKey));
        Object result = execution.getVariable("result");//这个参数是以“expression”形式设置在连线的监听器上
-      if("pass".equals(result))
+      if("ok".equals(result))
       {
-          salaryAdjust.setStatus(Const.WorkflowStatus.APPROVED.getCode());
+          salaryAdjust.setStatus(Const.BusinessStatus.PASSED.getCode());
           logger.info("薪资调整流程通过+++++++++++++++++++++++++++++++++");
       }else if("reject".equals(result))
       {
-          salaryAdjust.setStatus(Const.WorkflowStatus.REJECTED.getCode());
+          salaryAdjust.setStatus(Const.BusinessStatus.REJECTED.getCode());
           logger.info("薪资调整流程被拒绝+++++++++++++++++++++++++++++++++");
       }else if("cancled".equals(result))
       {
-          salaryAdjust.setStatus(Const.WorkflowStatus.CANCELED.getCode());
+          salaryAdjust.setStatus(Const.BusinessStatus.CANCELED.getCode());
           logger.info("薪资调整流程已取消+++++++++++++++++++++++++++++++++");
       }else {
           logger.info("薪资调整流程异常+++++++++++++++++++++++++++++++++");

@@ -37,6 +37,7 @@ public class SalaryModifyApplyProcessor implements TaskListener {
 				salaryAdjust.setDescription((String) delegateTask.getVariable("description"));
 			}
 			salaryAdjustMapper.updateByPrimaryKeySelective(salaryAdjust);
+			runtimeService.setVariable(salaryAdjust.getProcessinstanceid(),"enrty",salaryAdjust);
 			logger.info("薪资修改完成！");
 		} catch (Exception e) {
 			logger.error("薪资修改失败！");

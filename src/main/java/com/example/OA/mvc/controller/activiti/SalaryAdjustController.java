@@ -3,12 +3,13 @@ package com.example.OA.mvc.controller.activiti;
 import com.example.OA.dao.activiti.SalaryAdjustMapper;
 import com.example.OA.model.User;
 import com.example.OA.model.activiti.SalaryAdjust;
+import com.example.OA.model.VO.SalaryAdjustVO;
 import com.example.OA.mvc.common.Const;
+import com.example.OA.mvc.common.ServerResponse;
 import com.example.OA.mvc.controller.CommonController;
 import com.example.OA.mvc.exception.AppException;
 import com.example.OA.mvc.exception.Error;
 import com.example.OA.service.activiti.WorkflowService;
-import com.example.OA.util.BeanUtils;
 import com.google.common.collect.Maps;
 import org.activiti.engine.RuntimeService;
 import org.apache.shiro.SecurityUtils;
@@ -23,7 +24,6 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.validation.Valid;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 
@@ -44,8 +44,8 @@ public class SalaryAdjustController extends CommonController{
     RuntimeService runtimeService;
 
     //开启薪资调整流程   要进行表单验证
-    @RequestMapping(value = "start_salary_workflow",method = RequestMethod.POST)
-    public String startWorkflow(@Valid SalaryAdjust salaryAdjust , BindingResult bindingResult) {
+    @RequestMapping(value = "start_salary_workflow.do",method = RequestMethod.POST)
+    public ServerResponse startWorkflow(@Valid SalaryAdjust salaryAdjust , BindingResult bindingResult) {
         Subject subject = SecurityUtils.getSubject();
         if(!subject .isAuthenticated())
         {
@@ -58,14 +58,10 @@ public class SalaryAdjustController extends CommonController{
         User user = getUserBySubject(subject);
         if(salaryAdjust != null)
         {
-            //BaseVO 相关信息
-            salaryAdjust.setApplication(user.getId());//设置申请人
-            salaryAdjust.setApplicationName(user.getUsername());
-            salaryAdjust.setBusinesstype(Const.BusinessType.SALARY);//业务类型
-
             //SalaryAdjust相关信息
+            salaryAdjust.setApplication(user.getId());//设置申请人
             salaryAdjust.setCreateTime(new Date());
-            salaryAdjust.setStatus(Const.WorkflowStatus.APPLICATION.getCode());//业务状态
+            salaryAdjust.setStatus(Const.BusinessStatus.APPLICATION.getCode());//业务状态
 
             Map<String, Object> variables = new HashMap<String, Object>();
             variables.put("baseMoney", user.getSalary());  //原有薪金(回滚用)
@@ -75,37 +71,20 @@ public class SalaryAdjustController extends CommonController{
         throw new AppException(Error.PARAMS_ERROR);
     }
 
-    @RequestMapping(value = "salary_by_status",method = RequestMethod.POST)
-    public List<SalaryAdjust> getSalaryAddustByStatus(@RequestParam(value = "status",required = false,defaultValue = "1") Integer status) {
-        Subject subject = SecurityUtils.getSubject();
-        if(!subject .isAuthenticated())
-        {
-            throw new AppException(Error.UN_AUTHORIZATION);
-        }
-        try{
-            Const.WorkflowStatus.codeof(status);   // 检查传入状态参数
-        }catch (Exception e)
-        {
-            throw new AppException(Error.PARAMS_ERROR,"status 参数错误");
-        }
-        User user = getUserBySubject(subject);
-        return salaryAdjustMapper.getByApplicationAndStatus(null,status);
-    }
-
     //获取 薪资调整详细
-    @RequestMapping(value = "salary_by_id",method = RequestMethod.POST)
-    public SalaryAdjust getSalaryAdjust(@RequestParam(value = "salaryId",required = true) Integer salaryId) {
+    @RequestMapping(value = "get_salary_detail.do",method = RequestMethod.POST)
+    public SalaryAdjustVO getSalaryAdjust(@RequestParam(value = "salaryId",required = true) Integer salaryId) {
         Subject subject = SecurityUtils.getSubject();
         if(!subject .isAuthenticated())
         {
             throw new AppException(Error.UN_AUTHORIZATION);
         }
-        return salaryAdjustMapper.selectByPrimaryKey(salaryId);
+        return workflowService.getSalaryDetail(salaryId);
     }
 
 
     //修改申请 ，要进行表单验证
-    @RequestMapping(value = "modify_salary",method = RequestMethod.POST)
+    @RequestMapping(value = "modify_salary.do",method = RequestMethod.POST)
     public void modifySalaryAdjust(@Valid SalaryAdjust salaryAdjust,BindingResult bindingResult,
                                    @RequestParam(value = "reApply",required = true) Boolean reApply,
                                    @RequestParam(value = "taskId",required = true) String taskId,
