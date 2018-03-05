@@ -6,7 +6,7 @@ public class Const {
     //public static String processPath = "F:\\IDEAPATH\\OA\\src\\main\\resources\\processes";
     public static String processPath = "/usr/local/src/tomcat-server/webapps/oa/WEB-INF/classes/processes";
 
-    public static String allowedOrigin = "http://120.79.50.238/";
+    public static String allowedOrigin = "http://120.79.50.238:8090/";
 
     public static String salt = "sfasdfasdf@#$@#$#@KJdjklj;D../dSF.";
 
