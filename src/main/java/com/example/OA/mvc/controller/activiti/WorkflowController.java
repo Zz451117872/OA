@@ -11,7 +11,6 @@ import com.example.OA.mvc.exception.AppException;
 import com.example.OA.mvc.exception.Error;
 import com.example.OA.service.activiti.ProcessDefinitionService;
 import com.example.OA.service.activiti.WorkflowService;
-import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Maps;
 import org.activiti.engine.*;
 import org.apache.shiro.SecurityUtils;
@@ -23,8 +22,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -33,8 +30,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("workflow")
 public class WorkflowController extends CommonController{
-
-    Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     WorkflowService workflowService;

@@ -74,7 +74,7 @@ public class LeaveController extends CommonController{
                 Map<String, Object> variables = new HashMap<String, Object>();
                 variables.put("inputUser",user.getUsername());//设置申请人变量
                 List<Integer> roleIds = userRoleMapper.getRoleidByUserid(user.getId());
-                if(roleIds != null)
+                if(roleIds != null && roleIds.size() > 0 )
                 {       //目前一个用户只有一个角色，后期优化
                     Role role = roleMapper.selectByPrimaryKey(roleIds.get(0));
                     variables.put("role",role.getRoleName());

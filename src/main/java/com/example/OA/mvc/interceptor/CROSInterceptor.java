@@ -14,10 +14,10 @@ import javax.servlet.http.HttpServletResponse;
 public class CROSInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object o) throws Exception {
-        response.setHeader("Access-Control-Allow-Origin", "http://127.0.0.1:8020");
-        response.setHeader("Access-Control-Allow-Methods",  "PUT,POST,GET,DELETE,OPTIONS");
-        response.setHeader("Access-Control-Allow-Headers", "x-requested-with,content-type,Access-Control-Allow-Credentials");
-        response.setHeader("Access-Control-Allow-Credentials","true");
+//        response.setHeader("Access-Control-Allow-Origin", "*");
+//        response.setHeader("Access-Control-Allow-Methods",  "PUT,POST,GET,DELETE,OPTIONS");
+//        response.setHeader("Access-Control-Allow-Headers", "x-requested-with,content-type,Access-Control-Allow-Credentials");
+//        response.setHeader("Access-Control-Allow-Credentials","true");
         return true;
     }
 

@@ -66,7 +66,7 @@ public class ProcessDefinitionController extends CommonController{
 
     protected static Map<String, ProcessDefinition> PROCESS_DEFINITION_CACHE = new HashMap<String, ProcessDefinition>();
 
-    //部署流程定义
+    //部署流程定义 通过 流程定义名称方式
     @RequestMapping(value = "deploy_pdf.do",method = RequestMethod.POST)
     public ServerResponse deploymentProcessDefinition(@RequestParam(value = "processName",required = true) String processName,
                                                       @RequestParam(value = "deploymentName",required = false,defaultValue = "呵呵") String deploymentName) {
@@ -77,7 +77,7 @@ public class ProcessDefinitionController extends CommonController{
         return processDefinitionService.deploymentProcessDefinition(processName,deploymentName);
     }
 
-    //部署流程定义
+    //部署流程定义 通过zip文件方式
     @RequestMapping(value = "deploy_pdf_by_zip.do",method = RequestMethod.POST)
     public ServerResponse deploymentProcessDefinitionByZIP(MultipartHttpServletRequest request) {
         Subject subject = SecurityUtils.getSubject();
@@ -98,7 +98,7 @@ public class ProcessDefinitionController extends CommonController{
         throw new AppException(Error.PARAMS_ERROR);
     }
 
-    //部署流程定义
+    //部署所有流程定义
     @RequestMapping(value = "deploy_all_pdf.do",method = RequestMethod.POST)
     public ServerResponse deploymentAllProcessDefinition() {
         Subject subject = SecurityUtils.getSubject();
@@ -152,6 +152,7 @@ public class ProcessDefinitionController extends CommonController{
         return;
     }
 
+    //通过流程定义 获取资源图
     @RequestMapping(value = "get_resource_map.do",method = RequestMethod.POST)
     public ServerResponse getResourceMap(String processDefinitionId)
     {
@@ -193,7 +194,7 @@ public class ProcessDefinitionController extends CommonController{
     }
 
 
-    //读取流程图,中文不能显示，不知原因
+    //读取流程图
     @RequestMapping(value = "getFlowChart.do",method = RequestMethod.POST)
     public ServerResponse getFlowChart(@RequestParam(value = "executionId",required = true) String executionId) {
         Subject subject = SecurityUtils.getSubject();
@@ -291,6 +292,7 @@ public class ProcessDefinitionController extends CommonController{
         throw new AppException(Error.PARAMS_ERROR);
     }
 
+    //查询所有的流程定义名
     @RequestMapping(value = "all_pdf_names.do",method = RequestMethod.POST)
     public List<String> getAllProcessDefinetionName()
     {
@@ -302,6 +304,7 @@ public class ProcessDefinitionController extends CommonController{
         return processDefinitionService.getAllProcessDefinetionName();
     }
 
+    //查询所有的流程定义key
     @RequestMapping(value = "all_pdf_key.do",method = RequestMethod.POST)
     public List<String> getAllProcessDefinetionKey()
     {

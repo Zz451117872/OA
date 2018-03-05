@@ -18,7 +18,6 @@ import com.example.OA.util.IpUtil;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
-import org.apache.catalina.Loader;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,21 +56,22 @@ public class TopicService extends CommonService{
         try{
             if(topic != null)
             {
-                topic.setStatus(Const.TopicStatus.APPLY.getCode());
-                topic.setCreateTime(new Date());
-                int result = topicMapper.insertSelective(topic); //添加主题
-                if(result >= 1)
-                {
-                    Forum forum = forumMapper.selectByPrimaryKey(topic.getForumId());
-                    if(forum != null)
-                    {               //更新主题 所属版块信息
-                        forum.setTopCount(forum.getTopCount()+1);
-                        forum.setLastTopic(topic.getId());
-                        forumMapper.updateByPrimaryKeySelective(forum);
-                        return ServerResponse.createBySuccess();
+                if(topicMapper.getByIdOrName(null,topic.getTitle()) == null) {
+                    topic.setStatus(Const.TopicStatus.APPLY.getCode());
+                    topic.setCreateTime(new Date());
+                    int result = topicMapper.insertSelective(topic); //添加主题
+                    if (result >= 1) {
+                        Forum forum = forumMapper.selectByPrimaryKey(topic.getForumId());
+                        if (forum != null) {               //更新主题 所属版块信息
+                            forum.setTopCount(forum.getTopCount() + 1);
+                            forum.setLastTopic(topic.getId());
+                            forumMapper.updateByPrimaryKeySelective(forum);
+                            return ServerResponse.createBySuccess();
+                        }
+                        throw new AppException(Error.DATA_VERIFY_ERROR, "对应版块不存在");
                     }
-                    throw new AppException(Error.DATA_VERIFY_ERROR,"对应版块不存在");
                 }
+                throw new  AppException(Error.DATA_VERIFY_ERROR,"标题重复");
             }
             throw new AppException(Error.PARAMS_ERROR);
         }catch (AppException e)

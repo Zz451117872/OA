@@ -51,7 +51,7 @@ public class AuthRealm extends AuthorizingRealm {
 
         User user =  (User)principalCollection.getPrimaryPrincipal();
 
-        System.out.println("user:"+user.getId());
+        System.out.println("--------->user:"+user.getId());
 
         //把principals放session中 key=userId value=principals
         SecurityUtils.getSubject().getSession().setAttribute(String.valueOf(user.getId()), SecurityUtils.getSubject().getPrincipals());
@@ -67,7 +67,7 @@ public class AuthRealm extends AuthorizingRealm {
                 for(Role role : roles)
                 {
                     info.addRole(role.getRoleName());
-                    logger.info("addRole:"+role.getRoleName());
+                    logger.info("------------>addRole:"+role.getRoleName());
 
                     List<Integer> privilegeIds = rolePrivilegeMapper.getPrivilegeIdByRoleid(role.getId());
                     if(privilegeIds != null && !privilegeIds.isEmpty())

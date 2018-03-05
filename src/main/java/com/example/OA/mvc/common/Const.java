@@ -1,10 +1,12 @@
 package com.example.OA.mvc.common;
 
-import java.util.Date;
 
 public class Const {
 
-    public static String salt = "geelysdafaqj23ou89ZXcj@#$@#$#@KJdjklj;D../dSF.";
+    public static String processPath = "F:\\IDEAPATH\\OA\\src\\main\\resources\\processes";
+    //public static String processPath = "/usr/local/src/tomcat-server/webapps/oa/WEB-INF/classes/processes";
+
+    public static String salt = "sfasdfasdf@#$@#$#@KJdjklj;D../dSF.";
 
     public interface processDefinitionKey{
         String LEAVE = "leave";

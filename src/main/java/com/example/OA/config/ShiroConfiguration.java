@@ -11,6 +11,7 @@ import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
@@ -37,6 +38,7 @@ public class ShiroConfiguration {
         filterChainDefinitionMap.put("/**", "authc");//表示需要认证才可以访问
         filterChainDefinitionMap.put("/*.*", "authc");
         bean.setFilterChainDefinitionMap(filterChainDefinitionMap);
+        System.out.println("-------------->ShiroFilterFactoryBean started !!!");
         return bean;
     }
 
@@ -66,6 +68,7 @@ public class ShiroConfiguration {
     public LifecycleBeanPostProcessor lifecycleBeanPostProcessor(){
         return new LifecycleBeanPostProcessor();
     }
+
     @Bean
     public DefaultAdvisorAutoProxyCreator defaultAdvisorAutoProxyCreator(){
         DefaultAdvisorAutoProxyCreator creator=new DefaultAdvisorAutoProxyCreator();

@@ -80,7 +80,9 @@ public class ForumService extends CommonService{
     //所有版块
     public PageInfo<ForumVO> getAllForum(Integer pageNum, Integer pageSize) {
         try{
-            PageHelper.startPage(pageNum,pageSize);
+            if(pageNum != 0 && pageSize != 0) {
+                PageHelper.startPage(pageNum, pageSize);
+            }
             List<Forum> forumList = forumMapper.getAll();
             PageInfo pageInfo = new PageInfo(forumList);
             pageInfo.setList(convertForumVOs(forumList));

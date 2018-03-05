@@ -1,6 +1,7 @@
 package com.example.OA.service.activiti;
 
 import com.example.OA.model.activiti.ProcessDefinitionBean;
+import com.example.OA.mvc.common.Const;
 import com.example.OA.mvc.common.ServerResponse;
 import com.example.OA.mvc.exception.AppException;
 import com.example.OA.mvc.exception.Error;
@@ -13,14 +14,10 @@ import org.activiti.engine.RuntimeService;
 import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.repository.DeploymentBuilder;
 import org.activiti.engine.repository.ProcessDefinition;
-import org.activiti.engine.runtime.ProcessInstance;
-import org.activiti.engine.runtime.ProcessInstanceQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
-
 import java.io.File;
 import java.io.InputStream;
 import java.util.List;
@@ -43,8 +40,7 @@ public class ProcessDefinitionService extends CommonService{
     //获取所有流程定义的名称
     public List<String> getAllProcessDefinetionName() {
         try{
-            String path = "F:\\IDEAPATH\\OA\\src\\main\\resources\\processes" ;
-            File file = new File(path);
+            File file = new File(Const.processPath);
             if(file.exists()) {
                 List<String> pdf_names = Lists.newArrayList();
                 File[] pdfs = file.listFiles();
@@ -68,8 +64,7 @@ public class ProcessDefinitionService extends CommonService{
     //部署所有流程定义
     public ServerResponse deploymentAll() {
         try{
-            String path = "F:\\IDEAPATH\\OA\\src\\main\\resources\\processes" ;
-            File file = new File(path);
+            File file = new File(Const.processPath);
 
             DeploymentBuilder deploymentBuilder =  repositoryService.createDeployment().name("auto_deploy_all");
             if(file.exists())

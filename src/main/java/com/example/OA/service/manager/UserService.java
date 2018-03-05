@@ -4,7 +4,6 @@ import com.example.OA.dao.PartMapper;
 import com.example.OA.dao.RoleMapper;
 import com.example.OA.dao.UserMapper;
 import com.example.OA.dao.UserRoleMapper;
-import com.example.OA.model.Privilege;
 import com.example.OA.model.Role;
 import com.example.OA.model.User;
 import com.example.OA.model.UserRoleKey;
@@ -17,7 +16,6 @@ import com.example.OA.mvc.exception.Error;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -263,7 +261,9 @@ public class UserService {
     public PageInfo<UserVO> getAll(Integer pageNum,Integer pageSize)
     {
         try{
-            PageHelper.startPage(pageNum,pageSize);//分页组件是与mybatis 一起使用 才会生效，且只对第一次查询生效
+            if(pageNum != 0 && pageSize != 0) {
+                PageHelper.startPage(pageNum, pageSize);//分页组件是与mybatis 一起使用 才会生效，且只对第一次查询生效
+            }
             List<User> users =  userMapper.getAll();
             List<UserVO> userVOs = convertUserVOs(users);
             PageInfo pageInfo = new PageInfo(users);    //users带有分页信息，所以创建pageInfo时 需要使用users,

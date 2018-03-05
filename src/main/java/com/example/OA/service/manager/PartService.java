@@ -46,7 +46,7 @@ public class PartService {
     public String updatePart(Part part) {
         if(part != null) {
             if (partMapper.selectByPrimaryKey(part.getId()) != null) {
-                if(partMapper.getByPartname(part.getPartName()) != null) {
+                if(partMapper.getByPartname(part.getPartName()) == null) {
                     part.setUpdateTime(new Date());
                     partMapper.updateByPrimaryKeySelective(part);
                     return part.getPartName();
@@ -80,7 +80,9 @@ public class PartService {
 
     public PageInfo getAll(Integer pageNum,Integer pageSize)
     {
-        PageHelper.startPage(pageNum,pageSize);
+        if(pageNum != 0 && pageSize != 0) {
+            PageHelper.startPage(pageNum, pageSize);
+        }
         return new PageInfo(partMapper.getAll());
     }
 }

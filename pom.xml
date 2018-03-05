@@ -28,12 +28,20 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
+			<!--<exclusions>-->
+				<!--<exclusion>-->
+					<!--<groupId>org.springframework.boot</groupId>-->
+					<!--<artifactId>spring-boot-starter-tomcat</artifactId>-->
+				<!--</exclusion>-->
+			<!--</exclusions>-->
 		</dependency>
 
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-tomcat</artifactId>
-		</dependency>
+		<!--<dependency>-->
+			<!--<groupId>org.springframework.boot</groupId>-->
+			<!--<artifactId>spring-boot-starter-tomcat</artifactId>-->
+			<!--<scope>provided</scope>-->
+		<!--</dependency>-->
+
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -63,28 +71,10 @@
 
 		<dependency>
 			<groupId>com.github.pagehelper</groupId>
-			<artifactId>pagehelper-spring-boot-starter</artifactId>
-			<version>1.1.1</version>
-		</dependency>
-		<!--<dependency>-->
-			<!--<groupId>com.github.pagehelper</groupId>-->
-			<!--<artifactId>pagehelper</artifactId>-->
-			<!--<version>4.1.0</version>-->
-		<!--</dependency>-->
-
-		<dependency>
-			<groupId>com.github.miemiedev</groupId>
-			<artifactId>mybatis-paginator</artifactId>
-			<version>1.2.17</version>
+			<artifactId>pagehelper</artifactId>
+			<version>4.1.6</version>
 		</dependency>
 
-
-		<!--
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-jpa</artifactId>
-		</dependency>
-		-->
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
@@ -92,7 +82,7 @@
 		</dependency>
 
 
-		<!-- 整合shiro spring. -->
+		<!-- 整合shiro  -->
 		<dependency>
 			<groupId>org.apache.shiro</groupId>
 			<artifactId>shiro-core</artifactId>
@@ -103,6 +93,13 @@
 			<artifactId>shiro-spring</artifactId>
 			<version>1.2.2</version>
 		</dependency>
+
+		<dependency>
+			<groupId>net.sf.ehcache</groupId>
+			<artifactId>ehcache-core</artifactId>
+			<version>2.4.8</version>
+		</dependency>
+
 		<!-- shiro ehcache -->
 		<dependency>
 			<groupId>org.apache.shiro</groupId>
@@ -168,6 +165,14 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-war-plugin</artifactId>
+				<configuration>
+					<warName>oa</warName>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>

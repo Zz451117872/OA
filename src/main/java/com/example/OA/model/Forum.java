@@ -1,16 +1,12 @@
 package com.example.OA.model;
 
-import com.github.pagehelper.PageInfo;
-import org.hibernate.validator.constraints.NotEmpty;
 
+import org.hibernate.validator.constraints.NotEmpty;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.Date;
-import java.util.List;
-import java.util.concurrent.LinkedBlockingDeque;
 
 public class Forum implements Serializable {
     private Integer id;
