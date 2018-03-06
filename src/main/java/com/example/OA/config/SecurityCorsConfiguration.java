@@ -24,8 +24,8 @@ public class SecurityCorsConfiguration {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
-        //config.addAllowedOrigin("*");
-        config.addAllowedOrigin(Const.allowedOrigin);
+        config.addAllowedOrigin("*");
+        //config.addAllowedOrigin("http://120.79.50.238:8090");
         config.addAllowedHeader(CorsConfiguration.ALL);
         config.addAllowedMethod(CorsConfiguration.ALL);
         source.registerCorsConfiguration("/**", config);
