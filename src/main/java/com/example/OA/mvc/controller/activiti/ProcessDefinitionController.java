@@ -35,6 +35,7 @@ import java.util.Map;
 
 /**
  * Created by aa on 2017/11/6.
+ * 流程定义管理控制器
  */
 @RestController
 @RequestMapping("process")
@@ -66,7 +67,11 @@ public class ProcessDefinitionController extends CommonController{
 
     protected static Map<String, ProcessDefinition> PROCESS_DEFINITION_CACHE = new HashMap<String, ProcessDefinition>();
 
-    //部署流程定义 通过 流程定义名称方式
+    /*
+    部署流程定义
+    processName ： 流程定义名称
+    deploymentName ： 部署名称
+     */
     @RequestMapping(value = "deploy_pdf.do",method = RequestMethod.POST)
     public ServerResponse deploymentProcessDefinition(@RequestParam(value = "processName",required = true) String processName,
                                                       @RequestParam(value = "deploymentName",required = false,defaultValue = "呵呵") String deploymentName) {
@@ -77,7 +82,9 @@ public class ProcessDefinitionController extends CommonController{
         return processDefinitionService.deploymentProcessDefinition(processName,deploymentName);
     }
 
-    //部署流程定义 通过zip文件方式
+    /*
+    部署流程定义 通过zip文件方式
+     */
     @RequestMapping(value = "deploy_pdf_by_zip.do",method = RequestMethod.POST)
     public ServerResponse deploymentProcessDefinitionByZIP(MultipartHttpServletRequest request) {
         Subject subject = SecurityUtils.getSubject();
@@ -92,7 +99,6 @@ public class ProcessDefinitionController extends CommonController{
         }
         if(is != null)
         {
-
             return processDefinitionService.deploymentProcessDefinitionByZIP(is);
         }
         throw new AppException(Error.PARAMS_ERROR);

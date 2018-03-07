@@ -15,7 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * 请假流程结束监听器
+ * 薪水调整流程结束监听器，部署在工作流程中，在流程“end”时调用，还有“start,take”等
+ *  ，主要用于对业务对象的数据进行更新
  *
  */
 @Service
@@ -33,9 +34,7 @@ public class SalaryAdjuctProcessEndListener implements ExecutionListener {
     @Autowired
     SalaryAdjustMapper salaryAdjustMapper;
 
-    /*
-    这个方法是在流程“end”时调用，还有“start,take”等
-     */
+
     @Override
     public void notify(DelegateExecution execution) throws Exception {
         String processInstanceId = execution.getProcessInstanceId();

@@ -15,7 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * 请假流程结束监听器
+ * 请假流程结束监听器，部署在工作流程中，流程“end”时调用（还有“start,take”等）
+ *  ， 主要用于对业务对象的状态进行更新。
  *
  */
 @Service
@@ -33,19 +34,18 @@ public class LeaveProcessEndListener implements ExecutionListener {
     @Autowired
     LeaveMapper leaveMapper;
 
-    /*
-    这个方法是在流程“end”时调用，还有“start,take”等
-     */
+
     @Override
     public void notify(DelegateExecution execution) throws Exception {
+        //获取流程实例
         String processInstanceId = execution.getProcessInstanceId();
         ProcessInstance instance = runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
 
         String businessKey  = instance.getBusinessKey();
-
+        //获取业务对象
         Leave leave = leaveMapper.selectByPrimaryKey(Integer.parseInt(businessKey));
-
-       Object result = execution.getVariable("result");//这个参数是以“expression”形式设置在连线的监听器上
+        //这个参数是以“expression”形式设置在连线的监听器上
+       Object result = execution.getVariable("result");
       if("pass".equals(result))
       {
           leave.setStatus(Const.BusinessStatus.PASSED.getCode());

@@ -22,6 +22,7 @@ import java.util.List;
 
 /**
  * Created by aa on 2017/10/30.
+ * 验证与授权
  */
 public class AuthRealm extends AuthorizingRealm {
 
@@ -48,16 +49,14 @@ public class AuthRealm extends AuthorizingRealm {
 
     @Override
     protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principalCollection) {
-
+        //获取当前用户
         User user =  (User)principalCollection.getPrimaryPrincipal();
-
-        System.out.println("--------->user:"+user.getId());
 
         //把principals放session中 key=userId value=principals
         SecurityUtils.getSubject().getSession().setAttribute(String.valueOf(user.getId()), SecurityUtils.getSubject().getPrincipals());
 
         SimpleAuthorizationInfo info = new SimpleAuthorizationInfo();
-        //赋予角色
+        //赋予当前用户角色数据
         List<Integer> roleIds = userRoleMapper.getRoleidByUserid(user.getId());
         if(roleIds != null && !roleIds.isEmpty())
         {
@@ -73,7 +72,7 @@ public class AuthRealm extends AuthorizingRealm {
                     if(privilegeIds != null && !privilegeIds.isEmpty())
                     {
                         List<Privilege> privileges = privilegeMapper.getByIds(privilegeIds);
-                        //赋予权限
+                        //赋予当前用户权限数据
                         if(privileges != null && !privileges.isEmpty())
                         {
                             for(Privilege privilege : privileges){

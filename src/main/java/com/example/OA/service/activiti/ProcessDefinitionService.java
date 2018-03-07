@@ -39,13 +39,13 @@ public class ProcessDefinitionService extends CommonService{
 
     //获取所有流程定义的名称
     public List<String> getAllProcessDefinetionName() {
-        try{
+        try{        //获取项目流程定义路径下 的所有 流程定义
             File file = new File(Const.processPath);
             if(file.exists()) {
                 List<String> pdf_names = Lists.newArrayList();
                 File[] pdfs = file.listFiles();
                 for (int i = 0; i < pdfs.length; i++) {
-                    File pdf = pdfs[i];
+                    File pdf = pdfs[i];  //获取以.bpmn结尾的文件，得到流程定义名称
                     if (pdf.getName().endsWith(".bpmn")) {
                         String name = pdf.getName();
                         pdf_names.add(name.substring(0,name.indexOf(".")));
@@ -57,33 +57,28 @@ public class ProcessDefinitionService extends CommonService{
         }catch (Exception e)
         {
             e.printStackTrace();
-            throw new AppException(Error.UNKNOW_EXCEPTION);
+            throw e;
         }
     }
 
     //部署所有流程定义
     public ServerResponse deploymentAll() {
-        try{
+        try{                //获取项目流程定义路径下 的所有 流程定义
             File file = new File(Const.processPath);
-
+                            //获取部署器
             DeploymentBuilder deploymentBuilder =  repositoryService.createDeployment().name("auto_deploy_all");
             if(file.exists())
             {
                 File[] pdfs = file.listFiles();
                 for(int i=0; i<pdfs.length; i++) {
-                    File pdf = pdfs[i];
+                    File pdf = pdfs[i];  // 循环部署所有以 .bpmn结尾的文件
                     if (pdf.getName().endsWith(".bpmn")) {
                         System.out.println("部署pdf:" + pdf.getName());
                         deploymentBuilder = deploymentBuilder.addClasspathResource("processes/" + pdf.getName());
+                        deploymentBuilder.deploy();
                     }
                 }
-                Deployment deployment = deploymentBuilder.deploy();
-                if(deployment != null)
-                {
-                    return ServerResponse.createBySuccess();
-                }
-                throw new AppException(Error.UNKNOW_EXCEPTION,"deploymentProcessDefinition error");
-                }
+            }
             throw new AppException(Error.PARAMS_ERROR,"path 错误");
         }catch (Exception e)
         {
@@ -91,11 +86,18 @@ public class ProcessDefinitionService extends CommonService{
         }
     }
 
-    //部署单个流程定义：通过流程定义名称
+    /*
+    部署单个流程定义：通过流程定义名称
+    processName ： 流程定义名称
+    deploymentName ： 部署名称
+     */
     public ServerResponse deploymentProcessDefinition(String processName,String deploymentName) {
         try{
+                    //获取部署器
             DeploymentBuilder deploymentBuilder =  repositoryService.createDeployment().name(deploymentName);
+                    //部署器加入流程定义资源
             deploymentBuilder = deploymentBuilder.addClasspathResource("processes/"+processName+".bpmn");
+                    //部署流程定义
             Deployment deployment = deploymentBuilder.deploy();
             if(deployment != null)
             {
@@ -108,7 +110,10 @@ public class ProcessDefinitionService extends CommonService{
         }
     }
 
-    //部署单个流程定义：通过本地ZIP文件
+    /*
+    部署单个流程定义：通过本地ZIP文件
+
+     */
     public ServerResponse deploymentProcessDefinitionByZIP(InputStream inputStream) {
         try{
             DeploymentBuilder deploymentBuilder =  repositoryService.createDeployment().name("zip deploy");
@@ -127,14 +132,14 @@ public class ProcessDefinitionService extends CommonService{
 
     //获取所有流程定义
     public PageInfo getAllProcessDefinition( Integer pageNum, Integer pageSize) {
-        try{
+        try{            //从仓库中获取所有的流程定义
             List<ProcessDefinition> processDefinitionList = repositoryService//
                     .createProcessDefinitionQuery().latestVersion().list();
             if(processDefinitionList != null && !processDefinitionList.isEmpty())
             {
                 List<ProcessDefinitionBean> result = Lists.newArrayList();
                 for(ProcessDefinition processDefinition : processDefinitionList)
-                {
+                {         //将流程定义转化为前台需要的对象
                     result.add(convertProcessDefinitionBean(processDefinition));
                 }
                 PageHelper.startPage(pageNum,pageSize);
@@ -162,12 +167,12 @@ public class ProcessDefinitionService extends CommonService{
         }
     }
 
-    //删除单个流程定义
+    //删除单个部署
     public void deleteProcessDefinition(String processId) {
-        try{
+        try{        //获取流程定义对象
             ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().processDefinitionId(processId).singleResult();
             if(processDefinition != null)
-            {
+            {        //删除部署，true表示级联删除运行中 或者 已结束的流程实例，
                 repositoryService.deleteDeployment(processDefinition.getDeploymentId(),true);
                 logger.info("deleteDeployment:"+processDefinition.getDeploymentId());
                 return;
@@ -182,10 +187,10 @@ public class ProcessDefinitionService extends CommonService{
 
     //删除所有流程定义
     public void deleteAllProcessDefinition() {
-        try {
+        try {           //获取所有部署对象
             List<Deployment> deployments =  repositoryService.createDeploymentQuery().list();
             if(deployments != null && !deployments.isEmpty())
-            {
+            {       //循环删除部署
                 for (Deployment deployment : deployments)
                 {
                     repositoryService.deleteDeployment(deployment.getId(),true);
@@ -208,15 +213,20 @@ public class ProcessDefinitionService extends CommonService{
         runtimeService.suspendProcessInstanceById(processInstanceId);
     }
 
-
+    //获取所有流程定义key
     public List<String> getAllProcessDefinetionKey() {
-        List<ProcessDefinition> processDefinitionList = repositoryService//
-                .createProcessDefinitionQuery().latestVersion().list();
-        List<String> pdf_keys = Lists.newArrayList();
-        for(ProcessDefinition processDefinition : processDefinitionList)
+        try{            //获取所有的流程定义
+            List<ProcessDefinition> processDefinitionList = repositoryService//
+                    .createProcessDefinitionQuery().latestVersion().list();
+            List<String> pdf_keys = Lists.newArrayList();
+            for(ProcessDefinition processDefinition : processDefinitionList)
+            {
+                pdf_keys.add(processDefinition.getKey());
+            }
+            return pdf_keys;
+        }catch (Exception e)
         {
-            pdf_keys.add(processDefinition.getKey());
+            throw e;
         }
-        return pdf_keys;
     }
 }

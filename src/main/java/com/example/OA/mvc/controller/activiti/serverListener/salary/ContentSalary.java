@@ -15,7 +15,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-
+/*
+薪水调整 服务监听器，部署在流程中，工作流通过时调用，用于对薪水的调整
+ */
 @Component
 public class ContentSalary implements JavaDelegate {
 
@@ -29,6 +31,7 @@ public class ContentSalary implements JavaDelegate {
 	
 	@Override
 	public void execute(DelegateExecution execution) throws Exception {
+		//获取业务id，并获取业务对象
 		Integer businessKey = null;
 		try{
 			businessKey = (Integer) execution.getVariable("businessKey");
@@ -37,9 +40,10 @@ public class ContentSalary implements JavaDelegate {
 			businessKey = Integer.parseInt((String) execution.getVariable("businessKey"));
 		}
 		SalaryAdjust salaryAdjust = salaryAdjustMapper.selectByPrimaryKey(businessKey);
-
+		//获取申请人数据
 		User user = userMapper.selectByPrimaryKey(salaryAdjust.getApplication());
 		BigDecimal old = user.getSalary();
+		//对申请人的薪水进行调整
 		user.setSalary(BigDecimalUtil.add(user.getSalary().doubleValue(),salaryAdjust.getAdjustmoney().doubleValue()));
 		user.setUpdateTime(new Date());
 

@@ -12,7 +12,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
-
+/*
+薪水调整重新申请监听器，部署在任务节点中，在任务“complete”时调用（还有“create,assignment,delete"等）
+，主要用于重新申请后需要对业务对象的数据进行更新
+ */
 
 @Component
 public class SalaryModifyApplyProcessor implements TaskListener {

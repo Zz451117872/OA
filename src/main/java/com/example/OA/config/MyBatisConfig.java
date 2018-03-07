@@ -7,6 +7,7 @@ import java.util.Properties;
 
 /**
  * Created by aa on 2017/12/7.
+ * 配置mybatis 插件
  */
 @Configuration
 public class MyBatisConfig   {

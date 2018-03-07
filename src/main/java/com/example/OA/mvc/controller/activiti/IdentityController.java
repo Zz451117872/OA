@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 
 /**
- * 用户、组控制器
+ * 用户、组控制器，未测试
  */
 @RestController
 @RequestMapping("/identity")

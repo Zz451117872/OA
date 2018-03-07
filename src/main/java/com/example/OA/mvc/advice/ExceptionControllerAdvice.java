@@ -19,6 +19,7 @@ import javax.validation.ConstraintViolationException;
 /**
  * Created by aa on 2017/10/31.
  * 统一异常处理
+ * ControllerAdvice 控制器通知，对所有@RequestMapping修饰的方法起作用
  */
 @ControllerAdvice
 @ResponseBody
@@ -26,6 +27,7 @@ public class ExceptionControllerAdvice {
 
     Logger logger = LoggerFactory.getLogger(getClass());
 
+    //出现AppException 异常时触发
     @ExceptionHandler(AppException.class)
     public ServerResponse appException(AppException ex,HttpServletResponse response) {
         response.setStatus(200);

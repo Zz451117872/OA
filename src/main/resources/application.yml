@@ -4,13 +4,13 @@ server:
 spring:
   datasource:
 #        本地配置
-#        url: jdbc:mysql://localhost:3306/soooa?characterEncoding=utf-8&useSSL=false
-#        password: 151318
+        url: jdbc:mysql://localhost:3306/soooa?characterEncoding=utf-8&useSSL=false
+        password: 151318
 
 
 #       阿里云服务器配置
-        url: jdbc:mysql://120.79.50.238:3306/oa?characterEncoding=utf-8
-        password: Zz.151318.com
+#        url: jdbc:mysql://120.79.50.238:3306/oa?characterEncoding=utf-8
+#        password: Zz.151318.com
 
 #       公共配置
         username: root

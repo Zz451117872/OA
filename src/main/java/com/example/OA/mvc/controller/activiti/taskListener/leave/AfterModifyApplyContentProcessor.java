@@ -14,7 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Date;
 
 /**
- * 调整请假内容处理器
+ * 调整请假内容处理器，部署在用户任务节点中，在任务“complete”时调用（还有“create,assignment,delete"等）
+ *  ，主要用于在重新申请后需要对 申请内容的更新调整。
  */
 @Component
 @Transactional
@@ -28,15 +29,14 @@ public class AfterModifyApplyContentProcessor implements TaskListener {
     @Autowired
     RuntimeService runtimeService;
 
-    /*
-    这个方法是在“complete”时调用的，还有“create,assignment,delete"等
-     */
+
     public void notify(DelegateTask delegateTask) {
-
+        //获取变量reApply
         boolean reApply = (Boolean)delegateTask.getVariable("reApply");
-
+        //获取流程实例
         String processInstanceId = delegateTask.getProcessInstanceId();
         ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
+        //通过流程实例获取业务对象，并对业务对象的数据进行更新
         Leave leave = leaveMapper.selectByPrimaryKey(Integer.parseInt(processInstance.getBusinessKey()));
         if(reApply) {
             leave.setLeaveType((String) delegateTask.getVariable("leaveType"));//这些都是前台传进来的参数，完成任务时被设置进来

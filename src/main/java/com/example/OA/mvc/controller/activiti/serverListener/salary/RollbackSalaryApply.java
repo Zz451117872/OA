@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 
 
 /**
- * 回滚薪资调整
+ * 回滚薪资调整 ，在工作流经过时调用，用于对薪水的回滚
  */
 
 @Component
@@ -33,13 +33,17 @@ public class RollbackSalaryApply implements JavaDelegate {
 
 	@Override
 	public void execute(DelegateExecution execution) throws Exception {
+		//获取流程实例
 		String processInstanceId = execution.getProcessInstanceId();
 		ProcessInstance instance = runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
 		String businessKey = instance.getBusinessKey();
+		//获取业务对象
 		SalaryAdjust salaryAdjust =  salaryAdjustMapper.selectByPrimaryKey(Integer.parseInt(businessKey));
-
+		//获取申请人数据
 		User user = userMapper.selectByPrimaryKey(salaryAdjust.getApplication());
+		//获取调整前工资
 		BigDecimal baseMoney = (BigDecimal) execution.getVariable("baseMoney");
+		//回滚工资到调整前工资
 		user.setSalary(baseMoney);
 		user.setUpdateTime(new Date());
 		userMapper.updateByPrimaryKeySelective(user);

@@ -20,6 +20,7 @@ import java.util.LinkedHashMap;
 
 /**
  * Created by aa on 2017/10/30.
+ * 配置shiro
  */
 @Configuration
 public class ShiroConfiguration {

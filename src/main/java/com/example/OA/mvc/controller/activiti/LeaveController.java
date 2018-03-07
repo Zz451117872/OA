@@ -30,6 +30,7 @@ import java.util.*;
 
 /**
  * Created by aa on 2017/11/3.
+ * 请假流程控制器
  */
 @RestController
 @RequestMapping("leave")
@@ -50,7 +51,7 @@ public class LeaveController extends CommonController{
     @Autowired
     RoleMapper roleMapper;
 
-    //启动请假流程   要进行表单验证
+    //启动请假流程
     @RequestMapping(value = "start_leave_workflow.do",method = RequestMethod.POST)
     public ServerResponse startWorkflow(@Valid Leave leave , BindingResult bindingResult) {
         Subject subject = SecurityUtils.getSubject();
@@ -68,14 +69,14 @@ public class LeaveController extends CommonController{
                 User user = getUserBySubject(subject);
                 //leave 相关相关属性
                 leave.setApplication(user.getId()); //设置申请人
-                leave.setCreateTime(new Date());
-                leave.setStatus(Const.BusinessStatus.APPLICATION.getCode());
+                leave.setCreateTime(new Date());    //申请时间
+                leave.setStatus(Const.BusinessStatus.APPLICATION.getCode());//业务状态
 
                 Map<String, Object> variables = new HashMap<String, Object>();
                 variables.put("inputUser",user.getUsername());//设置申请人变量
                 List<Integer> roleIds = userRoleMapper.getRoleidByUserid(user.getId());
                 if(roleIds != null && roleIds.size() > 0 )
-                {       //目前一个用户只有一个角色，后期优化
+                {       //目前一个用户只有一个角色
                     Role role = roleMapper.selectByPrimaryKey(roleIds.get(0));
                     variables.put("role",role.getRoleName());
                 }else{
@@ -83,7 +84,7 @@ public class LeaveController extends CommonController{
                 }
 
                 return workflowService.startLeaveWorkflow(leave, variables);
-                }
+            }
                 throw new AppException(Error.PARAMS_ERROR);
             }catch (Exception e)
             {
@@ -123,7 +124,7 @@ public class LeaveController extends CommonController{
         try{
             if(leave != null) {
                 Map<String, Object> variables = Maps.newHashMap();
-                variables.put("reApply", reApply);
+                variables.put("reApply", reApply);  //是否重新申请
                 if (reApply) {   //可以修改的内容：请假天数，原因，开始结束时间，请假类型
                     variables.put("leaveNumber", leave.getLeaveNumber());
                     variables.put("reason", leave.getReason());

@@ -14,6 +14,7 @@ import java.lang.reflect.Type;
 /**
  * Created by aa on 2017/10/31.
  * 统一返回值处理
+ * ControllerAdvice 控制器通知，对所有@RequestMapping修饰的方法起作用
  */
 @ControllerAdvice
 public class CommonResponseBodyAdvice implements ResponseBodyAdvice<Object> {

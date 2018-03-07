@@ -4,11 +4,10 @@ import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.authc.credential.SimpleCredentialsMatcher;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Created by aa on 2017/10/30.
+ * 证书匹配器，用来验证密码是否正确
  */
 public class CredentialsMatcher extends SimpleCredentialsMatcher {
 
@@ -16,9 +15,10 @@ public class CredentialsMatcher extends SimpleCredentialsMatcher {
     @Override
     public boolean doCredentialsMatch(AuthenticationToken token, AuthenticationInfo info)
     {
+        //用户传入的用户名与密码
         UsernamePasswordToken upt = (UsernamePasswordToken)token;
+        //用户的密码信息
         String password = (String)info.getCredentials();
-        System.out.println(new String(upt.getPassword())+"    "+password);
         return this.equals(upt.getPassword(),password);
     }
 }

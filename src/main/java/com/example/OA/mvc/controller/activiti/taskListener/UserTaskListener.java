@@ -14,7 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 
-
+/*
+用户任务节点的 监听器，部署在工作流中，在用户任务创建时被触发，用于对用户任务的 代理人，候选人，候选组进行初始化
+ */
 @Component
 public class UserTaskListener implements TaskListener {
 
@@ -28,11 +30,15 @@ public class UserTaskListener implements TaskListener {
     
 	@Override
 	public void notify(DelegateTask delegateTask) {
+		//获取流程定义
 		String processDefinitionId = delegateTask.getProcessDefinitionId();
 		ProcessDefinition processDefinition = this.repositoryService.createProcessDefinitionQuery().processDefinitionId(processDefinitionId).singleResult();
+		//获取流程定义key
 		String processDefinitionKey = processDefinition.getKey();
+		//获取任务定义key
 		String taskDefinitionKey = delegateTask.getTaskDefinitionKey();
-		try {
+		try {		//查询 流程定义key为processDefinitionKey的所有任务，并对任务定义key为taskDefinitionKey
+					//的任务 进行初始化
 			List<UserTask> taskList = userTaskMapper.getByPdfKey(processDefinitionKey);
 			for(UserTask userTask : taskList){
 				String taskKey = userTask.getTaskdefkey();
@@ -40,13 +46,13 @@ public class UserTaskListener implements TaskListener {
 				String ids = userTask.getCandidateIds();
 
 				if(taskDefinitionKey.equals(taskKey)){
-					switch (taskType){
+					switch (taskType){  //任务类型为 代理 人
 						case "assignee" : {
 							delegateTask.setAssignee(ids);
 							logger.info("assignee id: "+ids);
 							break;
 						}
-						case "candidateUser" : {
+						case "candidateUser" : {	//任务类型为 候选人
 							String[] userIds = ids.split(",");
 							List<String> users = new ArrayList<String>();
 							for(int i=0; i<userIds.length;i++){
@@ -56,7 +62,7 @@ public class UserTaskListener implements TaskListener {
 							logger.info("候选人审批 ids: "+ids);
 							break;
 						}
-						case "candidateGroup" : {
+						case "candidateGroup" : {	//任务类型为 候选组
 							String[] groupIds = ids.split(",");
 							List<String> groups = new ArrayList<String>();
 							for(int i=0; i<groupIds.length;i++){

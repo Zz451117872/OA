@@ -15,8 +15,6 @@ import com.google.common.collect.Maps;
 import org.activiti.engine.*;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -26,6 +24,7 @@ import java.util.Map;
 
 /**
  * Created by aa on 2017/11/11.
+ * 工作流操作控制器
  */
 @RestController
 @RequestMapping("workflow")
@@ -55,8 +54,12 @@ public class WorkflowController extends CommonController{
     @Autowired
     HistoryService historyService;
 
-
-    //查找申请
+//=========================================任务查找=============
+    /*
+    查找申请
+    status : 申请的状态
+    isPersonal ： 是否是个人的申请
+     */
     @RequestMapping(value = "find_applications.do",method = RequestMethod.POST)
     public _PageInfo<BaseVO> findApplication(@RequestParam(value = "status",required = true) Integer status,
                                     @RequestParam(value = "isPersonal",required = false,defaultValue = "true") Boolean isPersonal,
@@ -67,7 +70,7 @@ public class WorkflowController extends CommonController{
             throw new AppException(Error.UN_AUTHORIZATION);
         }
         User user = getUserBySubject(subject);
-            try{
+            try{    // 检查申请状态的正确性
                 Const.BusinessStatus.codeof(status);
             }catch (Exception e)
             {
@@ -82,7 +85,7 @@ public class WorkflowController extends CommonController{
         }
     }
 
-    //查找任务
+    //查找正在运行的任务
     @RequestMapping(value= "find_tasks.do",method = RequestMethod.POST)
     public _PageInfo<BaseVO> findTasks(@RequestParam(value = "isPersonal",required = false,defaultValue = "true") Boolean isPersonal,
                                @RequestParam(value = "pageNum",required = false,defaultValue = "1") Integer pageNum,
@@ -100,7 +103,7 @@ public class WorkflowController extends CommonController{
         }
     }
 
-    //查找已完成任务
+    //查找历史任务
     @RequestMapping(value = "find_history_tasks.do",method = RequestMethod.POST)
     public _PageInfo<HistoryTaskVO> findHistoryTasks(@RequestParam(value = "isPersonal",required = false,defaultValue = "true") Boolean isPersonal,
                                                 @RequestParam(value = "pageNum",required = false,defaultValue = "1") Integer pageNum,
@@ -118,7 +121,8 @@ public class WorkflowController extends CommonController{
             return workflowService.findHisrotyTasks(null,pageNum,pageSize);
         }
     }
-    //查找评论
+
+    //查找评论 ，pin_id ： 流程实例id
     @RequestMapping(value = "find_comments.do",method = RequestMethod.POST)
     public _PageInfo<CommentVO> findComments(@RequestParam(value = "pin_id",required = true) String pin_id,
                                             @RequestParam(value = "pageNum",required = false,defaultValue = "1") Integer pageNum,
@@ -131,6 +135,8 @@ public class WorkflowController extends CommonController{
         }
         return workflowService.findComments(pin_id,pageNum,pageSize);
     }
+
+
 //=================任务操作流程==================================================
     //认领任务
     @RequestMapping(value = "claim_task.do",method = RequestMethod.POST)
@@ -183,7 +189,12 @@ public class WorkflowController extends CommonController{
 
     }
 
-    //完成任务
+    /*
+    完成任务
+    comment ： 对任务的评论
+    isPass ：是否通过
+    taskId ：任务的id
+     */
     @RequestMapping(value = "complete_task.do",method = RequestMethod.POST)
     public void complete(@RequestParam(value = "comment",required = false,defaultValue = "我无语") String comment,
                          @RequestParam(value = "isPass",required = true) Boolean isPass,

@@ -3,11 +3,14 @@ package com.example.OA.mvc.common;
 
 public class Const {
 
+    //流程定义存放的路径
     //public static String processPath = "F:\\IDEAPATH\\OA\\src\\main\\resources\\processes";
     public static String processPath = "/usr/local/src/tomcat-server/webapps/oa/WEB-INF/classes/processes";
 
+    //密码加密盐值
     public static String salt = "sfasdfasdf@#$@#$#@KJdjklj;D../dSF.";
 
+    //流程定义key，
     public interface processDefinitionKey{
         String LEAVE = "leave";
         String SALARY = "salaryAdjuct";
@@ -16,9 +19,9 @@ public class Const {
 
     //用户任务类型
     public interface userTaskType{
-        String ASSIGNEE = "assignee";
-        String CANDIDATEUSER = "candidateUser";
-        String CANDIDATEGROUP = "candidateGroup";
+        String ASSIGNEE = "assignee"; //代理人
+        String CANDIDATEUSER = "candidateUser"; //候选人
+        String CANDIDATEGROUP = "candidateGroup"; //候选组
     }
 
     //工作流业务类型

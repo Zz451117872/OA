@@ -29,6 +29,7 @@ import java.util.Map;
 
 /**
  * Created by aa on 2017/11/10.
+ * 薪水调整流程控制器
  */
 @RestController
 @RequestMapping("salary")
@@ -43,7 +44,7 @@ public class SalaryAdjustController extends CommonController{
     @Autowired
     RuntimeService runtimeService;
 
-    //开启薪资调整流程   要进行表单验证
+    //开启薪资调整流程
     @RequestMapping(value = "start_salary_workflow.do",method = RequestMethod.POST)
     public ServerResponse startWorkflow(@Valid SalaryAdjust salaryAdjust , BindingResult bindingResult) {
         Subject subject = SecurityUtils.getSubject();
@@ -60,7 +61,7 @@ public class SalaryAdjustController extends CommonController{
         {
             //SalaryAdjust相关信息
             salaryAdjust.setApplication(user.getId());//设置申请人
-            salaryAdjust.setCreateTime(new Date());
+            salaryAdjust.setCreateTime(new Date());     //申请时间
             salaryAdjust.setStatus(Const.BusinessStatus.APPLICATION.getCode());//业务状态
 
             Map<String, Object> variables = new HashMap<String, Object>();
@@ -83,7 +84,7 @@ public class SalaryAdjustController extends CommonController{
     }
 
 
-    //修改申请 ，要进行表单验证
+    //修改申请 ，重新申请
     @RequestMapping(value = "modify_salary.do",method = RequestMethod.POST)
     public void modifySalaryAdjust(@Valid SalaryAdjust salaryAdjust,BindingResult bindingResult,
                                    @RequestParam(value = "reApply",required = true) Boolean reApply,

@@ -1,6 +1,5 @@
 package com.example.OA.config;
 
-import com.example.OA.mvc.common.Const;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,23 +14,28 @@ import org.springframework.web.filter.CorsFilter;
 
 /*
 解决跨域问题
+@Configuration可理解为用spring的时候xml里面的<beans>标签
+@Bean可理解为用spring的时候xml里面的<bean>标签
  */
 @Configuration
 public class SecurityCorsConfiguration {
 
+    /*
+    FilterRegistrationBean ：setOrder方法，可以为filter设置排序值，
+    让spring在注册filter之前排序后再依次注册。
+     */
     @Bean
     public FilterRegistrationBean corsFilter() {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
         config.addAllowedOrigin("*");
-        //config.addAllowedOrigin("http://120.79.50.238:8090");
         config.addAllowedHeader(CorsConfiguration.ALL);
         config.addAllowedMethod(CorsConfiguration.ALL);
         source.registerCorsConfiguration("/**", config);
         FilterRegistrationBean bean = new FilterRegistrationBean(new CorsFilter(source));
         bean.setOrder(Ordered.HIGHEST_PRECEDENCE);
-        System.out.println("-------------->FilterRegistrationBean started !!!");
+        System.out.println("-------------->CorsFilter started !!!");
         return bean;
     }
 }
